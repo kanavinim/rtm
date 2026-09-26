@@ -94,44 +94,59 @@ do_action( 'woocommerce_before_main_content' );
   </nav>
 
 </div>
-<div id="content-place" class="inner">
+
+<div id="content-place" class="inner shop-archive">
 
 <?php if ( apply_filters( 'woocommerce_show_page_title', true )) : ?>
 		<h1 class="woocommerce-products-header__title page-title"><?php woocommerce_page_title(); ?></h1>
 <?php endif; ?>
-</div>
-<div class="inner" style="display:flex;">
 
-<div  class="left_block sticky-sidebar col-md-2 desktop">
+<div class="shop-archive-layout">
+
+<div class="left_block sticky-sidebar col-md-2 desktop shop-archive-sidebar">
       <?php echo get_categories_product(); ?>
 </div>
 
 <script>
-    var rukojatki = document.querySelectorAll(".left_block > ul:nth-child(1) > li:nth-child(1)")[0];
-    var sub_category_rukojatki = document.querySelectorAll(".left_block > ul:nth-child(1) > li:nth-child(1) > ul > li")[0];
-    var sub_category_rukojatki1 = document.querySelectorAll(".left_block > ul:nth-child(1) > li:nth-child(1) > ul > li")[1];
-    var sub_category_merch = document.querySelectorAll(".left_block > ul:nth-child(10) > li:nth-child(1) > ul > li")[0];
-    var sub_category_merch1 = document.querySelectorAll(".left_block > ul:nth-child(10) > li:nth-child(1) > ul > li")[1];
-    const points = document.querySelectorAll(".left_block ul li a");
-    for(let point of points){
-     if(point.href == document.location){
-      point.style.borderLeft = "2.5px solid #b8b8b8";
-      point.style.paddingLeft = "5px";
-      if(point.href == "https://rtm-a.ru/product-category/rukojatki/" || point.href == "https://rtm-a.ru/product-category/rukojatki/vertical/" || point.href == "https://rtm-a.ru/product-category/rukojatki/ugol/"){
-        sub_category_rukojatki.style.display = "block";
-        sub_category_rukojatki1.style.display = "block";
-      }
-      if(point.href == "https://rtm-a.ru/product-category/mertch/" || point.href == "https://rtm-a.ru/product-category/mertch/sticks/" || point.href == "https://rtm-a.ru/product-category/mertch/patch/"){
-        sub_category_merch.style.display = "block";
-        sub_category_merch1.style.display = "block";
-      }
-
-     }
+(function () {
+  function normalizePath(href) {
+    try {
+      var path = new URL(href, window.location.origin).pathname;
+      return path.replace(/\/+$/, '') || '/';
+    } catch (e) {
+      return '';
     }
+  }
+
+  var sub_category_rukojatki = document.querySelectorAll(".left_block > ul:nth-child(1) > li:nth-child(1) > ul > li")[0];
+  var sub_category_rukojatki1 = document.querySelectorAll(".left_block > ul:nth-child(1) > li:nth-child(1) > ul > li")[1];
+  var sub_category_merch = document.querySelectorAll(".left_block > ul:nth-child(10) > li:nth-child(1) > ul > li")[0];
+  var sub_category_merch1 = document.querySelectorAll(".left_block > ul:nth-child(10) > li:nth-child(1) > ul > li")[1];
+  var currentPath = normalizePath(window.location.href);
+  var points = document.querySelectorAll(".left_block ul li a");
+
+  for (var i = 0; i < points.length; i++) {
+    var point = points[i];
+    var pointPath = normalizePath(point.href);
+    if (pointPath !== currentPath) {
+      continue;
+    }
+    point.style.borderLeft = "2.5px solid #b8b8b8";
+    point.style.paddingLeft = "5px";
+    if (/\/product-category\/rukojatki(\/|$)/.test(currentPath)) {
+      if (sub_category_rukojatki) sub_category_rukojatki.style.display = "block";
+      if (sub_category_rukojatki1) sub_category_rukojatki1.style.display = "block";
+    }
+    if (/\/product-category\/mertch(\/|$)/.test(currentPath)) {
+      if (sub_category_merch) sub_category_merch.style.display = "block";
+      if (sub_category_merch1) sub_category_merch1.style.display = "block";
+    }
+  }
+})();
 </script>
 
 
-<div  class="col-md-10 mobile-product-loop" style="margin-left: 40px;">
+<div class="shop-archive-products mobile-product-loop">
 <?php
 if ( woocommerce_product_loop() ) {
 
@@ -180,6 +195,7 @@ if ( woocommerce_product_loop() ) {
 ?>
 
 
+</div>
 </div>
 </div>
     <?php get_footer('shop'); ?>
