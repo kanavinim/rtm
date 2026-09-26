@@ -815,10 +815,49 @@ a:hover {
 
 
 .lmp_products_loading{
-    width: 250px !important;
-    margin: 0 auto;
+    width: 100% !important;
+    max-width: 100%;
+    margin: 0 auto 20px;
     font-size: 20px;
-    margin-bottom: 20px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 56px;
+}
+/* Spin only the glyph, fixed in place (no double-rotate / wobble) */
+.lmp_products_loading .fa.lmp_rotate {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 56px !important;
+    height: 56px !important;
+    line-height: 56px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    animation: none !important;
+    -webkit-animation: none !important;
+    transform: none !important;
+}
+.lmp_products_loading .fa.lmp_rotate:before {
+    display: inline-block !important;
+    width: 1em;
+    height: 1em;
+    line-height: 1;
+    margin: 0 !important;
+    padding: 0 !important;
+    transform-origin: 50% 50% !important;
+    -webkit-transform-origin: 50% 50% !important;
+    -webkit-animation: lmp-spin-fixed 1.2s linear infinite !important;
+    animation: lmp-spin-fixed 1.2s linear infinite !important;
+}
+@-webkit-keyframes lmp-spin-fixed {
+    from { -webkit-transform: rotate(0deg); }
+    to { -webkit-transform: rotate(360deg); }
+}
+@keyframes lmp-spin-fixed {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 .col-md-2 > ul:nth-child(1) > li:nth-child(1) > ul:nth-child(2) > li:nth-child(1) > a:nth-child(1), .col-md-2 > ul:nth-child(1) > li:nth-child(1) > ul:nth-child(2) > li:nth-child(2) > a:nth-child(1), .col-md-2 > ul:nth-child(10) > li:nth-child(1) > ul:nth-child(2) > li:nth-child(1) > a:nth-child(1), .col-md-2 > ul:nth-child(10) > li:nth-child(1) > ul:nth-child(2) > li:nth-child(2) > a:nth-child(1){
     font-size: 12px;
@@ -2113,23 +2152,24 @@ li.active ul {display: block;}
     width: 100% !important;
     max-width: 100%;
     margin: 0 !important;
-    padding: 0;
+    padding: 0 0 8px;
     float: none !important;
     clear: none !important;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    align-items: stretch;
-    /* Override Storefront text-align:center so Buy stays left */
-    text-align: left;
+    align-items: center;
+    /* Storefront default: title / price / Buy centered under image */
+    text-align: center;
 }
 .shop-archive-products ul.products li.product .woocommerce-LoopProduct-link {
     display: flex;
     flex-direction: column;
     flex: 1 1 auto;
     width: 100%;
+    align-items: center;
     text-decoration: none;
-    text-align: left;
+    text-align: center;
 }
 .shop-archive-products ul.products li.product img {
     display: block;
@@ -2137,18 +2177,25 @@ li.active ul {display: block;}
     max-width: 100%;
     height: auto;
     margin: 0 0 10px;
+    order: 0;
 }
 .shop-archive-products ul.products li.product .woocommerce-loop-product__title {
     min-height: 2.6em;
     margin: 0 0 8px;
+    padding: 0 8px;
     font-size: 15px;
     line-height: 1.3;
-    text-align: left;
+    text-align: center;
+    width: 100%;
+    box-sizing: border-box;
 }
 .shop-archive-products ul.products li.product .price {
     margin: 0 0 10px !important;
+    padding: 0 8px;
     font-size: 18px;
-    text-align: left;
+    text-align: center;
+    width: 100%;
+    box-sizing: border-box;
 }
 .shop-archive-products ul.products li.product .button,
 .shop-archive-products ul.products li.product a.button.add_to_cart_button {
@@ -2156,11 +2203,9 @@ li.active ul {display: block;}
     clear: both;
     display: inline-block !important;
     width: auto !important;
-    max-width: 100%;
-    margin-top: auto;
-    margin-left: 0 !important;
-    margin-right: auto !important;
-    align-self: flex-start !important;
+    max-width: calc(100% - 16px);
+    margin: 4px auto 0 !important;
+    align-self: center !important;
     text-align: center;
 }
 
@@ -2467,22 +2512,22 @@ li.active ul {display: block;}
     width: 100% !important;
     max-width: 100%;
     margin: 0 !important;
-    padding: 0;
+    padding: 0 0 8px;
     float: none !important;
     clear: none !important;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    text-align: left;
+    align-items: center;
+    text-align: center;
 }
 .single-product div.product .related.products ul.products li.product .button,
 .single-product div.product .related.products ul.products li.product a.button.add_to_cart_button {
     float: none !important;
     display: inline-block !important;
     width: auto !important;
-    margin-left: 0 !important;
-    margin-right: auto !important;
-    align-self: flex-start !important;
+    margin: 4px auto 0 !important;
+    align-self: center !important;
 }
 
 @media (min-width: 768px) and (max-width: 1024px) {
