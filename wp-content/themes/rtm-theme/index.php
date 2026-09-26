@@ -83,7 +83,7 @@ Template Name: Main page
                     </div>
                     <div class="header-top clearfix mobile">
                         <div class="inner">
-                            <a id="menu-icon" class="mob-menu" onclick="openClose()">Меню</a>
+                            <a id="menu-icon" class="mob-menu" onclick="openClose()" aria-label="Меню"><span class="mob-menu-label">Меню</span></a>
                             <div class="header-top-right" style="display: flex; margin-top: 10px;">
                                 <span class="phone-number"><a href="tel:78006893509" style="color: rgb(116, 116, 116);">8 (800) 689-35-09</a></span>
                                 <div style="display: flex;">

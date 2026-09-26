@@ -2468,6 +2468,27 @@ li.active ul {display: block;}
     margin: 0 0 12px;
     line-height: 1.55;
 }
+/* Section labels in product description (Особенности / Комплектация / Совместимость) */
+.single-product div.product #description > strong,
+.single-product div.product #description p > strong,
+.single-product div.product #description strong {
+    display: inline-block;
+    margin-top: 1.35em;
+    margin-bottom: 0.45em;
+    font-weight: 700;
+}
+.single-product div.product #description > strong:first-child,
+.single-product div.product #description p:first-child > strong:first-child {
+    margin-top: 0.35em;
+}
+.single-product div.product #description ul {
+    margin: 0.35em 0 0.85em;
+    padding-left: 1.25em;
+}
+.single-product div.product #description ul li {
+    margin: 0 0 0.45em;
+    line-height: 1.5;
+}
 
 /* Related products — reuse shop card grid gap */
 .single-product div.product .related.products {
@@ -3177,3 +3198,66 @@ abbr.required {
     text-decoration: none !important;
 }
 
+/* Narrow phones: keep top bar on one line — hide "Меню" label */
+@media screen and (max-width: 400px) {
+    .header-top.mobile > .inner {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        align-items: center;
+        justify-content: space-between;
+        gap: 6px;
+        box-sizing: border-box;
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+    .header-top.mobile .mob-menu {
+        flex: 0 0 auto;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        min-width: 32px;
+        min-height: 32px;
+        padding: 6px 4px;
+        margin: 0;
+        text-decoration: none;
+        color: #7a7a7a;
+    }
+    .header-top.mobile .mob-menu-label {
+        display: none !important;
+    }
+    /* hamburger bars instead of the word */
+    .header-top.mobile .mob-menu::before {
+        content: "";
+        display: block;
+        width: 18px;
+        height: 2px;
+        background: #7a7a7a;
+        box-shadow: 0 6px 0 #7a7a7a, 0 12px 0 #7a7a7a;
+        margin-top: -6px;
+    }
+    .header-top.mobile .header-top-right {
+        float: none !important;
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        align-items: center;
+        gap: 6px;
+        margin-top: 0 !important;
+        min-width: 0;
+        flex: 1 1 auto;
+        justify-content: flex-end;
+    }
+    .header-top.mobile .phone-number {
+        font-size: 9px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 42vw;
+    }
+    .header-top.mobile .phone-number a {
+        padding: 8px 4px !important;
+    }
+    .header-top.mobile .icon-top {
+        max-height: 18px;
+        width: auto;
+    }
+}

@@ -72,7 +72,7 @@
                     </div>
                     <div class="header-top clearfix mobile">
                         <div class="inner">
-                            <a id="menu-icon" class="mob-menu" onclick="openClose()">Меню</a>
+                            <a id="menu-icon" class="mob-menu" onclick="openClose()" aria-label="Меню"><span class="mob-menu-label">Меню</span></a>
 
 
                             <div class="header-top-right" style="display: flex; margin-top: 10px;">
