@@ -1603,7 +1603,7 @@ font-size: unset !important;
 background-color: unset !important;
 }
 
-.categories li a {color: #979797;  padding: 7px 0; font-size: 14px; text-decoration: none; display: block;font-weight: 600;}
+.categories li a {color: #5a5a5a;  padding: 7px 0; font-size: 14px; text-decoration: none; display: block;font-weight: 600;}
 .categories ul {list-style: none;}
 .categories>div>div:hover .title4:after {background: #6a6a6a;}
 .categories li a:hover {background: #d2d2d2;}
