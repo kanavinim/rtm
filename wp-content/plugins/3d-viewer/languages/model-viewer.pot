@@ -1,0 +1,1007 @@
+# Copyright (C) 2022 bPlugins LLC
+# This file is distributed under the GPLv3.
+msgid ""
+msgstr ""
+"Project-Id-Version: 3D Viewer 1.3.3\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/3d-viewer\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2022-09-04T05:28:14+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.6.0\n"
+"X-Domain: model-viewer\n"
+
+#. Plugin Name of the plugin
+#: inc/Base/PostTypeModelViewer.php:53
+#: inc/Base/PostTypeModelViewer.php:54
+#: inc/Base/PostTypeModelViewer.php:55
+msgid "3D Viewer"
+msgstr ""
+
+#. Plugin URI of the plugin
+msgid "https://bplugins.com/"
+msgstr ""
+
+#. Description of the plugin
+msgid "Easily display interactive 3D models on the web. Supported File type .glb, .gltf"
+msgstr ""
+
+#. Author of the plugin
+msgid "bPlugins LLC"
+msgstr ""
+
+#. Author URI of the plugin
+msgid "http://bplugins.com"
+msgstr ""
+
+#: admin/ads/submenu.php:40
+msgid "Thanks for Installing 3D Viewer Plugin."
+msgstr ""
+
+#: admin/ads/submenu.php:41
+msgid "Please follow the links below to get some helpful resources."
+msgstr ""
+
+#: admin/csf/metabox-options.php:28
+#: inc/Field/Viewer.php:51
+#: inc/Field/ViewerPro.php:53
+msgid "Upload Source"
+msgstr ""
+
+#: admin/csf/metabox-options.php:29
+#: inc/Field/Viewer.php:52
+#: inc/Field/Viewer.php:61
+#: inc/Field/ViewerPro.php:54
+#: inc/Field/ViewerPro.php:63
+#: inc/Field/ViewerPro.php:81
+#: inc/Woocommerce/ProductMeta.php:34
+#: inc/Woocommerce/ProductMetaPro.php:33
+msgid "3D Source"
+msgstr ""
+
+#: admin/csf/metabox-options.php:30
+#: inc/Field/Viewer.php:54
+#: inc/Field/Viewer.php:81
+#: inc/Field/ViewerPro.php:56
+msgid "Upload or Select 3d object files. Supported file type: glb, glTF"
+msgstr ""
+
+#: admin/csf/metabox-options.php:36
+#: inc/Addons/ModelViewer.php:395
+#: inc/Field/Settings.php:34
+#: inc/Field/SettingsPro.php:33
+#: inc/Field/Viewer.php:90
+#: inc/Field/ViewerPro.php:142
+msgid "Width"
+msgstr ""
+
+#: admin/csf/metabox-options.php:37
+#: inc/Field/Settings.php:35
+#: inc/Field/SettingsPro.php:34
+#: inc/Field/Viewer.php:91
+#: inc/Field/ViewerPro.php:143
+msgid "3D Viewer Width"
+msgstr ""
+
+#: admin/csf/metabox-options.php:47
+#: inc/Addons/ModelViewer.php:427
+#: inc/Field/Settings.php:45
+#: inc/Field/SettingsPro.php:44
+#: inc/Field/Viewer.php:101
+#: inc/Field/ViewerPro.php:153
+msgid "Height"
+msgstr ""
+
+#: admin/csf/metabox-options.php:48
+#: inc/Field/Settings.php:46
+#: inc/Field/SettingsPro.php:45
+#: inc/Field/Viewer.php:102
+#: inc/Field/ViewerPro.php:154
+msgid "3D Viewer height"
+msgstr ""
+
+#: admin/csf/metabox-options.php:59
+msgid "Camera Controls"
+msgstr ""
+
+#: admin/csf/metabox-options.php:60
+msgid "Use the camera-controls attribute to enable user interaction"
+msgstr ""
+
+#: admin/csf/metabox-options.php:70
+#: inc/Field/Settings.php:106
+#: inc/Field/Settings.php:219
+#: inc/Field/SettingsPro.php:106
+#: inc/Field/SettingsPro.php:218
+#: inc/Field/ViewerPro.php:229
+msgid "Enable or Disable Zoom Behaviour"
+msgstr ""
+
+#: admin/csf/metabox-options.php:71
+#: inc/Field/Viewer.php:133
+msgid "If you wish to disable zooming behaviour please choose Yes."
+msgstr ""
+
+#: admin/csf/metabox-options.php:81
+#: inc/Field/Settings.php:127
+#: inc/Field/Settings.php:241
+#: inc/Field/SettingsPro.php:127
+#: inc/Field/SettingsPro.php:239
+#: inc/Field/Viewer.php:143
+#: inc/Field/ViewerPro.php:250
+msgid "Loading Type"
+msgstr ""
+
+#: admin/csf/metabox-options.php:93
+#: inc/Field/Settings.php:140
+#: inc/Field/Settings.php:253
+#: inc/Field/SettingsPro.php:140
+#: inc/Field/SettingsPro.php:251
+#: inc/Field/Viewer.php:293
+#: inc/Field/ViewerPro.php:273
+msgid "Auto Rotate"
+msgstr ""
+
+#: inc/Addons/ModelViewer.php:15
+#: inc/Addons/ModelViewer.php:47
+msgid "Model Viewer"
+msgstr ""
+
+#: inc/Addons/ModelViewer.php:55
+msgid "Use Multiple Model?"
+msgstr ""
+
+#: inc/Addons/ModelViewer.php:66
+#: inc/Addons/ModelViewer.php:125
+msgid "Select Model"
+msgstr ""
+
+#: inc/Addons/ModelViewer.php:69
+#: inc/Addons/ModelViewer.php:128
+msgid "Paste Model URL"
+msgstr ""
+
+#: inc/Addons/ModelViewer.php:79
+#: inc/Addons/ModelViewer.php:134
+msgid "Use Decoder"
+msgstr ""
+
+#: inc/Addons/ModelViewer.php:83
+#: inc/Addons/ModelViewer.php:138
+msgid "None"
+msgstr ""
+
+#: inc/Addons/ModelViewer.php:84
+#: inc/Addons/ModelViewer.php:139
+msgid "Draco"
+msgstr ""
+
+#: inc/Addons/ModelViewer.php:95
+#: inc/Addons/ModelViewer.php:146
+msgid "Upload bin file"
+msgstr ""
+
+#: inc/Addons/ModelViewer.php:98
+#: inc/Addons/ModelViewer.php:149
+msgid "Paste bin file URL"
+msgstr ""
+
+#: inc/Addons/ModelViewer.php:109
+#: inc/Addons/ModelViewer.php:159
+msgid "Select Poster"
+msgstr ""
+
+#: inc/Addons/ModelViewer.php:112
+#: inc/Addons/ModelViewer.php:162
+msgid "Paste Poster URL"
+msgstr ""
+
+#: inc/Addons/ModelViewer.php:169
+msgid "Models"
+msgstr ""
+
+#: inc/Addons/ModelViewer.php:196
+msgid "Rotate"
+msgstr ""
+
+#: inc/Addons/ModelViewer.php:204
+msgid "Rotate Along X (degree)"
+msgstr ""
+
+#: inc/Addons/ModelViewer.php:223
+msgid "Rotate Along Y (degree)"
+msgstr ""
+
+#: inc/Addons/ModelViewer.php:260
+msgid "Fullscreen Button"
+msgstr ""
+
+#: inc/Addons/ModelViewer.php:271
+msgid "Mouse Control"
+msgstr ""
+
+#: inc/Addons/ModelViewer.php:273
+#: inc/Addons/ModelViewer.php:286
+#: inc/Addons/ModelViewer.php:299
+msgid "Enable"
+msgstr ""
+
+#: inc/Addons/ModelViewer.php:274
+#: inc/Addons/ModelViewer.php:287
+#: inc/Addons/ModelViewer.php:300
+msgid "Disable"
+msgstr ""
+
+#: inc/Addons/ModelViewer.php:284
+msgid "Lazy Load"
+msgstr ""
+
+#: inc/Addons/ModelViewer.php:297
+msgid "Enable Shadow"
+msgstr ""
+
+#: inc/Addons/ModelViewer.php:310
+msgid "Autoplay ( if animated )"
+msgstr ""
+
+#: inc/Addons/ModelViewer.php:321
+msgid "Enable Variant Selector"
+msgstr ""
+
+#: inc/Addons/ModelViewer.php:331
+msgid "Enable Animation Selector"
+msgstr ""
+
+#: inc/Addons/ModelViewer.php:341
+msgid "show loading percentage"
+msgstr ""
+
+#: inc/Addons/ModelViewer.php:352
+msgid "show progressbar"
+msgstr ""
+
+#: inc/Addons/ModelViewer.php:362
+msgid "Exposure"
+msgstr ""
+
+#: inc/Addons/ModelViewer.php:386
+msgid "Model"
+msgstr ""
+
+#: inc/Addons/ModelViewer.php:456
+#: inc/Field/Settings.php:57
+#: inc/Field/SettingsPro.php:56
+#: inc/Field/Viewer.php:113
+#: inc/Field/ViewerPro.php:165
+msgid "Background Color"
+msgstr ""
+
+#: inc/Addons/ModelViewer.php:468
+msgid "Choose Background Image"
+msgstr ""
+
+#: inc/Base/Activate.php:27
+msgid "If you like <strong> 3D Viewer </strong> please leave us a <a href=\"%s\" target=\"_blank\">&#9733;&#9733;&#9733;&#9733;&#9733;</a> rating. Your Review is very important to us as it helps us to grow more. "
+msgstr ""
+
+#: inc/Base/PostTypeModelViewer.php:56
+msgid "Add New"
+msgstr ""
+
+#: inc/Base/PostTypeModelViewer.php:57
+msgid "Add New "
+msgstr ""
+
+#: inc/Base/PostTypeModelViewer.php:58
+msgid "New 3D Viewer "
+msgstr ""
+
+#: inc/Base/PostTypeModelViewer.php:59
+msgid "Edit 3D Viewer "
+msgstr ""
+
+#: inc/Base/PostTypeModelViewer.php:60
+msgid "View 3D Viewer "
+msgstr ""
+
+#: inc/Base/PostTypeModelViewer.php:61
+msgid "All 3D Viewers"
+msgstr ""
+
+#: inc/Base/PostTypeModelViewer.php:64
+msgid "3D Viewer Options."
+msgstr ""
+
+#: inc/Base/PostTypeModelViewer.php:113
+msgid "SHORTCODE"
+msgstr ""
+
+#: inc/Base/PostTypeModelViewer.php:115
+msgid "Supports"
+msgstr ""
+
+#: inc/Base/PostTypeModelViewer.php:118
+msgid "Shortcode"
+msgstr ""
+
+#: inc/Base/PostTypeModelViewer.php:119
+msgid "Copy and paste this shortcode into your posts, pages and widget:"
+msgstr ""
+
+#: inc/Base/PostTypeModelViewer.php:123
+msgid "Template Include"
+msgstr ""
+
+#: inc/Base/PostTypeModelViewer.php:124
+msgid "Copy and paste the PHP code into your template file:"
+msgstr ""
+
+#: inc/Field/Settings.php:19
+#: inc/Field/Viewer.php:13
+#: inc/Field/ViewerPro.php:13
+#: inc/Woocommerce/ProductMeta.php:15
+#: inc/Woocommerce/ProductMetaPro.php:13
+msgid "3D Viewer Settings"
+msgstr ""
+
+#: inc/Field/Settings.php:28
+msgid "Preset"
+msgstr ""
+
+#: inc/Field/Settings.php:58
+#: inc/Field/SettingsPro.php:57
+#: inc/Field/Viewer.php:114
+#: inc/Field/ViewerPro.php:166
+msgid "Set Background Color For 3d Model.If You don't need just leave blank. Default : 'transparent color'"
+msgstr ""
+
+#: inc/Field/Settings.php:59
+#: inc/Field/SettingsPro.php:58
+#: inc/Field/Viewer.php:115
+#: inc/Field/ViewerPro.php:167
+msgid "Choose Your Background Color For Model."
+msgstr ""
+
+#: inc/Field/Settings.php:65
+#: inc/Field/Settings.php:286
+#: inc/Field/SettingsPro.php:64
+#: inc/Field/SettingsPro.php:281
+#: inc/Field/Viewer.php:196
+#: inc/Field/ViewerPro.php:189
+msgid "Autoplay"
+msgstr ""
+
+#: inc/Field/Settings.php:66
+#: inc/Field/Settings.php:287
+#: inc/Field/SettingsPro.php:65
+#: inc/Field/SettingsPro.php:282
+#: inc/Field/Viewer.php:197
+#: inc/Field/ViewerPro.php:190
+msgid "Enable or Disable AutoPlay"
+msgstr ""
+
+#: inc/Field/Settings.php:67
+#: inc/Field/Settings.php:288
+#: inc/Field/SettingsPro.php:66
+#: inc/Field/SettingsPro.php:283
+#: inc/Field/Viewer.php:198
+#: inc/Field/ViewerPro.php:191
+msgid "Autoplay Feature is for Autoplay Supported Model."
+msgstr ""
+
+#: inc/Field/Settings.php:68
+#: inc/Field/Settings.php:87
+#: inc/Field/Settings.php:97
+#: inc/Field/Settings.php:108
+#: inc/Field/Settings.php:119
+#: inc/Field/Settings.php:143
+#: inc/Field/Settings.php:174
+#: inc/Field/Settings.php:211
+#: inc/Field/Settings.php:221
+#: inc/Field/Settings.php:232
+#: inc/Field/Settings.php:256
+#: inc/Field/Settings.php:289
+#: inc/Field/Settings.php:300
+#: inc/Field/Viewer.php:134
+#: inc/Field/Viewer.php:170
+#: inc/Field/Viewer.php:199
+#: inc/Field/Viewer.php:272
+#: inc/Field/Viewer.php:284
+#: inc/Field/Viewer.php:296
+#: inc/Field/Viewer.php:329
+#: inc/Woocommerce/ProductMeta.php:61
+msgid "Yes"
+msgstr ""
+
+#: inc/Field/Settings.php:69
+#: inc/Field/Settings.php:98
+#: inc/Field/Settings.php:109
+#: inc/Field/Settings.php:120
+#: inc/Field/Settings.php:144
+#: inc/Field/Settings.php:175
+#: inc/Field/Settings.php:212
+#: inc/Field/Settings.php:222
+#: inc/Field/Settings.php:233
+#: inc/Field/Settings.php:257
+#: inc/Field/Settings.php:290
+#: inc/Field/Settings.php:301
+#: inc/Field/Viewer.php:200
+#: inc/Field/Viewer.php:297
+#: inc/Field/Viewer.php:330
+msgid "No"
+msgstr ""
+
+#: inc/Field/Settings.php:75
+#: inc/Field/Settings.php:200
+#: inc/Field/SettingsPro.php:74
+#: inc/Field/SettingsPro.php:200
+msgid "Shadow Intensity"
+msgstr ""
+
+#: inc/Field/Settings.php:76
+#: inc/Field/Settings.php:201
+#: inc/Field/SettingsPro.php:75
+#: inc/Field/SettingsPro.php:201
+#: inc/Field/Viewer.php:208
+#: inc/Field/ViewerPro.php:200
+msgid "Shadow Intensity for Model"
+msgstr ""
+
+#: inc/Field/Settings.php:77
+#: inc/Field/Settings.php:202
+#: inc/Field/SettingsPro.php:76
+#: inc/Field/SettingsPro.php:202
+#: inc/Field/Viewer.php:209
+#: inc/Field/ViewerPro.php:201
+msgid "Use Shadow Intensity Limit for Model. \"1\" for Default."
+msgstr ""
+
+#: inc/Field/Settings.php:84
+#: inc/Field/Viewer.php:269
+msgid "Preload"
+msgstr ""
+
+#: inc/Field/Settings.php:85
+#: inc/Field/SettingsPro.php:84
+#: inc/Field/Viewer.php:270
+#: inc/Field/ViewerPro.php:208
+msgid "Preload with poster and show model on interaction"
+msgstr ""
+
+#: inc/Field/Settings.php:86
+#: inc/Field/SettingsPro.php:85
+#: inc/Field/Viewer.php:271
+#: inc/Field/ViewerPro.php:209
+msgid "Choose \"Yes\" if you want to use preload with poster image."
+msgstr ""
+
+#: inc/Field/Settings.php:88
+#: inc/Field/Viewer.php:135
+#: inc/Field/Viewer.php:171
+#: inc/Field/Viewer.php:273
+#: inc/Field/Viewer.php:285
+#: inc/Woocommerce/ProductMeta.php:62
+msgid "NO"
+msgstr ""
+
+#: inc/Field/Settings.php:95
+#: inc/Field/Settings.php:209
+#: inc/Field/SettingsPro.php:95
+#: inc/Field/SettingsPro.php:208
+#: inc/Field/Viewer.php:121
+#: inc/Field/ViewerPro.php:219
+msgid "Moving Controls"
+msgstr ""
+
+#: inc/Field/Settings.php:96
+#: inc/Field/Settings.php:210
+#: inc/Field/SettingsPro.php:96
+#: inc/Field/SettingsPro.php:209
+#: inc/Field/Viewer.php:122
+#: inc/Field/ViewerPro.php:220
+msgid "Use The Moving controls to enable user interaction"
+msgstr ""
+
+#: inc/Field/Settings.php:107
+#: inc/Field/Settings.php:220
+#: inc/Field/SettingsPro.php:107
+#: inc/Field/SettingsPro.php:219
+#: inc/Field/ViewerPro.php:230
+msgid "If you wish to disable zooming behaviour please choose No."
+msgstr ""
+
+#: inc/Field/Settings.php:116
+#: inc/Field/Settings.php:229
+#: inc/Field/Viewer.php:281
+msgid "Progressbar"
+msgstr ""
+
+#: inc/Field/Settings.php:117
+#: inc/Field/Settings.php:230
+#: inc/Field/SettingsPro.php:117
+#: inc/Field/SettingsPro.php:229
+#: inc/Field/Viewer.php:282
+#: inc/Field/ViewerPro.php:240
+msgid "Enable or Disable Progressbar"
+msgstr ""
+
+#: inc/Field/Settings.php:118
+#: inc/Field/Settings.php:231
+#: inc/Field/SettingsPro.php:118
+#: inc/Field/SettingsPro.php:230
+#: inc/Field/Viewer.php:283
+#: inc/Field/ViewerPro.php:241
+msgid "If you wish to disable Progressbar please choose No."
+msgstr ""
+
+#: inc/Field/Settings.php:128
+#: inc/Field/Settings.php:242
+#: inc/Field/SettingsPro.php:128
+#: inc/Field/SettingsPro.php:240
+#: inc/Field/Viewer.php:144
+#: inc/Field/ViewerPro.php:251
+msgid "Choose Loading type, default:  'Auto' "
+msgstr ""
+
+#: inc/Field/Settings.php:130
+#: inc/Field/Settings.php:244
+#: inc/Field/Viewer.php:146
+msgid "Auto"
+msgstr ""
+
+#: inc/Field/Settings.php:131
+#: inc/Field/Settings.php:245
+#: inc/Field/Viewer.php:147
+msgid "Lazy"
+msgstr ""
+
+#: inc/Field/Settings.php:132
+#: inc/Field/Settings.php:246
+#: inc/Field/Viewer.php:148
+msgid "Eager"
+msgstr ""
+
+#: inc/Field/Settings.php:141
+#: inc/Field/Settings.php:254
+#: inc/Field/SettingsPro.php:141
+#: inc/Field/SettingsPro.php:252
+#: inc/Field/Viewer.php:294
+#: inc/Field/ViewerPro.php:274
+msgid "Enable or Disable Auto Rotation"
+msgstr ""
+
+#: inc/Field/Settings.php:142
+#: inc/Field/Settings.php:255
+#: inc/Field/SettingsPro.php:142
+#: inc/Field/SettingsPro.php:253
+#: inc/Field/Viewer.php:295
+#: inc/Field/ViewerPro.php:275
+msgid "Enables the auto-rotation of the model."
+msgstr ""
+
+#: inc/Field/Settings.php:151
+#: inc/Field/Settings.php:264
+#: inc/Field/SettingsPro.php:150
+#: inc/Field/SettingsPro.php:261
+#: inc/Field/Viewer.php:304
+#: inc/Field/ViewerPro.php:283
+msgid "Auto Rotate Speed"
+msgstr ""
+
+#: inc/Field/Settings.php:152
+#: inc/Field/Settings.php:265
+#: inc/Field/SettingsPro.php:151
+#: inc/Field/SettingsPro.php:262
+#: inc/Field/Viewer.php:305
+#: inc/Field/ViewerPro.php:284
+msgid "Auto Rotation Speed Per Seconds"
+msgstr ""
+
+#: inc/Field/Settings.php:153
+#: inc/Field/Settings.php:266
+#: inc/Field/SettingsPro.php:152
+#: inc/Field/SettingsPro.php:263
+#: inc/Field/Viewer.php:306
+#: inc/Field/ViewerPro.php:285
+msgid "Use Negative Number for Reverse Action. \"30\" for Default Behaviour."
+msgstr ""
+
+#: inc/Field/Settings.php:162
+#: inc/Field/Settings.php:276
+#: inc/Field/SettingsPro.php:161
+#: inc/Field/SettingsPro.php:272
+#: inc/Field/Viewer.php:316
+#: inc/Field/ViewerPro.php:294
+msgid "Auto Rotation Delay"
+msgstr ""
+
+#: inc/Field/Settings.php:163
+#: inc/Field/Settings.php:277
+#: inc/Field/SettingsPro.php:162
+#: inc/Field/SettingsPro.php:273
+#: inc/Field/Viewer.php:317
+#: inc/Field/ViewerPro.php:295
+msgid "After a period of time auto rotation will start"
+msgstr ""
+
+#: inc/Field/Settings.php:164
+#: inc/Field/Settings.php:278
+#: inc/Field/SettingsPro.php:163
+#: inc/Field/SettingsPro.php:274
+#: inc/Field/Viewer.php:318
+#: inc/Field/ViewerPro.php:296
+msgid "Sets the delay before auto-rotation begins. The format of the value is a number in milliseconds.(1000ms = 1s)"
+msgstr ""
+
+#: inc/Field/Settings.php:171
+#: inc/Field/Settings.php:297
+#: inc/Field/SettingsPro.php:170
+#: inc/Field/SettingsPro.php:291
+#: inc/Field/Viewer.php:326
+#: inc/Field/ViewerPro.php:332
+msgid "Fullscreen"
+msgstr ""
+
+#: inc/Field/Settings.php:172
+#: inc/Field/Settings.php:298
+#: inc/Field/SettingsPro.php:171
+#: inc/Field/SettingsPro.php:292
+#: inc/Field/Viewer.php:327
+#: inc/Field/ViewerPro.php:333
+msgid "Enable or Disable Fullscreen Mode"
+msgstr ""
+
+#: inc/Field/Settings.php:173
+#: inc/Field/Settings.php:299
+#: inc/Field/SettingsPro.php:172
+#: inc/Field/SettingsPro.php:293
+#: inc/Field/Viewer.php:328
+#: inc/Field/ViewerPro.php:334
+msgid "Default: \"Yes / Enable\""
+msgstr ""
+
+#: inc/Field/Settings.php:186
+msgid "Woocommerce Settings"
+msgstr ""
+
+#: inc/Field/Settings.php:192
+#: inc/Field/SettingsPro.php:192
+msgid "Woocommerce"
+msgstr ""
+
+#: inc/Field/Settings.php:193
+#: inc/Field/SettingsPro.php:193
+msgid "Enable / Disable Woocommerce Feature for 3D Viewer."
+msgstr ""
+
+#: inc/Field/Settings.php:194
+#: inc/Field/SettingsPro.php:194
+msgid "Enable / Disable. Default is Enable."
+msgstr ""
+
+#: inc/Field/Settings.php:218
+#: inc/Field/Viewer.php:131
+msgid "Enable Zoom"
+msgstr ""
+
+#: inc/Field/Viewer.php:24
+#: inc/Field/ViewerPro.php:26
+msgid "Model Type."
+msgstr ""
+
+#: inc/Field/Viewer.php:25
+#: inc/Field/ViewerPro.php:27
+msgid "Choose Model Type"
+msgstr ""
+
+#: inc/Field/Viewer.php:26
+#: inc/Field/ViewerPro.php:28
+msgid "Select Model Type, Default- Simple."
+msgstr ""
+
+#: inc/Field/Viewer.php:29
+msgid "Simple"
+msgstr ""
+
+#: inc/Field/Viewer.php:30
+#: inc/Field/Viewer.php:234
+msgid "Cycle"
+msgstr ""
+
+#: inc/Field/Viewer.php:37
+#: inc/Field/ViewerPro.php:39
+msgid "Model Source Type."
+msgstr ""
+
+#: inc/Field/Viewer.php:38
+#: inc/Field/ViewerPro.php:40
+msgid "Choose Model Source"
+msgstr ""
+
+#: inc/Field/Viewer.php:39
+#: inc/Field/ViewerPro.php:41
+msgid "Select Model Source, Default- Upload."
+msgstr ""
+
+#: inc/Field/Viewer.php:42
+msgid "Upload"
+msgstr ""
+
+#: inc/Field/Viewer.php:43
+msgid "Link"
+msgstr ""
+
+#: inc/Field/Viewer.php:53
+#: inc/Field/ViewerPro.php:55
+msgid "Choose 3D Model"
+msgstr ""
+
+#: inc/Field/Viewer.php:60
+#: inc/Field/ViewerPro.php:62
+msgid "Paste Source"
+msgstr ""
+
+#: inc/Field/Viewer.php:62
+#: inc/Field/ViewerPro.php:64
+msgid "Input Model Valid url"
+msgstr ""
+
+#: inc/Field/Viewer.php:63
+#: inc/Field/ViewerPro.php:65
+msgid "Input / Paste Model url. Supported file type: glb, glTF"
+msgstr ""
+
+#: inc/Field/Viewer.php:71
+#: inc/Field/ViewerPro.php:72
+msgid "3D Cycle Models"
+msgstr ""
+
+#: inc/Field/Viewer.php:72
+#: inc/Field/ViewerPro.php:73
+msgid "Cycling between 3D Models"
+msgstr ""
+
+#: inc/Field/Viewer.php:73
+#: inc/Field/ViewerPro.php:74
+msgid "Add New Model"
+msgstr ""
+
+#: inc/Field/Viewer.php:74
+#: inc/Field/ViewerPro.php:75
+msgid "Use Multiple Model in a row."
+msgstr ""
+
+#: inc/Field/Viewer.php:80
+msgid "Model Source"
+msgstr ""
+
+#: inc/Field/Viewer.php:132
+msgid "Enable or Disable Zooming Behaviour"
+msgstr ""
+
+#: inc/Field/Viewer.php:154
+#: inc/Field/ViewerPro.php:261
+msgid "Align"
+msgstr ""
+
+#: inc/Field/Viewer.php:157
+msgid "Left"
+msgstr ""
+
+#: inc/Field/Viewer.php:158
+msgid "Center"
+msgstr ""
+
+#: inc/Field/Viewer.php:159
+msgid "Right"
+msgstr ""
+
+#: inc/Field/Viewer.php:167
+#: inc/Field/ViewerPro.php:304
+#: inc/Woocommerce/ProductMeta.php:59
+#: inc/Woocommerce/ProductMetaPro.php:57
+msgid "Specified Custom Angle of Model in Initial Load."
+msgstr ""
+
+#: inc/Field/Viewer.php:168
+#: inc/Field/ViewerPro.php:305
+#: inc/Woocommerce/ProductMeta.php:60
+#: inc/Woocommerce/ProductMetaPro.php:58
+msgid "Enable or Disable Custom Angle Option."
+msgstr ""
+
+#: inc/Field/Viewer.php:178
+#: inc/Woocommerce/ProductMeta.php:70
+msgid "Custom Angle Values"
+msgstr ""
+
+#: inc/Field/Viewer.php:179
+#: inc/Field/ViewerPro.php:104
+#: inc/Field/ViewerPro.php:315
+#: inc/Woocommerce/ProductMeta.php:71
+#: inc/Woocommerce/ProductMetaPro.php:68
+msgid "Set The Custom values for Model. Default Values are (\"X=0deg Y=75deg Z=105%\")"
+msgstr ""
+
+#: inc/Field/Viewer.php:180
+#: inc/Field/ViewerPro.php:105
+#: inc/Field/ViewerPro.php:316
+#: inc/Woocommerce/ProductMeta.php:72
+#: inc/Woocommerce/ProductMetaPro.php:69
+msgid "Set Your Desire Values. (X= Horizontal Position, Y= Vertical Position, Z= Zoom Level/Position) "
+msgstr ""
+
+#: inc/Field/Viewer.php:207
+#: inc/Field/ViewerPro.php:199
+msgid "shadow Intensity"
+msgstr ""
+
+#: inc/Field/Viewer.php:216
+#: inc/Field/ViewerPro.php:92
+msgid "Cycle Animation Duration"
+msgstr ""
+
+#: inc/Field/Viewer.php:217
+#: inc/Field/ViewerPro.php:93
+msgid "Animation Duration Time at Seconds : 1000ms = 1sec"
+msgstr ""
+
+#: inc/Field/Viewer.php:218
+msgid "Input Model Animation Duration Time (default: '5') Seconds"
+msgstr ""
+
+#: inc/Field/Viewer.php:227
+#: inc/Field/ViewerPro.php:103
+msgid "Poster Type."
+msgstr ""
+
+#: inc/Field/Viewer.php:228
+msgid "Choose Poster Type"
+msgstr ""
+
+#: inc/Field/Viewer.php:229
+msgid "Select Poster Type, Default- Simple."
+msgstr ""
+
+#: inc/Field/Viewer.php:233
+msgid "simple"
+msgstr ""
+
+#: inc/Field/Viewer.php:241
+#: inc/Field/ViewerPro.php:116
+msgid "Upload Poster"
+msgstr ""
+
+#: inc/Field/Viewer.php:242
+#: inc/Field/ViewerPro.php:117
+msgid "3D Poster Image"
+msgstr ""
+
+#: inc/Field/Viewer.php:243
+#: inc/Field/ViewerPro.php:118
+msgid "Display a poster until loaded"
+msgstr ""
+
+#: inc/Field/Viewer.php:244
+msgid "Upload or Select 3d Poster Image.  if you don't want to use just leave it empty"
+msgstr ""
+
+#: inc/Field/Viewer.php:251
+#: inc/Field/ViewerPro.php:125
+msgid "Poster Images"
+msgstr ""
+
+#: inc/Field/Viewer.php:252
+#: inc/Field/ViewerPro.php:126
+msgid "Cycling between posters"
+msgstr ""
+
+#: inc/Field/Viewer.php:253
+#: inc/Field/ViewerPro.php:127
+msgid "Add New Poster Images"
+msgstr ""
+
+#: inc/Field/Viewer.php:254
+#: inc/Field/ViewerPro.php:128
+msgid "Use multiple images for poster image.if you don't want to use just leave it empty"
+msgstr ""
+
+#: inc/Field/ViewerPro.php:82
+#: inc/Woocommerce/ProductMeta.php:35
+#: inc/Woocommerce/ProductMetaPro.php:34
+msgid "Upload Model Or Input Valid Model url"
+msgstr ""
+
+#: inc/Field/ViewerPro.php:83
+#: inc/Woocommerce/ProductMeta.php:36
+#: inc/Woocommerce/ProductMetaPro.php:35
+msgid "Upload / Paste Model url. Supported file type: glb, glTF"
+msgstr ""
+
+#: inc/Field/ViewerPro.php:94
+msgid "Input Model Animation Duration Time (default: 5sec : 1000ms = 1sec) Seconds"
+msgstr ""
+
+#: inc/Field/ViewerPro.php:119
+msgid "Upload or Select 3d Poster Image. if you don't want to use just leave it empty"
+msgstr ""
+
+#: inc/Field/ViewerPro.php:173
+msgid "Progressbar Color"
+msgstr ""
+
+#: inc/Field/ViewerPro.php:174
+msgid "Set Progressbar Color For 3d Model."
+msgstr ""
+
+#: inc/Field/ViewerPro.php:175
+msgid "Choose Progressbar Color For Model."
+msgstr ""
+
+#: inc/Field/ViewerPro.php:181
+msgid "Icon Color"
+msgstr ""
+
+#: inc/Field/ViewerPro.php:182
+msgid "Icon Color For 3d Model."
+msgstr ""
+
+#: inc/Field/ViewerPro.php:183
+msgid "Choose Icon Color For Model."
+msgstr ""
+
+#: inc/Field/ViewerPro.php:342
+msgid "Show Progress Percent"
+msgstr ""
+
+#: inc/Woocommerce/ProductMeta.php:26
+msgid "Product 3D Models"
+msgstr ""
+
+#: inc/Woocommerce/ProductMeta.php:37
+msgid "You Can Paste here Model url"
+msgstr ""
+
+#: inc/Woocommerce/ProductMeta.php:46
+msgid "3D Viewer Position"
+msgstr ""
+
+#: inc/Woocommerce/ProductMeta.php:48
+msgid "Top of the product image"
+msgstr ""
+
+#: inc/Woocommerce/ProductMeta.php:49
+msgid "Bottom of the product image"
+msgstr ""
+
+#: inc/Woocommerce/ProductMeta.php:50
+msgid "Replace Product Image with 3D"
+msgstr ""
+
+#: blocks/3d-viewer/block.json
+msgctxt "block title"
+msgid "Model Viewer"
+msgstr ""
+
+#: blocks/3d-viewer/block.json
+msgctxt "block description"
+msgid ""
+msgstr ""
+
+#: blocks/3d-viewer/block.json
+msgctxt "block keyword"
+msgid "3D Viewer"
+msgstr ""
+
+#: blocks/3d-viewer/block.json
+msgctxt "block keyword"
+msgid "3D Embedder"
+msgstr ""
+
+#: blocks/3d-viewer/block.json
+msgctxt "block keyword"
+msgid "3D Model Viewer"
+msgstr ""

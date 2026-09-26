@@ -1,0 +1,81 @@
+name: Deploy to staging
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Rsync themes/plugins/languages → staging
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        env:
+          STAGING_SSH_KEY: ${{ secrets.STAGING_SSH_KEY }}
+          STAGING_HOST: ${{ secrets.STAGING_HOST }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$STAGING_SSH_KEY" > ~/.ssh/staging_key
+          chmod 600 ~/.ssh/staging_key
+          ssh-keyscan -H "$STAGING_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
+
+      - name: Deploy wp-content (themes, plugins, languages)
+        env:
+          STAGING_HOST: ${{ secrets.STAGING_HOST }}
+          STAGING_USER: ${{ secrets.STAGING_USER }}
+          STAGING_PATH: ${{ secrets.STAGING_PATH }}
+        run: |
+          set -euo pipefail
+          RSH="ssh -i ~/.ssh/staging_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes"
+          DEST="${STAGING_USER}@${STAGING_HOST}:${STAGING_PATH}/wp-content"
+
+          echo "==> Deploy themes"
+          rsync -az --delete \
+            --exclude='.git/' \
+            --exclude='node_modules/' \
+            --exclude='cache/' \
+            --exclude='*.log' \
+            -e "$RSH" \
+            wp-content/themes/ \
+            "${DEST}/themes/"
+
+          echo "==> Deploy plugins"
+          rsync -az --delete \
+            --exclude='.git/' \
+            --exclude='node_modules/' \
+            --exclude='cache/' \
+            --exclude='*.log' \
+            --exclude='backups/' \
+            --exclude='*.zip' \
+            -e "$RSH" \
+            wp-content/plugins/ \
+            "${DEST}/plugins/"
+
+          echo "==> Deploy languages"
+          rsync -az --delete \
+            --exclude='*.log' \
+            -e "$RSH" \
+            wp-content/languages/ \
+            "${DEST}/languages/"
+
+          echo "==> Done. uploads/ and wp-config.php were NOT touched."
+
+      - name: Smoke check staging SSH
+        env:
+          STAGING_HOST: ${{ secrets.STAGING_HOST }}
+          STAGING_USER: ${{ secrets.STAGING_USER }}
+          STAGING_PATH: ${{ secrets.STAGING_PATH }}
+        run: |
+          ssh -i ~/.ssh/staging_key -o IdentitiesOnly=yes \
+            "${STAGING_USER}@${STAGING_HOST}" \
+            "test -d ${STAGING_PATH}/wp-content/themes && test -d ${STAGING_PATH}/wp-content/plugins && test -f ${STAGING_PATH}/wp-config.php && echo OK_staging_intact"

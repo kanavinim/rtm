@@ -1,0 +1,57 @@
+# WordPress runtime / secrets — never track
+wp-config.php
+wp-config-*.php
+.env
+.env.*
+*.env
+
+# Uploads and media (stay on server)
+wp-content/uploads/
+uploads/
+
+# Caches and temp
+**/cache/
+**/.cache/
+**/caches/
+*.log
+*.tmp
+*.temp
+*.bak
+*.bak-*
+*.swp
+*~
+
+# Incomplete migration leftovers
+*.bak-incomplete*
+
+# Node / build junk
+node_modules/
+npm-debug.log*
+yarn-error.log*
+.DS_Store
+Thumbs.db
+
+# Composer local (plugin vendors that ship with plugins ARE tracked)
+# Do not ignore plugin vendor/ dirs — they are required to run.
+
+# IDE / local
+.idea/
+.vscode/
+*.sublime-*
+
+# Duplicator / backup packages
+**/*.zip
+**/backups/
+wp-content/backups/
+wp-content/ai1wm-backups/
+wp-content/updraft/
+
+# WP core (not tracked — only wp-content themes/plugins/languages)
+wp-admin/
+wp-includes/
+/index.php
+/license.txt
+/readme.html
+/xmlrpc.php
+/wp-*.php
+!wp-content/

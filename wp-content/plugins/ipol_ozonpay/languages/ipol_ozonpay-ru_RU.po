@@ -1,0 +1,502 @@
+# Translation for Plugin
+msgid ""
+msgstr ""
+"Project-Id-Version: Plugins - RC WooCommerce Acuiring OZON Pay\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2023-11-15 15:25+0300\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Generator: Poedit 3.0.1\n"
+
+
+
+msgid "Payment gateway - Acquiring OZON Pay for WooCommerce"
+msgstr "Платежный шлюз - Эквайринг OZON Pay"
+
+msgid "Payments with OZON Pay"
+msgstr "Оплата с OZON Pay"
+
+msgid "Custom name for checkout page"
+msgstr "Произвольное название для страницы оформления заказа"
+
+msgid "You can specify a custom name for the payment system for the checkout page"
+msgstr "Вы можете указать произвольное название для платежной системы для страницы оформления заказа"
+
+msgid "Payment online with payment service from Ozon"
+msgstr "Оплата онлайн с помощью платежного сервиса от Ozon"
+
+msgid "Connection settings"
+msgstr "Настройки подключения"
+
+msgid "You can get the value of this parameter from your OZON Pay Acquiring personal account"
+msgstr "Вы можете получить значение этого параметра из личного кабинета Эквайринга OZON Pay"
+
+msgid "Payment mode"
+msgstr "Режим работы оплаты"
+
+msgid "One-step payments"
+msgstr "Одностадийные платежи"
+
+msgid "Two-stage payments"
+msgstr "Двухстадийные платежи"
+
+msgid "Fiscalization settings"
+msgstr "Настройки фискализации"
+
+msgid "Enable fiscalization mode"
+msgstr "Включить режим фискализации"
+
+msgid "If this mode is enabled, receipts will be generated for payments and returns"
+msgstr "Если этот режим включен, для оплат и возвратов будут формироваться чеки"
+
+msgid "Phone number for check"
+msgstr "Телефон для чека"
+
+msgid "This phone number will be transferred to the OFD when generating a fiscal receipt, and will also be shown in this receipt"
+msgstr "Этот телефон будет передан в ОФД при формировании фискального чека, а так же будет показан в этом чеке"
+
+msgid "Fiscalization scheme"
+msgstr "Схема фискализации"
+
+msgid "If a double fiscalization regime is chosen, this will allow trading in goods subject to mandatory labeling"
+msgstr "Если будет выбран двойной режим фискализации, это позволит торговать товарами, подлежащими обязательной маркировке"
+
+msgid "When applying this regime, it will be necessary to indicate the labeling of goods in the future. At the time of sending the order to the buyer, issue a final receipt containing information about the labeling of goods"
+msgstr "При применении этого режима необходимо будет в дальнейшем указывать маркировку товаров. В момент отправки заказа покупателю - выбить финальный чек, содержащий информацию о маркировке товаров"
+
+msgid "Single circuit"
+msgstr "Одинарная схема"
+
+msgid "Double circuit"
+msgstr "Двойная схема"
+
+msgid "Default VAT rate for goods"
+msgstr "Ставка НДС по умолчанию для товаров"
+
+msgid "If the product does not have VAT specified, the value from this setting will be used"
+msgstr "Если у товара не указан НДС, то будет использоваться значение из этой настройки"
+
+msgid "Without VAT"
+msgstr "Без НДС"
+
+msgid "Default VAT rate for delivery service"
+msgstr "Ставка НДС по умолчанию для службы доставки"
+
+msgid "If the delivery service does not have VAT specified, the value from this setting will be used"
+msgstr "Если у службы доставки не указан НДС, то будет использоваться значение из этой настройки"
+
+msgid "Service settings"
+msgstr "Сервисные настройки"
+
+msgid "Enable exchange logging"
+msgstr "Включить ведение лога обмена"
+
+msgid "If this mode is enabled, all requests and responses will be recorded in a separate log file for further analysis"
+msgstr "Если этот режим включен, все запросы и ответы будут записываться в отдельный файл лога для возможности дальнейшего анализа"
+
+msgid "Enable service mode"
+msgstr "Включить сервисный режим"
+
+msgid "Some additional utility features are available in this mode. It is not recommended to use this mode on a working project"
+msgstr "В этом режиме доступны некоторые дополнительные служебные возможности. Не рекомендуется использовать этот режим на рабочем проекте"
+
+msgid "Please fill out the setting"
+msgstr "Пожалуйста, заполните настройку"
+
+msgid "data received from the Agreement or from the Personal Account"
+msgstr "данными, полученных из Договора или из Личного Кабинета"
+
+msgid "Address for sending requests"
+msgstr "Адрес для отправки запросов"
+
+msgid "Payment expected"
+msgstr "Ожидается оплата"
+
+msgid "Error when registering OZON Pay Acquiring payment. Please report this problem to the store administration"
+msgstr "Ошибка при регистрации оплаты Эквайринга OZON Pay. Пожалуйста, сообщите об этой проблеме администрации магазина"
+
+msgid "Attention"
+msgstr "Внимание"
+
+msgid "All actions to manage this order should be performed from the Ozon Pay Acquiring control panel"
+msgstr "Все действия по управлению этим заказом следует производить из панели управления Эквайринга Ozon Pay"
+
+msgid "Order management"
+msgstr "Управление заказом"
+
+msgid "Refund error"
+msgstr "Ошибка возврата"
+
+msgid "This order data was not found"
+msgstr "Данные этого заказа не найдены"
+
+msgid "Payments Ozon Pay"
+msgstr "Оплаты Ozon Pay"
+
+msgid "The order is not in status"
+msgstr "Заказ не находится в статусе"
+
+msgid "which is possible for the refund procedure"
+msgstr "который возможен для процедуры возврата"
+
+msgid "To return, use the order management page"
+msgstr "Для возврата воспользуйтесь страницей"
+
+msgid "in the OZON Pay Acquiring section"
+msgstr "управления заказом в разделе Эквайринг OZON Pay"
+
+msgid "Error. This order was not found"
+msgstr "Ошибка. Этот заказ не найден"
+
+msgid "Go back to main page"
+msgstr "Вернуться на главную страницу"
+
+msgid "Order has been paid"
+msgstr "Заказ оплачен"
+
+msgid "Error. Payment for the order failed"
+msgstr "Ошибка. Оплата заказа завершилась неудачей"
+
+msgid "Try to pay for the order again"
+msgstr "Попытаться оплатить заказ еще раз"
+
+msgid "Error updating order information"
+msgstr "Ошибка обновления информации заказа"
+
+msgid "Cancel error"
+msgstr "Ошибка отмены"
+
+msgid "Order not registered"
+msgstr "Заказ не зарегистрирован"
+
+msgid "An error occurred during the cancellation process. Please try again later"
+msgstr "В процессе отмены произошла ошибка. Пожалуйста, попробуйте повторить операцию позднее"
+
+msgid "Order cancelled"
+msgstr "Заказ отменен"
+
+msgid "Label update error"
+msgstr "Ошибка обновления маркировки"
+
+msgid "Cant parse the data to update the labeling. Try the operation again"
+msgstr "Не могу разобрать данные для обновления маркировки. Попробуйте выполнить операцию еще раз"
+
+msgid "Error sending final check"
+msgstr "Ошибка отправки финального чека"
+
+msgid "An error occurred during the final check submission process. Please try again later"
+msgstr "В процессе отправки финального чека произошла ошибка. Пожалуйста, попробуйте повторить операцию позднее"
+
+msgid "The final check has been generated"
+msgstr "Финальный чек сформирован"
+
+msgid "An error occurred during the labeling update process. Please try again later"
+msgstr "В процессе обновления маркировки произошла ошибка. Пожалуйста, попробуйте повторить операцию позднее"
+
+msgid "Labeling updated"
+msgstr "Маркировка обновлена"
+
+msgid "Confirmation error"
+msgstr "Ошибка подтверждения"
+
+msgid "Cant make out the data to confirm. Try the operation again"
+msgstr "Не могу разобрать данные для подтверждения. Попробуйте выполнить операцию еще раз"
+
+msgid "An error occurred during the confirmation process. Please try again later"
+msgstr "В процессе подтверждения произошла ошибка. Пожалуйста, попробуйте повторить операцию позднее"
+
+msgid "Order confirmation made"
+msgstr "Произведено подтверждение заказа"
+
+msgid "The following items were returned during the confirmation process"
+msgstr "В процессе подтверждения были возвращены следующие товары"
+
+msgid "Order holding canceled, goods returned"
+msgstr "Холдирование заказа отменено, товары возвращены"
+
+msgid "Confirmation completed"
+msgstr "Подтверждение завершено"
+
+msgid "Cant make out the data to refund. Try the operation again"
+msgstr "Не могу разобрать данные для возврата. Попробуйте выполнить операцию еще раз"
+
+msgid "An error occurred during the refund process. Please try again later"
+msgstr "В процессе возврата произошла ошибка. Пожалуйста, попробуйте повторить операцию позднее"
+
+msgid "Refund has been made."
+msgstr "Возврат осуществлен."
+
+msgid "Order no."
+msgstr "№ заказа"
+
+msgid "OZON Pay order ID"
+msgstr "ID заказа OZON Pay"
+
+msgid "Status"
+msgstr "Статус"
+
+msgid "Contains markings"
+msgstr "Содержит маркировку"
+
+msgid "Fiscalization"
+msgstr "Фискализация"
+
+msgid "Payment type"
+msgstr "Тип оплаты"
+
+msgid "Confirmed"
+msgstr "Подтвержден"
+
+msgid "Final check"
+msgstr "Финальный чек"
+
+msgid "Updated"
+msgstr "Обновлено"
+
+msgid "There are no orders here yet"
+msgstr "Здесь пока еще нет заказов"
+
+msgid "Yes"
+msgstr "Да"
+
+msgid "No"
+msgstr "Нет"
+
+msgid "Enabled"
+msgstr "Включена"
+
+msgid "Formed"
+msgstr "Сформирован"
+
+msgid "Is not sent"
+msgstr "Не отправлен"
+
+msgid "Single"
+msgstr "Одинарная"
+
+msgid "Double"
+msgstr "Двойная"
+
+msgid "Single stage"
+msgstr "Одностадийная"
+
+msgid "Two-stage"
+msgstr "Двухстадийная"
+
+msgid "Actions with the order"
+msgstr "Действия с заказом"
+
+msgid "Total orders"
+msgstr "Всего заказов"
+
+msgid "Error updating order status"
+msgstr "Ошибка обновления статуса заказа"
+
+msgid "OZON Pay server is not available or access keys are incorrect"
+msgstr "Cервер OZON Pay не доступен или неверные ключи доступа"
+
+msgid "Ozon marking"
+msgstr "Маркировка Ozon"
+
+msgid "Current marking"
+msgstr "Текущая маркировка"
+
+msgid "Note"
+msgstr "Примечание"
+
+msgid "Refund status"
+msgstr "Статус возврата"
+
+msgid "Confirmation"
+msgstr "Подтверждение"
+
+msgid "Refund"
+msgstr "Возврат"
+
+msgid "Marking not specified"
+msgstr "Маркировка не указана"
+
+msgid "Item refunded with unknown markings"
+msgstr "Возвращен товар с неизвестной маркировкой"
+
+msgid "Name"
+msgstr "Наименование"
+
+msgid "Cost for 1 unit"
+msgstr "Стоимость за 1 ед"
+
+msgid "Quantity"
+msgstr "Количество"
+
+msgid "Refunded"
+msgstr "Возвращено"
+
+msgid "Labeled product"
+msgstr "Маркированный товар"
+
+msgid "Details"
+msgstr "Сведения о позиции"
+
+msgid "If the markings of the goods are unknown, enter here the number of goods to be refunded with unknown markings"
+msgstr "Если маркировка товаров неизвестна, введите здесь количество товаров для возврата с неизвестной маркировкой"
+
+msgid "Previously, a product with an unknown marking was returned in the amount of"
+msgstr "Ранее был произведен возврат товара с неизвестной маркировкой в кол-ве"
+
+msgid "units"
+msgstr "ед."
+
+msgid "Maximum available quantity of goods for refund"
+msgstr "Максимально доступное кол-во товара для возврата"
+
+msgid "Total to be refunded"
+msgstr "Итого к возврату"
+
+msgid "RUB"
+msgstr "руб."
+
+msgid "cost"
+msgstr "стоимость"
+
+msgid "rub for 1 unit, quantity"
+msgstr "руб. за 1 ед, кол-во"
+
+msgid "Cancellation of payment"
+msgstr "Отмена оплаты"
+
+msgid "Confirm two-step payment"
+msgstr "Подтвердить двустадийную оплату"
+
+msgid "Specify marking codes"
+msgstr "Уточнить маркировочные коды"
+
+msgid "Generate final check"
+msgstr "Сформировать финальный чек"
+
+msgid "Information and order management"
+msgstr "Информация и управление заказом"
+
+msgid "Current order information has been updated"
+msgstr "Актуальная информация по заказу обновлена"
+
+msgid "General information"
+msgstr "Общая информация"
+
+msgid "WordPress order no."
+msgstr "№ заказа WordPress"
+
+msgid "Bank order number"
+msgstr "№ банковского ордера"
+
+msgid "Available for payment up to"
+msgstr "Доступен для оплаты до"
+
+msgid "Payment status"
+msgstr "Статус платежа"
+
+msgid "Fiscalization enabled"
+msgstr "Фискализация включена"
+
+msgid "Type of fiscalization"
+msgstr "Тип фискализации"
+
+msgid "Payment scheme"
+msgstr "Схема платежа"
+
+msgid "Goods and services"
+msgstr "Товары и услуги"
+
+msgid "Total to confirm"
+msgstr "Всего к подтверждению"
+
+msgid "Total to refund"
+msgstr "Всего к возврату"
+
+msgid "Order transaction history"
+msgstr "История операций с заказом"
+
+msgid "No transaction history"
+msgstr "История операций отсутствует"
+
+msgid "Do you want to cancel the payment"
+msgstr "Выполнить отмену платежа"
+
+msgid "This operation cannot be undone"
+msgstr "Отменить эту операцию нельзя"
+
+msgid "Confirm"
+msgstr "Подтвердить"
+
+msgid "Close"
+msgstr "Закрыть"
+
+msgid "Send final check"
+msgstr "Отправить финальный чек"
+
+msgid "Attention! When sending the final check, the marking information contained in the “Current marking” field will be transmitted. Please check the data is correct before sending the final check"
+msgstr "Внимание! При отправке финального чека будут переданы сведения о маркировке которые содержатся в поле “Текущая маркировка”. Проверяйте корректность данных до отправки финального чека"
+
+msgid "Update"
+msgstr "Обновить"
+
+msgid "Update labeling"
+msgstr "Обновить маркировку"
+
+msgid "Send"
+msgstr "Отправить"
+
+msgid "Perform payment confirmation"
+msgstr "Выполнить подтверждение платежа"
+
+msgid "Error"
+msgstr "Ошибка"
+
+msgid "An error occurred during the operation"
+msgstr "В процессе выполнения операции произошла ошибка"
+
+msgid "Perform a refund"
+msgstr "Выполнить возврат"
+
+msgid "New"
+msgstr "Новый"
+
+msgid "Awaiting payment"
+msgstr "Ожидает оплаты"
+
+msgid "Expired"
+msgstr "Истек срок действия"
+
+msgid "Canceled"
+msgstr "Отменен"
+
+msgid "Authorized"
+msgstr "Авторизован"
+
+msgid "Partially returned"
+msgstr "Частично возвращен"
+
+msgid "Paid"
+msgstr "Оплачен"
+
+msgid "Partially refunded"
+msgstr "Частично возвращен"
+
+msgid "Dispute"
+msgstr "Спор"
+
+msgid "Not refunded"
+msgstr "Не возвращен"
+
+msgid "Full refunded"
+msgstr "Полный возврат"
+
+msgid "Partial"
+msgstr "Частичный"
+
+msgid "Refunds not available"
+msgstr "Возврат недоступен"

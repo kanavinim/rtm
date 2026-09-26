@@ -1,0 +1,80 @@
+<?php
+
+namespace BP3D;
+
+if (!defined('ABSPATH')) {
+    exit;
+} //Exit if accessed directly
+
+class Init{
+    private static $instance = null;
+    private function __construct() {
+		add_action( 'init', [ $this, 'i18n' ] );
+	}
+
+    public static function instance() {
+		if ( is_null( self::$instance ) ) {
+			self::$instance = new self();
+			self::$instance->init();
+		}
+		return self::$instance;
+	}
+
+    public function i18n() {
+		load_plugin_textdomain('model-viewer',false,dirname( plugin_basename( BP3D__FILE__ ) ) . '/languages/');
+	}
+   
+    public static function get_services(){
+        return [
+            Base\EnqueueAssets::class,
+            Base\PostTypeModelViewer::class,
+            Base\MenuOrder::class,
+            Base\Import::class,
+            Base\Shortcode::class,
+            Base\ExtendMimeType::class,
+            Field\Viewer::class,
+            Field\Settings::class,
+            Woocommerce\ProductMeta::class,
+            Woocommerce\ProductView::class,
+            Helper\Utils::class,
+            Addons\Controls\Controls::class,
+            Addons\Addons::class,
+            Addons\Blocks::class,
+            Template\ModelViewer::class,
+        ];
+    }
+
+    public static function init(){
+        
+        foreach(self::get_services() as $class){
+            $file = str_replace('\\', '/', $class);
+            
+            if(file_exists(BP3D_PATH.str_replace('BP3D', 'inc', $file."Pro").'.php') && \bp3dv_fs()->is__premium_only() && \bp3dv_fs()->can_use_premium_code()){
+                $file = BP3D_PATH.str_replace('BP3D', 'inc', $file."Pro").'.php';;
+                $class = $class."Pro";
+            }else {
+                $file = BP3D_PATH.str_replace('BP3D', 'inc', $file).'.php';
+            }
+
+            if(file_exists($file)){
+                require_once($file);
+                $services = self::instantiate($class);
+                if(method_exists($services, 'register')){
+                    $services->register();
+                }
+            }
+          
+        }
+    }
+
+    
+
+    private static function instantiate($class){
+        if(class_exists($class)){
+            return new $class();
+        }
+        
+        return new \stdClass();
+    }
+}
+

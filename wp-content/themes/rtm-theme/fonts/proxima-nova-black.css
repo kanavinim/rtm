@@ -1,0 +1,8 @@
+@font-face {
+    font-family: 'ProximaNovaBlack';
+    src: url('proxima-nova-black.eot');
+    src: url('proxima-nova-black.eot') format('embedded-opentype'),
+         url('proxima-nova-black.woff') format('woff'),
+         url('proxima-nova-black.ttf') format('truetype'),
+         url('proxima-nova-black.svg#ProximaNovaBlack') format('svg');
+}
