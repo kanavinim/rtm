@@ -75,7 +75,7 @@
                             <a id="menu-icon" class="mob-menu" onclick="openClose()" aria-label="Меню"><span class="mob-menu-label">Меню</span></a>
 
 
-                            <div class="header-top-right" style="display: flex; margin-top: 10px;">
+                            <div class="header-top-right" style="display: flex;">
                                 <span class="phone-number"><a href="tel:89771177499" style="color: rgb(116, 116, 116);">8 (999) 772-85-29</a></span>
                                 <div style="display: flex;">
                                     <a href="https://vk.com/rtm_teh" target="_blank" ><img class="icon-top" src="/wp-content/themes/rtm-theme/images/vk.png" alt=""/> </a>
