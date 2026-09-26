@@ -1894,8 +1894,14 @@ li.active ul {display: block;}
     width: 100%;
     margin: 0 auto;
     box-sizing: border-box;
-    padding: 24px 0 60px;
+    /* Horizontal padding must live here: earlier mobile rules are overridden by this block */
+    padding: 24px 16px 60px;
     overflow: hidden;
+}
+@media (max-width: 767px) {
+    .delivery-page {
+        padding: 20px 16px 60px;
+    }
 }
 .delivery-page .delivery-img {
     display: block;
@@ -1938,7 +1944,12 @@ li.active ul {display: block;}
     width: 100%;
     margin: 0 auto;
     box-sizing: border-box;
-    padding: 24px 0 60px;
+    padding: 24px 16px 60px;
+}
+@media (max-width: 767px) {
+    .contacts-page {
+        padding: 20px 16px 60px;
+    }
 }
 .contacts-page h1 {
     margin: 0 0 24px;
