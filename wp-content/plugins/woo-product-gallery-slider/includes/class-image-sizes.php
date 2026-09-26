@@ -1,5 +1,5 @@
 <?php
-if ( !class_exists( 'CSF_Field_image_sizes' ) ) {
+if ( ! class_exists( 'CSF_Field_image_sizes' ) ) {
 	/**
 	 *
 	 * Field: Image sizes.
@@ -53,26 +53,26 @@ if ( !class_exists( 'CSF_Field_image_sizes' ) ) {
 					$height = get_option( "{$_size}_size_h" );
 					$crop   = (bool) get_option( "{$_size}_crop" ) ? 'hard' : 'soft';
 
-					$sizes[$_size] = ucfirst( "{$_size} - $crop:{$width}x{$height}" );
+					$sizes[ $_size ] = ucfirst( "{$_size} - $crop:{$width}x{$height}" );
 
-				} elseif ( isset( $_wp_additional_image_sizes[$_size] ) ) {
+				} elseif ( isset( $_wp_additional_image_sizes[ $_size ] ) ) {
 
-					$width  = $_wp_additional_image_sizes[$_size]['width'];
-					$height = $_wp_additional_image_sizes[$_size]['height'];
-					$crop   = $_wp_additional_image_sizes[$_size]['crop'] ? 'hard' : 'soft';
+					$width  = $_wp_additional_image_sizes[ $_size ]['width'];
+					$height = $_wp_additional_image_sizes[ $_size ]['height'];
+					$crop   = $_wp_additional_image_sizes[ $_size ]['crop'] ? 'hard' : 'soft';
 
-					$sizes[$_size] = ucfirst( "{$_size} - $crop:{$width}X{$height}" );
+					$sizes[ $_size ] = ucfirst( "{$_size} - $crop:{$width}X{$height}" );
 				}
 			}
 			$sizes = array_merge(
 				$sizes,
 				array(
-					'full'   => __( 'Original uploaded image', 'woo-product-gallery-slider' ),
-					'_' => __( 'Set custom size(PRO)', 'woo-product-gallery-slider' ),
+					'full' => __( 'Original uploaded image', 'woo-product-gallery-slider' ),
+					'_'    => __( 'Set custom size(PRO)', 'woo-product-gallery-slider' ),
 				)
 			);
 
-			if ( !empty( $sizes ) ) {
+			if ( ! empty( $sizes ) ) {
 
 				$multiple_name    = ( $args['multiple'] ) ? '[]' : '';
 				$multiple_attr    = ( $args['multiple'] ) ? ' multiple="multiple"' : '';
@@ -80,12 +80,12 @@ if ( !class_exists( 'CSF_Field_image_sizes' ) ) {
 				$chosen_attr      = ( $args['chosen'] ) ? ' class="spf-chosen' . $chosen_rtl . '"' : '';
 				$placeholder_attr = ( $args['chosen'] && $args['placeholder'] ) ? ' data-placeholder="' . $args['placeholder'] . '"' : '';
 
-				if ( !empty( $sizes ) ) {
+				if ( ! empty( $sizes ) ) {
 
 					echo '<select name="' . esc_attr( $this->field_name( $multiple_name ) ) . '"' . wp_kses_post( $multiple_attr . $chosen_attr . $placeholder_attr ) . $this->field_attributes() . '>'; // phpcs:ignore
 
 					if ( $args['placeholder'] && empty( $args['multiple'] ) ) {
-						if ( !empty( $args['chosen'] ) ) {
+						if ( ! empty( $args['chosen'] ) ) {
 							echo '<option value=""></option>';
 						} else {
 							echo '<option value="">' . wp_kses_post( $args['placeholder'] ) . '</option>';
@@ -94,7 +94,7 @@ if ( !class_exists( 'CSF_Field_image_sizes' ) ) {
 
 					foreach ( $sizes as $option_key => $option ) {
 
-						if ( is_array( $option ) && !empty( $option ) ) {
+						if ( is_array( $option ) && ! empty( $option ) ) {
 
 							echo '<optgroup label="' . esc_attr( $option_key ) . '">';
 
@@ -113,14 +113,12 @@ if ( !class_exists( 'CSF_Field_image_sizes' ) ) {
 
 				} else {
 
-					echo !empty( $this->field['empty_message'] ) ? esc_html( $this->field['empty_message'] ) : esc_html__( 'No image sizes found.', 'woo-product-gallery-slider' );
+					echo ! empty( $this->field['empty_message'] ) ? esc_html( $this->field['empty_message'] ) : esc_html__( 'No image sizes found.', 'woo-product-gallery-slider' );
 
 				}
 			}
 
 			echo wp_kses_post( $this->field_after() );
-
 		}
-
 	}
 }

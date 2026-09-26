@@ -31,3 +31,18 @@
 .custom-pagination__btn--arrow {
   background: #F8F8F8;
 }
+
+.custom-pagination__ellipsis {
+  width: 45px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 6px;
+  font-weight: bold;
+  font-size: 18px;
+  line-height: 26px;
+  color: #8E8E8E;
+  cursor: default;
+  user-select: none;
+}

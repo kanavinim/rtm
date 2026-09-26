@@ -2,32 +2,49 @@
 
 /**
  * @wordpress-plugin
- * Plugin Name:       Product Gallery Slider for WooCommerce
+ * Plugin Name:       Product Gallery Slider & Additional Variation Images for WooCommerce
  * Plugin URI:        https://wordpress.org/plugins/woo-product-gallery-slider/
- * Description:       Customizable image gallery slider for the single product page
- * Version:           2.2.6
+ * Description:       Best <a href="https://www.codeixer.com/product-gallery-slider-for-woocommerce/">Product Image Gallery Slider for WooCommerce</a> – Showcase your WooCommerce products with a stunning image carousel slider. Supports additional variation images, grabs customer attention, enhances your store’s visual appeal, and helps boost sales.
+ * Version:           2.3.23
  * Author:            Codeixer
  * Author URI:        http://codeixer.com
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
  * Text Domain:       woo-product-gallery-slider
  * Domain Path:       /languages
- * Tested up to: 6.1
+ * Tested up to: 7.0
  * WC requires at least: 3.9
- * WC tested up to: 7.0.1
+ * WC tested up to: 10.3
+ * Requires PHP: 7.4
+ * Requires Plugin: WooCommerce
  */
 
 // If this file is called directly, abort.
-if ( !defined( 'WPINC' ) ) {
+if ( ! defined( 'WPINC' ) ) {
 	die;
+}
+add_action(
+	'before_woocommerce_init',
+	function () {
+		if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+		}
+		if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
+			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'cart_checkout_blocks', __FILE__, true );
+		}
+	}
+);
+if ( Defined( 'WPGS' ) ) {
+	return;
 }
 require __DIR__ . '/vendor/autoload.php';
 
+
 define( 'WPGS_NAME', 'Product Gallery Slider for Woocommerce' );
-define( 'WPGS_INC', plugin_dir_path( __FILE__ ) . 'inc/' );
+define( 'WPGS_INC', plugin_dir_path( __FILE__ ) . 'includes/' );
 define( 'WPGS_ROOT', plugin_dir_path( __FILE__ ) . '' );
 define( 'WPGS_ROOT_URL', plugin_dir_url( __FILE__ ) . '' );
-define( 'WPGS_INC_URL', plugin_dir_url( __FILE__ ) . 'inc/' );
+define( 'WPGS_INC_URL', plugin_dir_url( __FILE__ ) . 'includes/' );
 define( 'WPGS_PLUGIN_BASE', plugin_basename( __FILE__ ) );
 
 /**
@@ -35,38 +52,52 @@ define( 'WPGS_PLUGIN_BASE', plugin_basename( __FILE__ ) );
  *
  * @return void
  */
-function appsero_init_tracker_woo_product_gallery_slider() {
+require __DIR__ . '/includes/usage-tracking/Client.php';
+function cdx_init_tracker_woo_product_gallery_slider() {
 
-	if ( !class_exists( 'Appsero\Client' ) ) {
-		require_once __DIR__ . '/appsero/src/Client.php';
-	}
-
-	$client = new Appsero\Client( '862a2d3f-9bbf-42f4-a1ae-89a36cde4e79', 'Product Gallery Slider for WooCommerce', __FILE__ );
+	$client = new NS7_UT\Client(
+		'862a2d3f-9bbf-42f4-a1ae-89a36cde4e79',
+		'Product Gallery Slider for WooCommerce',
+		__FILE__
+	);
 
 	// Active insights
-	$client->insights()->init();
-
+	$client->insights()->add_plugin_data()->init();
 }
 
-appsero_init_tracker_woo_product_gallery_slider();
+cdx_init_tracker_woo_product_gallery_slider();
+
+NS7_RDNC::instance()->add_notification( 72, 'a9873a6e608e946e', 'https://www.codeixer.com' );
 
 final class CI_WPGS {
 
 	/**
 	 * Plugin version
+	 *
 	 * @var string
 	 */
-	const version = '2.2.6';
+	const version = '2.3.21';
 
 	private function __construct() {
-		register_activation_hook( __FILE__, array( $this, 'plugin_activation' ) );
+
+		register_activation_hook( __FILE__, array( $this, 'activation' ) );
+		register_deactivation_hook( __FILE__, array( $this, 'deactivation' ) );
 
 		$this->define_constants();
 		add_action( 'admin_init', array( 'PAnD', 'init' ) );
-		add_action( 'woocommerce_loaded', [$this, 'init_plugin'], 30 );
-		add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ) . '', [$this, 'wpgs_plugin_row_meta'] );
+		add_action( 'woocommerce_loaded', array( $this, 'init_plugin' ), 30 );
+		add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ) . '', array( $this, 'wpgs_plugin_row_meta' ) );
 	}
+	public function core_files() {
+		require_once WPGS_ROOT . 'includes/functions.php';
+		require_once WPGS_ROOT . 'includes/codestar/codestar-framework.php';
+		require_once WPGS_ROOT . 'includes/core.php';
+		require_once WPGS_ROOT . 'includes/class-delete-cache.php';
+		require_once WPGS_ROOT . 'includes/class-image-sizes.php';
+		require_once WPGS_ROOT . 'includes/class-variation-images.php';
+		require_once WPGS_ROOT . 'includes/class-plugin-suggest.php';
 
+	}
 	/**
 	 * Add Pro version link into the plugin row meta
 	 *
@@ -76,8 +107,8 @@ final class CI_WPGS {
 	public function wpgs_plugin_row_meta( $links ) {
 		$row_meta = array(
 			'settings' => '<a href="' . admin_url( 'admin.php?page=cix-gallery-settings' ) . '">Settings</a>',
-			'docs'     => '<a href="' . esc_url( 'https://www.codeixer.com/product-gallery-slider-for-woocommerce?utm_source=freemium&utm_medium=plugin-page&utm_campaign=upgrade_pro' ) . '" target="_blank" aria-label="' . esc_attr__( 'PRO Version', 'woo-product-gallery-slider' ) . '" style="color:#1da867;font-weight:600;">' . esc_html__( 'Get Pro', 'woo-product-gallery-slider' ) . '</a>',
-			
+			'docs'     => '<a href="' . esc_url( 'https://www.codeixer.com/product-gallery-slider-for-woocommerce?utm_source=freemium&utm_medium=plugin-page&utm_campaign=upgrade_pro' ) . '" target="_blank" aria-label="' . esc_attr__( 'PRO Version', 'woo-product-gallery-slider' ) . '" style="color:#1da867;font-weight:600;">' . esc_html__( 'Get PRO Version', 'woo-product-gallery-slider' ) . '</a>',
+
 		);
 
 		return array_merge( $links, $row_meta );
@@ -89,8 +120,8 @@ final class CI_WPGS {
 	 * @return void
 	 */
 	public function init_plugin() {
-		new \Product_Gallery_Sldier\Bootstrap;
-
+		$this->core_files();
+		\Product_Gallery_Sldier\Bootstrap::get_instance();
 	}
 
 	/**
@@ -98,15 +129,18 @@ final class CI_WPGS {
 	 *
 	 * @return void
 	 */
-	public function plugin_activation() {
+	public function activation() {
 		$installed = get_option( 'ciwpgs_installed' );
 
-		if ( !$installed ) {
-			update_option( 'ciwpgs_installed', date( "Y/m/d" ) );
+		if ( ! $installed ) {
+			update_option( 'ciwpgs_installed', date( 'Y/m/d' ) );
 		}
+	}
+	public function deactivation(): void {
 	}
 	/**
 	 * Define the required plugin constants
+	 *
 	 * @return void
 	 */
 	public function define_constants() {
@@ -128,7 +162,7 @@ final class CI_WPGS {
 		 */
 		static $instance = false;
 
-		if ( !$instance ) {
+		if ( ! $instance ) {
 			$instance = new self();
 		}
 
@@ -136,55 +170,5 @@ final class CI_WPGS {
 	}
 }
 
-if ( !function_exists( 'cix_get_wp_image_sizes' ) ) {
-	/**
-	 * @param $value
-	 */
-	function cix_get_wp_image_sizes() {
-		// Get the image sizes.
-		global $_wp_additional_image_sizes;
-		$sizes = array();
-
-		foreach ( get_intermediate_image_sizes() as $_size ) {
-			if ( in_array( $_size, array( 'thumbnail', 'medium', 'medium_large', 'large' ), true ) ) {
-
-				$width  = 500;
-				$height = 500;
-				$crop   = (bool) get_option( "{$_size}_crop" ) ? 'hard' : 'soft';
-
-				$sizes[$_size] = ucfirst( "{$_size} - $crop:{$width}x{$height}" );
-
-			} elseif ( isset( $_wp_additional_image_sizes[$_size] ) ) {
-
-				$width  = $_wp_additional_image_sizes[$_size]['width'];
-				$height = $_wp_additional_image_sizes[$_size]['height'];
-				$crop   = $_wp_additional_image_sizes[$_size]['crop'] ? 'hard' : 'soft';
-
-				$sizes[$_size] = ucfirst( "{$_size} - $crop:{$width}X{$height}" );
-			}
-		}
-		return $sizes;
-	}
-}
-
 // kick-off the plugin
 CI_WPGS::init();
-
-add_action( 'admin_notices', 'twistgetpro_admin_notice__sdssuccess' );
-/**
- * @return null
- */
-function twistgetpro_admin_notice__sdssuccess() {
-	if ( !\PAnD::is_admin_notice_active( 'twist-getpro-notice-30' ) ) {
-		return;
-	}
-
-	?>
-			<div data-dismissible="twist-getpro-notice-30" class="info notice notice-info is-dismissible">
-
-				<p class="exclusive-txt">Limited time offer for only those who have downloaded <b>Product Gallery Slider for WooCommerce</b> and want to go <a target="_blank"  href="https://www.codeixer.com/product-gallery-slider-for-woocommerce?utm_source=freemium&utm_medium=admin_notice&utm_campaign=upgrade_pro" >PRO.</a> <br>
-				Use coupon code <span class="wpgs-coupon">welcome20</span> and get 20% discount.</p>
-
-			</div>
-			<?php
-}

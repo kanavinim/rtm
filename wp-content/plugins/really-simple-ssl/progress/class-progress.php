@@ -11,10 +11,6 @@ class rsssl_progress {
 		add_action( 'admin_init', array( $this, 'dismiss_from_admin_notice') );
 	}
 
-	static function this() {
-		return self::$_this;
-	}
-
 	public function get() {
 		return [
 			'text' => $this->get_text(),
@@ -24,7 +20,7 @@ class rsssl_progress {
 	}
 
 	public function notices(){
-		$notices = RSSSL()->admin->get_notices_list(array( 'status' => 'all' ));
+		$notices = RSSSL()->admin->get_notices_list(array( 'status' => ['open','warning','completed','premium'] ));
 		$out = [];
 		foreach ($notices as $id => $notice ) {
 			$notice['id'] = $id;
@@ -51,9 +47,9 @@ class rsssl_progress {
 		$max_score    = 0;
 		$actual_score = 0;
 		$notices = RSSSL()->admin->get_notices_list(array(
-			'status' => 'all',
+			'status' => ['open','warning','completed','premium'],
 		));
-		foreach ( $notices as $id => $notice ) {
+		foreach ( $notices as $notice ) {
 			if (isset( $notice['score'] )) {
 				// Only items matching condition will show in the dashboard. Only use these to determine max count.
 				$max_score += (int) $notice['score'];
@@ -77,46 +73,41 @@ class rsssl_progress {
 		if (!rsssl_user_can_manage()) return '';
 		ob_start();
 
-		$lowest_possible_task_count = $this->get_lowest_possible_task_count();
-		$open_task_count = count( RSSSL()->admin->get_notices_list( array( 'status' => 'open' ) ));
+		$open_task_count = count( RSSSL()->admin->get_notices_list( array( 'status' => ['open','warning'] ) ));
 		if ( rsssl_get_option('ssl_enabled') ) {
-			$doing_well = __( "SSL is activated on your site.",  'really-simple-ssl' ) . ' ' . sprintf( _n( "You still have %s task open.", "You still have %s tasks open.", $open_task_count, 'really-simple-ssl' ), $open_task_count );
-			if ( $open_task_count === 0 ) {
-				_e("SSL configuration finished!", "really-simple-ssl");
-			} elseif ( !defined('rsssl_pro_version') ){
-				if ( $open_task_count >= $lowest_possible_task_count) {
-					echo $doing_well;
-				} else {
-					printf(__("Basic SSL configuration finished! Improve your score with %sReally Simple SSL Pro%s.", "really-simple-ssl"), '<a target="_blank" href="' . RSSSL()->admin->pro_url . '">', '</a>');
-				}
-			} else {
-				echo $doing_well;
+			if ( $open_task_count !== 0 ) {
+				echo sprintf( _n( "Security configuration not completed yet. You still have %s task open.", "You still have %s tasks open.", $open_task_count, 'really-simple-ssl' ), $open_task_count );
 			}
-		} else {
-			if ( !is_network_admin() ) _e("SSL is not yet enabled on this site." , "really-simple-ssl");
+			if ( $open_task_count === 0 && defined('rsssl_pro') ) {
+				_e("Security configuration completed!", "really-simple-ssl");
+			}
+
+			if ( $open_task_count === 0 && ! defined('rsssl_pro') ) {
+				_e( "Basic security configuration completed!", "really-simple-ssl" );
+			}
+		} else if ( !is_network_admin() ) {
+			_e( "SSL is not yet enabled on this site.", "really-simple-ssl" );
 		}
 		do_action('rsssl_progress_feedback');
 		return ob_get_clean();
 	}
 
 	/**
-	 * Count number of premium notices we have in the list.
-	 * @return int
-	 */
-	public function get_lowest_possible_task_count() {
-		$premium_notices = RSSSL()->admin->get_notices_list(array('premium_only'=>true));
-		return count($premium_notices) ;
-	}
-
-	/**
 	 * @return void
 	 */
 	public function dismiss_from_admin_notice(){
-		if ( !rsssl_user_can_manage() ) {
+		if ( ! rsssl_user_can_manage() ) {
 			return;
 		}
-		if (isset($_GET['dismiss_notice'])) {
+
+		if ( isset($_GET['dismiss_notice']) ) {
 			$id = sanitize_title($_GET['dismiss_notice']);
+
+			// Verify nonce
+			if ( ! isset($_GET['_wpnonce']) || ! wp_verify_nonce($_GET['_wpnonce'], 'rsssl_dismiss_notice_' . $id) ) {
+				return; // or wp_die('Invalid request');
+			}
+
 			$this->dismiss_task($id);
 		}
 	}
@@ -152,6 +143,4 @@ class rsssl_progress {
 			'percentage' => $this->percentage(),
 		];
 	}
-
-
 }

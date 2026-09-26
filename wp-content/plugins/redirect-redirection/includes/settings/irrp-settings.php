@@ -25,6 +25,8 @@ class IRRPSettings implements IRRPConstants {
 
         $this->dbManager = $dbManager;
         $this->helper = $helper;
+        $irrPRedirection = IrrPRedirection::getInstance();
+        $irrPRedirection->irrpInit();
 
         add_option(self::OPTIONS_MAIN, $this->getDefaultSettings(), "", "no");
         add_option(self::OPTIONS_AUTO_REDIRECTS, $this->getDefaultAutoRedirects(), "", "yes");
@@ -33,6 +35,7 @@ class IRRPSettings implements IRRPConstants {
 
         add_action("admin_menu", [&$this, "settingsPage"], 1);
         add_action("admin_enqueue_scripts", [&$this, "backendScripts"]);
+        add_action("admin_init", [&$this, "applyHotFixes"]);
 
         // AJAX
         add_action("wp_ajax_irLoadTab", [&$this, "loadTab"]);
@@ -245,6 +248,22 @@ class IRRPSettings implements IRRPConstants {
                 "type_redirection_rule" => self::TYPE_REDIRECTION_RULE,
                 "nonce" => wp_create_nonce("ir_ajax_nonce"),
             ];
+
+            if (get_option("irrp_regex_help_notification", false) == false) {
+                $ajaxArgs["regex_help_notification"] = sprintf(
+                    __("Need help with a RegEx or a Redirection?%s Ask us %shere%s!", "redirect-redirection"),
+                    "<br/>",
+                    '<a href=" ' . self::SUPPORT_URL . '" target="_blank" rel="noopener noreferrer" style="color: inherit; font-weight: bold;">','</a>'
+                );
+            } else {
+                $ajaxArgs["regex_help_notification"] = "";
+            }
+            if (get_option("irrp_plain_structure_notification", false) == 'required') {
+                $ajaxArgs["plain_structure_notification"] =__("Plain permalink structure is detected on your site, thus “Ignore parameters” option is automatically disabled in the “Advanced options” section of the plugin.", "redirect-redirection");
+                delete_option("irrp_plain_structure_notification");
+            } else {
+                $ajaxArgs["plain_structure_notification"] = "";
+            }
             wp_register_script("ir-backend-ajax-js", plugins_url(IRRP_DIR_NAME . "/assets/js/backend-ajax.js"), ["ir-backend-events-js"], IRRP_PLUGIN_VERSION);
             wp_enqueue_script("ir-backend-ajax-js");
             wp_localize_script("ir-backend-ajax-js", "irAjaxJS", $ajaxArgs);
@@ -402,6 +421,21 @@ class IRRPSettings implements IRRPConstants {
 
     public function logRequests(){
         return get_option(self::OPTIONS_LOGS_STATUS) == "1";
+    }
+
+    public function applyHotFixes(){
+        $current_patch = get_option('irrp_hotfixes', []);
+
+        if (!in_array('IRRP_25_11_25', $current_patch)) {
+            // check if the current permalink structure is plain
+            $permalink_structure = get_option('permalink_structure');
+            if (empty($permalink_structure)) {
+                update_option('irrp_plain_structure_notification', 'required');
+            }
+
+            $current_patch[] = 'IRRP_25_11_25';
+            update_option('irrp_hotfixes', $current_patch);
+        }
     }
 
 }

@@ -196,6 +196,15 @@ jQuery(document).ready(function () {
             jQuery(this).parent().find('.customizer-repeater-link-control').prev().prev().show();
             jQuery(this).parent().find('.customizer-repeater-link-control').show();
         }
+        if (jQuery(disable_link).val() != 'wpbm-onclick') {
+            jQuery(this).parent().find('.customizer-repeater-text-control').hide();
+            jQuery(this).parent().find('.customizer-repeater-text-control').prev().prev().hide();
+            jQuery(this).parent().find('.customizer-repeater-text-control').hide();
+        }else{
+            jQuery(this).parent().find('.customizer-repeater-text-control').show();
+            jQuery(this).parent().find('.customizer-repeater-text-control').prev().prev().show();
+            jQuery(this).parent().find('.customizer-repeater-text-control').show();
+        }
     });
 
     theme_conrols.on('change', '.icp',function(){
@@ -231,6 +240,16 @@ jQuery(document).ready(function () {
             jQuery(this).parent().parent().find('.customizer-repeater-link-control').show();
             jQuery(this).parent().parent().find('.customizer-repeater-link-control').prev().prev().show();
             jQuery(this).parent().parent().find('.customizer-repeater-link-control').show();
+        }
+       
+        if (jQuery(this).val() != 'wpbm-onclick') {
+            jQuery(this).parent().parent().find('.customizer-repeater-text-control').hide();
+            jQuery(this).parent().parent().find('.customizer-repeater-text-control').prev().prev().hide();
+            jQuery(this).parent().parent().find('.customizer-repeater-text-control').hide();
+        }else{
+            jQuery(this).parent().parent().find('.customizer-repeater-text-control').prev().prev().show();
+            jQuery(this).parent().parent().find('.customizer-repeater-text-control').show();
+            jQuery(this).parent().parent().find('.customizer-repeater-text-control').show();
         }
         
 

@@ -57,8 +57,8 @@
 
 @media(min-width: 1366px) {
   .tabs__button {
-    width: 25%;
-    padding: 14px 0;
+    width: auto;
+    padding: 14px;
     font-size: 17px;
     line-height: 27px;
   }

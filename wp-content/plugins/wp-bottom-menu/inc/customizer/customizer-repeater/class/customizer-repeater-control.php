@@ -275,7 +275,7 @@ class Customizer_Repeater extends WP_Customize_Control {
 						}
 						if($this->customizer_repeater_text_control==true){
 							$this->input_control(array(
-								'label' => apply_filters('repeater_input_labels_filter', esc_html__( 'Text','wp-bottom-menu' ), $this->id, 'customizer_repeater_text_control' ),
+								'label' => apply_filters('repeater_input_labels_filter', esc_html__( 'onClick','wp-bottom-menu' ), $this->id, 'customizer_repeater_text_control' ),
 								'class' => 'customizer-repeater-text-control',
 								'type'  => apply_filters('customizer_repeater_input_types_filter', 'textarea', $this->id, 'customizer_repeater_text_control' ),
 							), $text);
@@ -430,7 +430,7 @@ class Customizer_Repeater extends WP_Customize_Control {
 			switch ($options['type']) {
 				case 'textarea':?>
                     <span class="customize-control-title"><?php echo esc_html( $options['label'] ); ?></span>
-                    <textarea class="<?php echo esc_attr( $options['class'] ); ?>" placeholder="<?php echo esc_attr( $options['label'] ); ?>"><?php echo ( !empty($options['sanitize_callback']) ?  call_user_func_array( $options['sanitize_callback'], array( $value ) ) : esc_attr($value) ); ?></textarea>
+                    <textarea class="<?php echo esc_attr( $options['class'] ); ?>" placeholder="<?php echo esc_attr( $options['label'] ); ?>"><?php echo esc_attr( !empty($options['sanitize_callback']) ?  call_user_func_array( $options['sanitize_callback'], array( $value ) ) : esc_attr($value) ); ?></textarea>
 					<?php
 					break;
 				case 'color':
@@ -440,14 +440,14 @@ class Customizer_Repeater extends WP_Customize_Control {
 					}?>
                     <span class="customize-control-title" <?php if( !empty( $style_to_add ) ) { echo 'style="'.esc_attr( $style_to_add ).'"';} ?>><?php echo esc_html( $options['label'] ); ?></span>
                     <div class="<?php echo esc_attr($options['class']); ?>" <?php if( !empty( $style_to_add ) ) { echo 'style="'.esc_attr( $style_to_add ).'"';} ?>>
-                        <input type="text" value="<?php echo ( !empty($options['sanitize_callback']) ?  call_user_func_array( $options['sanitize_callback'], array( $value ) ) : esc_attr($value) ); ?>" class="<?php echo esc_attr($options['class']); ?>" />
+                        <input type="text" value="<?php echo esc_attr( !empty($options['sanitize_callback']) ?  call_user_func_array( $options['sanitize_callback'], array( $value ) ) : esc_attr($value) ); ?>" class="<?php echo esc_attr($options['class']); ?>" />
                     </div>
 					<?php
 					break;
 			}
 		} else { ?>
             <span class="customize-control-title"><?php echo esc_html( $options['label'] ); ?></span>
-            <input type="text" value="<?php echo ( !empty($options['sanitize_callback']) ?  call_user_func_array( $options['sanitize_callback'], array( $value ) ) : esc_attr($value) ); ?>" class="<?php echo esc_attr($options['class']); ?>" placeholder="<?php echo esc_attr( $options['label'] ); ?>"/>
+            <input type="text" value="<?php echo esc_attr( !empty($options['sanitize_callback']) ?  call_user_func_array( $options['sanitize_callback'], array( $value ) ) : esc_attr($value) ); ?>" class="<?php echo esc_attr($options['class']); ?>" placeholder="<?php echo esc_attr( $options['label'] ); ?>"/>
 			<?php
 		}
 	}
@@ -461,6 +461,7 @@ class Customizer_Repeater extends WP_Customize_Control {
             <span class="description customize-control-description">
                 <?php
                 echo sprintf(
+	                /* translators: %1$s: URL to FontAwesome icons */
 	                esc_html__( 'Note: Some icons may not be displayed here. You can see the full list of icons at %1$s.', 'wp-bottom-menu' ),
 	                sprintf( '<a href="http://fontawesome.io/icons/" rel="nofollow">%s</a>', esc_html__( 'http://fontawesome.io/icons/', 'wp-bottom-menu' ) )
                 ); ?>
@@ -509,6 +510,8 @@ class Customizer_Repeater extends WP_Customize_Control {
             <option value="wpbm-post-search" <?php if($value == "wpbm-post-search") echo "selected"; ?> ><?php esc_html_e('Search for post','wp-bottom-menu'); ?></option>
             <option value="wpbm-custom-search" <?php if($value == "wpbm-custom-search") echo "selected"; ?> ><?php esc_html_e('Search for custom post types','wp-bottom-menu'); ?></option>
             <option value="wpbm-menu" <?php if($value == "wpbm-menu") echo "selected"; ?> ><?php esc_html_e('Custom Menu','wp-bottom-menu'); ?></option>
+            <option value="wpbm-onclick" <?php if($value == "wpbm-onclick") echo "selected"; ?> ><?php esc_html_e('JavaScript onClick','wp-bottom-menu'); ?></option>
+            <option value="wpbm-page-back" <?php if($value == "wpbm-page-back") echo "selected"; ?> ><?php esc_html_e('Page Back','wp-bottom-menu'); ?></option>
 		</select>
 		<?php
 	}
@@ -520,6 +523,7 @@ class Customizer_Repeater extends WP_Customize_Control {
 		<?php
 		echo '<span class="description customize-control-description">';
 		echo sprintf(
+			/* translators: %1$s: URL to FontAwesome icons */
 			esc_html__( 'Note: Some icons may not be displayed here. You can see the full list of icons at %1$s.', 'wp-bottom-menu' ),
 			sprintf( '<a href="http://fontawesome.io/icons/" rel="nofollow">%s</a>', esc_html__( 'http://fontawesome.io/icons/', 'wp-bottom-menu' ) )
 		);

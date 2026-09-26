@@ -6,20 +6,20 @@ if ( ! class_exists( "rsssl_le_hosts" ) ) {
     class rsssl_le_hosts {
         private static $_this;
         public $steps;
-        public $hosts;
-        public $supported_hosts;
+        private $hosts;
         public $not_local_certificate_hosts;
         public $no_installation_renewal_needed;
         public $dashboard_activation_required;
         public $activated_by_default;
         public $paid_only;
 
-        function __construct() {
-	        define('RSSSL_LE_CONFIG_LOADED', true);
+        public function __construct() {
+	        if ( !defined('RSSSL_LE_CONFIG_LOADED') ) {
+				define('RSSSL_LE_CONFIG_LOADED', true);
+	        }
 
 	        if ( isset( self::$_this ) ) {
-                wp_die( sprintf( '%s is a singleton class and you cannot create a second instance.',
-                    get_class( $this ) ) );
+                wp_die( 'This is a singleton class and you cannot create a second instance.');
             }
 
             self::$_this = $this;
@@ -140,6 +140,7 @@ if ( ! class_exists( "rsssl_le_hosts" ) ) {
 		            'free_ssl_available' => 'activation_required',
 		            'hosting_dashboard' => false,
 		            'api' => false,
+					'detected' => isset($_SERVER['IS_WPE']),
 		            'ssl_installation_link' => 'https://wpengine.com/support/add-ssl-site/#letsencrypt',
 	            ),
 	            'ipage' => array(
@@ -293,6 +294,7 @@ if ( ! class_exists( "rsssl_le_hosts" ) ) {
 		            'free_ssl_available' => 'activation_required',
 		            'hosting_dashboard' => 'flywheel',
 		            'api' => false,
+					'detected' => isset($_SERVER['SERVER_SOFTWARE']) && strpos($_SERVER['SERVER_SOFTWARE'], 'Flywheel/') === 0,
 		            'ssl_installation_link' => 'https://getflywheel.com/why-flywheel/simple-ssl/',
 	            ),
 	            'kinsta' => array(
@@ -312,6 +314,7 @@ if ( ! class_exists( "rsssl_le_hosts" ) ) {
 		            'hosting_dashboard' => 'pressable',
 		            'api' => false,
 		            'ssl_installation_link' => false,
+		            'detected' => (defined('IS_ATOMIC') && IS_ATOMIC) || (defined('IS_PRESSABLE') && IS_PRESSABLE),
 	            ),
 	            'wpx' => array(
 		            'name' => 'WPX',
@@ -475,6 +478,35 @@ if ( ! class_exists( "rsssl_le_hosts" ) ) {
 		            'api' => false,
 		            'ssl_installation_link' => false,
 	            ),
+	            'combell' => array(
+		            'name' => 'Combell',
+		            'installation_renewal_required' => false,
+		            'local_ssl_generation_needed' => false,
+		            'free_ssl_available' => true,
+		            'hosting_dashboard' => 'cpanel',
+		            'detected' => defined('HBRW_PLATFORM_ID') && (int) HBRW_PLATFORM_ID === 1,
+		            'api' => false,
+		            'ssl_installation_link' => false,
+	            ),
+	            'easyhost' => array(
+		            'name' => 'EasyHost',
+		            'installation_renewal_required' => false,
+		            'local_ssl_generation_needed' => false,
+		            'free_ssl_available' => true,
+		            'hosting_dashboard' => 'cpanel',
+		            'detected' => defined('HBRW_PLATFORM_ID') && (int) HBRW_PLATFORM_ID === 2,
+		            'api' => false,
+		            'ssl_installation_link' => false,
+	            ),
+	            'transip' => array(
+		            'name' => 'TransIP',
+		            'installation_renewal_required' => false,
+		            'local_ssl_generation_needed' => false,
+		            'free_ssl_available' => true,
+		            'hosting_dashboard' => 'cpanel',
+		            'api' => false,
+		            'ssl_installation_link' => false,
+	            ),
 	            'digitalocean' => array(
 		            'name' => 'Digitalocean',
 		            'installation_renewal_required' => false,
@@ -520,6 +552,227 @@ if ( ! class_exists( "rsssl_le_hosts" ) ) {
 		            'api' => false,
 		            'ssl_installation_link' => 'https://support.upress.io',
 	            ),
+	            'infomaniak' => array(
+		            'name' => 'Infomaniak',
+		            'installation_renewal_required' => false,
+		            'local_ssl_generation_needed' => false,
+		            'free_ssl_available' => 'activation_required',
+		            'hosting_dashboard' => 'infomaniak',
+		            'api' => false,
+		            'ssl_installation_link' => 'https://www.infomaniak.com/en/secure/ssl-certificates',
+	            ),
+	            'dandomain' => array(
+		            'name' => 'DanDomain',
+		            'installation_renewal_required' => false,
+		            'local_ssl_generation_needed' => false,
+		            'free_ssl_available' => 'paid_only',
+		            'hosting_dashboard' => 'dandomain',
+		            'api' => false,
+		            'ssl_installation_link' => '',
+	            ),
+	            'hetzner' => array(
+		            'name' => 'Hetzner',
+		            'installation_renewal_required' => false,
+		            'local_ssl_generation_needed' => false,
+		            'free_ssl_available' => 'activation_reguired',
+		            'hosting_dashboard' => 'konsoleh',
+		            'api' => false,
+		            'ssl_installation_link' => '',
+	            ),
+	            'amenfr' => array(
+		            'name' => 'Amen.fr',
+		            'hosting_dashboard' => 'cpanel',
+		            'api' => false,
+	            ),
+	            'amenpt' => array(
+		            'name' => 'Amen.pt',
+		            'hosting_dashboard' => 'cpanel',
+		            'api' => false,
+	            ),
+	            'dominiospt' => array(
+		            'name' => 'Dominios.pt',
+		            'hosting_dashboard' => 'cpanel',
+		            'api' => false,
+	            ),
+	            'lcn' => array(
+		            'name' => 'LCN',
+		            'hosting_dashboard' => 'cpanel',
+		            'api' => false,
+	            ),
+	            'nominalia' => array(
+		            'name' => 'Nominalia',
+		            'hosting_dashboard' => 'cpanel',
+		            'api' => false,
+	            ),
+	            'ptisp' => array(
+		            'name' => 'PTisp',
+		            'hosting_dashboard' => 'cpanel',
+		            'api' => false,
+	            ),
+	            'register365' => array(
+		            'name' => 'Register365',
+		            'hosting_dashboard' => 'cpanel',
+		            'api' => false,
+	            ),
+	            'registerit' => array(
+		            'name' => 'Register.it',
+		            'hosting_dashboard' => 'cpanel',
+		            'api' => false,
+	            ),
+	            'superspace' => array(
+		            'name' => 'Superspace',
+		            'installation_renewal_required' => false,
+		            'local_ssl_generation_needed' => false,
+		            'free_ssl_available' => true,
+		            'hosting_dashboard' => 'cpanel',
+		            'api' => false,
+		            'ssl_installation_link' => false,
+	            ),
+	            'swizzonic' => array(
+		            'name' => 'Swizzonic',
+		            'hosting_dashboard' => 'cpanel',
+		            'api' => false,
+	            ),
+	            'vimexx' => array(
+		            'name' => 'Vimexx',
+		            'hosting_dashboard' => 'cpanel',
+		            'api' => false,
+	            ),
+	            'hostingireland' => array(
+		            'name' => 'HostingIreland',
+		            'hosting_dashboard' => 'cpanel',
+		            'api' => false,
+	            ),
+	            'letshost' => array(
+		            'name' => 'Letshost',
+		            'hosting_dashboard' => 'cpanel',
+		            'api' => false,
+	            ),
+	            'webempresa' => array(
+		            'name' => 'Webempresa',
+		            'hosting_dashboard' => 'cpanel',
+		            'api' => false,
+	            ),
+	            'superhostingbg' => array(
+		            'name' => 'СуперХостинг.БГ',
+		            'hosting_dashboard' => 'cpanel',
+		            'api' => false,
+	            ),
+	            'keliweb' => array(
+		            'name' => 'Keliweb',
+		            'hosting_dashboard' => 'cpanel',
+		            'api' => false,
+	            ),
+	            'papaki' => array(
+		            'name' => 'Papaki',
+		            'hosting_dashboard' => 'cpanel',
+		            'api' => false,
+	            ),
+	            'natro' => array(
+		            'name' => 'Natro',
+		            'hosting_dashboard' => 'cpanel',
+		            'api' => false,
+	            ),
+	            'turhost' => array(
+		            'name' => 'Turhost',
+		            'hosting_dashboard' => 'cpanel',
+		            'api' => false,
+	            ),
+	            'ukdedicated' => array(
+		            'name' => 'UkDedicated',
+		            'hosting_dashboard' => 'cpanel',
+		            'api' => false,
+	            ),
+	            'catalyst2' => array(
+		            'name' => 'Catalyst2',
+		            'hosting_dashboard' => 'cpanel',
+		            'api' => false,
+	            ),
+	            'guru' => array(
+		            'name' => 'Guru',
+		            'hosting_dashboard' => 'cpanel',
+		            'api' => false,
+	            ),
+	            'scannet' => array(
+		            'name' => 'Scannet',
+		            'hosting_dashboard' => 'cpanel',
+		            'api' => false,
+	            ),
+	            'curanet' => array(
+		            'name' => 'Curanet',
+		            'hosting_dashboard' => 'cpanel',
+		            'api' => false,
+	            ),
+	            'tophost' => array(
+		            'name' => 'Tophost',
+		            'hosting_dashboard' => 'cpanel',
+		            'api' => false,
+	            ),
+	            'magyarhosting' => array(
+		            'name' => 'Magyar Hosting',
+		            'hosting_dashboard' => 'cpanel',
+		            'api' => false,
+	            ),
+	            'ezit' => array(
+		            'name' => 'Ezit',
+		            'hosting_dashboard' => 'cpanel',
+		            'api' => false,
+	            ),
+	            'hostingpalvelu' => array(
+		            'name' => 'Hostingpalvelu',
+		            'hosting_dashboard' => 'cpanel',
+		            'api' => false,
+	            ),
+	            'domainhotelli' => array(
+		            'name' => 'Domainhotelli',
+		            'hosting_dashboard' => 'cpanel',
+		            'api' => false,
+	            ),
+	            'hypernode' => array(
+		            'name' => 'Hypernode',
+		            'hosting_dashboard' => 'cpanel',
+		            'api' => false,
+	            ),
+	            'proserve' => array(
+		            'name' => 'Proserve',
+		            'hosting_dashboard' => 'cpanel',
+		            'api' => false,
+	            ),
+	            'vdx' => array(
+		            'name' => 'VDX',
+		            'hosting_dashboard' => 'cpanel',
+		            'api' => false,
+	            ),
+	            'maxcluster' => array(
+		            'name' => 'maxcluster',
+		            'hosting_dashboard' => 'cpanel',
+		            'api' => false,
+	            ),
+	            'raidboxes' => array(
+		            'name' => 'Raidboxes',
+		            'hosting_dashboard' => 'cpanel',
+		            'api' => false,
+	            ),
+	            'loopia' => array(
+		            'name' => 'Loopia',
+		            'hosting_dashboard' => 'cpanel',
+		            'api' => false,
+	            ),
+	            'active24' => array(
+		            'name' => 'Active24',
+		            'hosting_dashboard' => 'cpanel',
+		            'api' => false,
+	            ),
+	            'websupport' => array(
+		            'name' => 'Websupport',
+		            'hosting_dashboard' => 'cpanel',
+		            'api' => false,
+	            ),
+	            'planeetta' => array(
+		            'name' => 'Planeetta',
+		            'hosting_dashboard' => 'cpanel',
+		            'api' => false,
+	            ),
             );
 
 	        $this->not_local_certificate_hosts = $this->filter_hosts( 'local_ssl_generation_needed', false);
@@ -530,29 +783,43 @@ if ( ! class_exists( "rsssl_le_hosts" ) ) {
             $this->no_installation_renewal_needed[] = 'cpanel:autossl';
 
 	        ksort($this->hosts);
-	        $this->supported_hosts = array(
-		        'none' => __('I don\'t know, or not listed, proceed with installation', 'really-simple-ssl'),
-	        );
-	        $this->supported_hosts = $this->supported_hosts + wp_list_pluck($this->hosts, 'name');
         }
 
-        static function this() {
-            return self::$_this;
-        }
+	/**
+	 * Get the known hosts configuration array
+	 *
+	 * @return array
+	 */
+	public function getKnownHosts() {
+		return $this->hosts;
+	}
+		public function detect_host_on_activation(){
+			foreach ( $this->hosts as $host_key => $host ) {
+				if ( isset($host['detected']) && $host['detected'] ) {
+					rsssl_update_option('other_host_type', $host_key );
+				}
+			}
+		}
 
 
 	    /**
-	     * @param array $array
-	     * @param mixed $filter_value
-	     * @param mixed $filter_key
+	     * Filter hosts based on a specific key and value
 	     *
-	     * @return array
+	     * @param string $filter_key The key to filter on
+	     * @param mixed $filter_value The value to match
+	     *
+	     * @return array               Array of filtered host keys
 	     */
-        public function filter_hosts( $filter_key, $filter_value){
-	        return array_keys(array_filter($this->hosts, function ($var) use ($filter_value, $filter_key) {
-		        return ($var[$filter_key] == $filter_value);
-	        }) );
-        }
+	    public function filter_hosts( string $filter_key, $filter_value ): array {
+		    return array_keys( array_filter( $this->hosts, function ( $var ) use ( $filter_value, $filter_key ) {
+			    // Only check if the key exists
+			    if ( ! isset( $var[ $filter_key ] ) ) {
+				    return false;
+			    }
+
+			    return $var[ $filter_key ] === $filter_value;
+		    } ) );
+	    }
 
 	    /**
 	     * @param string | bool $type

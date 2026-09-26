@@ -1,19 +1,16 @@
-import {useState, useEffect} from "@wordpress/element";
 import { __ } from '@wordpress/i18n';
 import * as rsssl_api from "../utils/api";
 import {dispatch,} from '@wordpress/data';
-import Notices from "../Settings/Notices";
-import update from 'immutability-helper';
-import {useUpdateEffect} from 'react-use';
 import sleeper from "../utils/sleeper";
 import Hyperlink from "../utils/Hyperlink";
 
 import {
     Button,
 } from '@wordpress/components';
+import useFields from "../Settings/FieldsData";
 
 const Generation = (props) => {
-    const action = props.action;
+    let action = props.action;
 
     if (!action) {
         return (<></>);
@@ -24,7 +21,7 @@ const Generation = (props) => {
             props.restartTests();
             const notice = dispatch('core/notices').createNotice(
                 'success',
-                __( 'Skip DNS verification ', 'really-simple-ssl' ),
+                __( 'Skip DNS verification', 'really-simple-ssl' ),
                 {
                     __unstableHTML: true,
                     id: 'rsssl_skip_dns',
@@ -42,9 +39,9 @@ const Generation = (props) => {
             { (action.status === 'error' && action.action==='verify_dns' ) &&
                 <>
                     <p>{ __("We could not check the DNS records. If you just added the record, please check in a few minutes.","really-simple-ssl")}&nbsp;
-                                    <Hyperlink target="_blank" text={__("You can manually check the DNS records in an %sonline tool%s.","really-simple-ssl")}
+                                    <Hyperlink target="_blank" rel="noopener noreferrer" text={__("You can manually check the DNS records in an %sonline tool%s.","really-simple-ssl")}
                                     url="https://mxtoolbox.com/SuperTool.aspx"/>
-                        { __("If you're sure it's set correctly, you can click the button to skip the DNS check.","really-simple-ssl")}&nbsp;
+                        { ' '+__("If you're sure it's set correctly, you can click the button to skip the DNS check.","really-simple-ssl")}&nbsp;
                     </p>
                     <Button
                         variant="secondary"

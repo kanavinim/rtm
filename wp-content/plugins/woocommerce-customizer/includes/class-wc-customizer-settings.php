@@ -17,7 +17,7 @@
  * needs please refer to http://www.skyverge.com/product/woocommerce-customizer/ for more information.
  *
  * @author      SkyVerge
- * @copyright   Copyright (c) 2013-2022, SkyVerge, Inc. (info@skyverge.com)
+ * @copyright   Copyright (c) 2013-2023, SkyVerge, Inc. (info@skyverge.com)
  * @license     http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
  */
 
@@ -32,6 +32,10 @@ defined( 'ABSPATH' ) or exit;
  */
 class WC_Customizer_Settings extends WC_Settings_Page {
 
+	/**
+	 * @var array|false|mixed|null
+	 */
+	protected array $customizations = [];
 
 	/**
 	 * Add various admin hooks/filters

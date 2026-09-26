@@ -46,9 +46,17 @@ class IRRPHelperAjax implements IRRPConstants {
 
         // REDIRECT RULES
         add_action("wp_ajax_irAddRedirectRule", [&$this, "addRedirectRule"]);
+
+        add_action("wp_ajax_irRegexHelpNotificationDismiss", [&$this, "regexHelpNotificationDismiss"]);
     }
 
     // AJAX FUNCTIONS //
+
+    public function regexHelpNotificationDismiss() {
+        check_ajax_referer( 'ir_ajax_nonce', 'nonce' );
+        update_option("irrp_regex_help_notification", "1");
+        wp_send_json_success();
+    }
 
     /**
      * new redirect
@@ -652,11 +660,10 @@ class IRRPHelperAjax implements IRRPConstants {
         if (!empty($redirects) && is_array($redirects)) {
 
             $countPages = ceil($countRedirects / self::PER_PAGE_REDIRECTIONS);
-            $currentOffset = 0;
 
             // buidling pagination
             ob_start();
-            $this->helper->buildPaginationHtml($countRedirects, $countPages, $currentOffset);
+            $this->helper->buildPaginationHtml($countRedirects, $countPages, $offset);
             $response["pagination"] = ob_get_clean();
 
             $response["content"] = $this->helper->buildRedirectsHtml($redirects, $selected);

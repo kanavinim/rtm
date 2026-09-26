@@ -1,5 +1,5 @@
 import {
-    render,
+    render, createRoot
 } from '@wordpress/element';
 import Page from './Page';
 
@@ -10,12 +10,11 @@ import Page from './Page';
 document.addEventListener( 'DOMContentLoaded', () => {
 	const container = document.getElementById( 'really-simple-ssl' );
 	if ( container ) {
-		render(
-			<>
-				<Page/>
-			</>,
-			container
-		);
+		if ( createRoot ) {
+			createRoot( container ).render( <Page/> );
+		} else {
+			render( <Page/>, container );
+		}
 	}
 });
 
@@ -25,7 +24,10 @@ document.addEventListener( 'DOMContentLoaded', () => {
 
 document.addEventListener('click', e => {
     if ( e.target.closest('#ssl-labs-check-button') ) {
-        document.querySelector('.rsssl-ssllabs').classList.add('rsssl-block-highlight');
+		document.querySelector('.rsssl-ssllabs').classList.add('rsssl-block-highlight');
+		setTimeout(function(){
+			document.querySelector('.rsssl-ssllabs').classList.remove('rsssl-block-highlight');
+		}, 6000);
     }
 });
 

@@ -18,7 +18,10 @@ class THWVSF_Admin_Settings_General extends THWVSF_Admin_Settings{
 	private $settings_fields    = NULL;
 	private $cell_props_CB      = array();
 	private $cell_props_TA      = array();
-
+	private $cell_props_C       = array();
+	private $cell_props_CP      = array();
+	private $cell_props_S       = array();
+	private $global_fields      = array();
 	private $field_form = null;
 	
 	public function __construct() {
@@ -86,20 +89,20 @@ class THWVSF_Admin_Settings_General extends THWVSF_Admin_Settings{
 		);
 		return array(
 
-			'auto_convert' => array('type'=>'checkbox', 'name'=>'auto_convert', 'label'=>__('Convert all Dropdown Swatches to Label Swatches', 'product-variation-swatches-for-woocommerce') ,'hint_text' => __('If a label is not provided, the term name will be treated as Label'), 'product-variation-swatches-for-woocommerce', 'value'=>'yes', 'checked'=>0),
+			'auto_convert' => array('type'=>'checkbox', 'name'=>'auto_convert', 'label'=>__('Auto Convert Dropdown to Label/Button Swatches', 'product-variation-swatches-for-woocommerce') ,'hint_text' => __('If a label is not provided, the term name will be treated as Label', 'product-variation-swatches-for-woocommerce'), 'value'=>'yes', 'checked'=>0),
 			
 			'ajax_variation_threshold' => array('type'=>'text', 'name'=>'ajax_variation_threshold', 'label'=>__('Ajax Variation Threshold', 'product-variation-swatches-for-woocommerce'),'value'=>'30','min'=>1,'hint_text'=>__('By default, if the no. of product variations is less than 30, the product availability check is through JavaScript. If greater than 30, the ajax method is used. This field can control the threshold value of 30.', 'product-variation-swatches-for-woocommerce')),
 
-			'clear_select' =>array('name'=>'clear_select', 'label'=>__('Clear On Reselect', 'product-variation-swatches-for-woocommerce'), 'type'=>'checkbox','hint_text'=>'', 'value'=>'yes', 'checked'=>1),
+			'clear_select' =>array('name'=>'clear_select', 'label'=>__('Clear on Reselect', 'product-variation-swatches-for-woocommerce'), 'type'=>'checkbox','hint_text'=>'', 'value'=>'yes', 'checked'=>1),
 
-			'disable_style_sheet' =>array('name'=>'disable_style_sheet', 'label'=>__('Disable Swatches Plugin Stylesheet (For applying the theme default stylesheet)', 'product-variation-swatches-for-woocommerce'), 'type'=>'checkbox','hint_text'=>'', 'value'=>'yes', 'checked'=>0),
+			'disable_style_sheet' =>array('name'=>'disable_style_sheet', 'label'=>__('Disable Swatches Plugin Stylesheet', 'product-variation-swatches-for-woocommerce'), 'type'=>'checkbox','hint_text'=>'For applying the theme default stylesheet', 'value'=>'yes', 'checked'=>0),
 
-			'behavior_for_unavailable_variation' => array('name' => 'behavior_for_unavailable_variation','type' => 'select','options' =>$behaviors,'label' => __('Behavior for Unavailable Variation', 'product-variation-swatches-for-woocommerce'),'value' => 'blur_with_cross' ),
+			'behavior_for_unavailable_variation' => array('name' => 'behavior_for_unavailable_variation','type' => 'select','options' =>$behaviors,'label' => __('Unavailable Variation Behavior', 'product-variation-swatches-for-woocommerce'),'value' => 'blur_with_cross' ),
 
-			'behavior_of_out_of_stock' => array('name' => 'behavior_of_out_of_stock','type' => 'select','options' =>$out_of_stock_behaviour,'label' => __('Behavior for Out of Stock Variation', 'product-variation-swatches-for-woocommerce'),'value' => 'default' ),
+			'behavior_of_out_of_stock' => array('name' => 'behavior_of_out_of_stock','type' => 'select','options' =>$out_of_stock_behaviour,'label' => __('Out of Stock Variation Behavior', 'product-variation-swatches-for-woocommerce'),'value' => 'default' ),
 			'swatches_on_additional_info' => array('name'=>'swatches_on_additional_info', 'label'=>__('Enable Swatches on Additional Info', 'product-variation-swatches-for-woocommerce'), 'type'=>'checkbox','hint_text'=>'', 'value'=>'yes', 'checked'=>0),
-			'show_selected_variation_name' => array('name'=>'show_selected_variation_name', 'label'=>__('Show Selected Variation Name Beside Attribute Label', 'woocommerce-product-variation-swatches'), 'type'=>'checkbox','hint_text'=>'', 'value'=>'yes', 'checked'=>0),
-			'enable_lazy_load' => array('name'=>'enable_lazy_load', 'label'=>__('Enable Lazy Load', 'woocommerce-product-variation-swatches'), 'type'=>'checkbox','hint_text'=>'', 'value'=>'yes', 'checked'=>0),
+			'show_selected_variation_name' => array('name'=>'show_selected_variation_name', 'label'=>__('Show Selected Variation Name Beside Attribute Label', 'product-variation-swatches-for-woocommerce'), 'type'=>'checkbox','hint_text'=>'', 'value'=>'yes', 'checked'=>0),
+			'enable_lazy_load' => array('name'=>'enable_lazy_load', 'label'=>__('Enable Lazy Load', 'product-variation-swatches-for-woocommerce'), 'type'=>'checkbox','hint_text'=>'', 'value'=>'yes', 'checked'=>0),
 		);
 	}
 
@@ -125,10 +128,10 @@ class THWVSF_Admin_Settings_General extends THWVSF_Admin_Settings{
 		$settings = $this->prepare_reset_global_settings_data($_POST, $this->global_fields);
 		$result   = $this->save_advanced_settings($settings);
 
-		if ($result == true) {
-			echo '<div class="updated"><p>'. __('Settings successfully reset.','') .'</p></div>';
+		if ($result === true) {
+			echo '<div class="updated notice notice-success is-dismissible thwvs-msg"><p>'. esc_html__('Your changes were saved.','product-variation-swatches-for-woocommerce') .'</p></div>';
 		} else {
-			echo '<div class="error"><p>'. __('Your changes were not saved due to an error (or you made none!).','') .'</p></div>';
+			echo '<div class="error notice is-dismissible thwvs-msg"><p>'. esc_html__('Your changes were not saved due to an error (or you made none!).','product-variation-swatches-for-woocommerce') .'</p></div>';
 		}
 	}
 	
@@ -143,10 +146,10 @@ class THWVSF_Admin_Settings_General extends THWVSF_Admin_Settings{
 		$settings = $this->prepare_global_settings_from_posted_data($_POST, $this->global_fields);
 		$result   = $this->save_advanced_settings($settings);
 
-		if ($result == true) {
-			echo '<div class="updated"><p>'. __('Your changes were saved.','') .'</p></div>';
+		if ($result === true) {
+			echo '<div class="updated notice notice-success is-dismissible thwvs-msg"><p>'. esc_html__('Your changes were saved.','product-variation-swatches-for-woocommerce') .'</p></div>';
 		} else {
-			echo '<div class="error"><p>'. __('Your changes were not saved due to an error (or you made none!).','') .'</p></div>';
+			echo '<div class="error notice is-dismissible thwvs-msg"><p>'. esc_html__('Your changes were not saved due to an error (or you made none!).','product-variation-swatches-for-woocommerce') .'</p></div>';
 		}
 	}
 
@@ -163,12 +166,6 @@ class THWVSF_Admin_Settings_General extends THWVSF_Admin_Settings{
 
 		$default_settings = array();
 		$design_settings = array();
-
-		if(isset($_POST['global_reset_settings']))
-			$this->reset_settings();	
-			
-		if(isset($_POST['global_save_settings']))
-			$this->save_settings();
 			
 		$settings = THWVSF_Utils::get_advanced_swatches_settings();	
 		?><form method="post" id="thwvs_global_form" action="">
@@ -186,9 +183,9 @@ class THWVSF_Admin_Settings_General extends THWVSF_Admin_Settings{
 
 	                <div class="btn-toolbar">
 										
-						<input type="submit" class="save-btn btn-primary-alt" name="global_save_settings" class="button-primary" value="<?php _e('Save', 'woocommerce-product-variation-swatches'); ?>"/>
+						<input type="submit" class="save-btn btn-primary-alt" name="global_save_settings" class="button-primary" value="<?php echo esc_attr__('Save', 'product-variation-swatches-for-woocommerce'); ?>"/>
 
-						<input type="submit" class="reset-btn btn-primary-alt" name="global_reset_settings" class="button-primary" value="<?php _e('Reset', 'woocommerce-product-variation-swatches'); ?>" onclick="return confirm('Are you sure you want to reset to default settings? all your changes will be deleted.');">	
+						<input type="submit" class="reset-btn btn-primary-alt" name="global_reset_settings" class="button-primary" value="<?php echo esc_attr__('Reset', 'product-variation-swatches-for-woocommerce'); ?>" onclick="return confirm('Are you sure you want to reset to default settings? all your changes will be deleted.');">	
 											
 					</div>
 

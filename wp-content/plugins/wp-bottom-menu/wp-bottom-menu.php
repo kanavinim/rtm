@@ -2,8 +2,8 @@
 /**
  * Plugin Name: WP Bottom Menu
  * Description: WP Bottom Menu allows you to add a woocommerce supported bottom menu to your site.
- * Version: 2.1.1
- * Author: J4
+ * Version: 2.3.0
+ * Author: J4 & LiquidThemes
  * Author URI: https://hub.liquid-themes.com/
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -23,7 +23,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
-define( 'WP_BOTTOM_MENU_VERSION', '2.1.1' );
+define( 'WP_BOTTOM_MENU_VERSION', '2.3.0' );
 define( 'WP_BOTTOM_MENU_DIR_URL', plugin_dir_url( __FILE__ ) );
 define( 'WP_BOTTOM_MENU_DIR_PATH', plugin_dir_path( __FILE__ ) );
 
@@ -103,11 +103,20 @@ final class WPBottomMenu{
 
         $this->i18n();
         $this->include_files();
-        $this->promote_hub();
 
         add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
         add_action( 'wp_footer', array($this, 'wp_bottom_menu' ) );
         add_filter( 'plugin_action_links', array($this, 'wp_bottom_menu_action_links'), 10, 2 );
+
+        // Admin menu - Settings > WP Bottom Menu
+        add_action( 'admin_menu', function() {
+            add_submenu_page(
+                'options-general.php', 'WP Bottom Menu', 'WP Bottom Menu', 'manage_options', 'wp-bottom-menu',
+                function(){
+                    echo '<script>window.location.href = "' . esc_url( admin_url( 'customize.php?autofocus[panel]=wpbottommenu_panel' ) ) . '";</script>';
+                }
+            );
+		} );        
 
         add_action( 'customize_controls_enqueue_scripts', function(){
 
@@ -137,6 +146,26 @@ final class WPBottomMenu{
                 'wpbm_custom' => __( 'WP Bottom Menu', 'wp-bottom-menu' ),
             ) );
         } );
+
+        // Polylang register translatable strings
+        add_action('init', function(){
+            if ( function_exists('pll_register_string') ) {
+                $customizer_repeater_wpbm = get_option('customizer_repeater_wpbm', json_encode( array(
+                    array("choice" => "wpbm-homepage" ,"subtitle" => "fa-home", "title" => "Home", "id" => "customizer_repeater_1" ),
+                    array("choice" => "wpbm-woo-account" ,"subtitle" => "fa-user", "title" => "Account", "id" => "customizer_repeater_2" ),
+                    array("choice" => "wpbm-woo-cart" ,"subtitle" => "fa-shopping-cart", "title" => "Cart", "id" => "customizer_repeater_3" ),
+                    array("choice" => "wpbm-woo-search" ,"subtitle" => "fa-search", "title" => "Search", "id" => "customizer_repeater_4" ),
+                ) ) );
+        
+                $customizer_repeater_wpbm_decoded = json_decode($customizer_repeater_wpbm);
+
+                foreach ( $customizer_repeater_wpbm_decoded as $repeater_item ) {
+                    pll_register_string( 'Menu Item', $repeater_item->title, 'WP Bottom Menu' );
+                    pll_register_string( 'Menu Link', $repeater_item->link, 'WP Bottom Menu' );
+                }
+            }
+        });
+
     } 
     
     function include_files(){
@@ -144,47 +173,6 @@ final class WPBottomMenu{
         require_once( WP_BOTTOM_MENU_DIR_PATH . 'inc/customizer/customizer-repeater/functions.php' );
         require_once( WP_BOTTOM_MENU_DIR_PATH . 'inc/customizer/customizer.php' );
         require_once( WP_BOTTOM_MENU_DIR_PATH . 'inc/customizer/condition.php' );
-
-    }
-
-    function promote_hub(){
-
-        // Hub promote notice
-        if ( isset( $_GET['hub_promote'] ) && 'false' === $_GET['hub_promote'] ) {
-            set_transient( 'hub_promote', [], 4 * WEEK_IN_SECONDS );
-        }
-        
-        if ( false === get_transient( 'hub_promote' ) ){
-            add_action( 'admin_notices', function() {
-                if ( 'Hub' === wp_get_theme()->get( 'Name' ) || 'Hub Child' === wp_get_theme()->get( 'Name' ) ) {
-                    return;
-                }
-                ?>
-                    <div class="notice">
-                        <h3 style="margin-bottom:0.5em">Looking for an ultra fast WP theme?</h3>
-                        <h4 style="margin:0">WP Bottom Menu developers recommend Hub:</h4>
-                        <ul style="list-style:disc;margin-left:2em">
-                            <li>The Best Selling Theme of the Year</li>
-                            <li>Free Support + Updates + Plugins</li>
-                            <li>Elementor + WP Bakery + WP Bottom Menu Support</li>
-                            <li>800+ Award-Winning Templates</li>
-                            <li>And Many More!</li>
-                        </ul>
-                        <p style="display:flex;align-items:center;">
-                            <a class="button button-primary" target="_blank" href="<?php echo esc_url( 'https://themeforest.net/item/hub-responsive-multipurpose-wordpress-theme/31569152?utm_source=wp_bottom_menu&utm_medium=banner&utm_campaign=wpbm_promote' ); ?>" >
-                                Join Hub
-                            </a>
-                            <a style="margin-left:1em" class="button button-secondary" target="_blank" href="<?php echo esc_url( 'https://hub.liquid-themes.com/?utm_source=wp_bottom_menu&utm_medium=banner&utm_campaign=wpbm_promote' ); ?>" >
-                                Learn More
-                            </a>
-                            <a style="margin-left:auto" href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'hub_promote', 'false' ), 'false' ) ); ?>" >
-                                Hide Notification
-                            </a>
-                        </p>
-                    </div>
-                <?php
-            } );
-        }
 
     }
 
@@ -203,6 +191,13 @@ final class WPBottomMenu{
             if ( get_option( 'wpbottommenu_iconset', 'fontawesome' ) == 'fontawesome2' ){
                 wp_enqueue_style( 'font-awesome-wpbm', WP_BOTTOM_MENU_DIR_URL . 'assets/vendors/fontawesome/all.min.css', array(), '6.1.1' );
             }
+
+            wp_localize_script( 'wp-bottom-menu', 'WPBM',
+                array( 
+                    'ajaxurl' => admin_url( 'admin-ajax.php' ),
+                    'siteurl' => site_url(),
+                )
+            );
             
         }
             
@@ -215,6 +210,22 @@ final class WPBottomMenu{
         if ( !$this->display_condition() ){
             return;
         }
+
+        $svg_allowed_tags = array(
+            'svg'  => array(
+                'xmlns' => true, 'width' => true, 'height' => true, 'viewbox' => true,
+                'fill' => true, 'stroke' => true, 'stroke-width' => true,
+                'stroke-linecap' => true, 'stroke-linejoin' => true, 'class' => true,
+            ),
+            'path' => array(
+                'd' => true, 'stroke' => true, 'fill' => true, 'stroke-width' => true,
+                'fill-rule' => true, 'clip-rule' => true,
+            ),
+            'span' => array(
+                'class' => true, 'data-tippy-content' => true, 'title' => true,
+            ),
+            'i'    => array( 'class' => true ),
+        );
 
         ?>
         <div class="wp-bottom-menu" id="wp-bottom-menu">
@@ -229,29 +240,37 @@ final class WPBottomMenu{
         /*This returns a json so we have to decode it*/
 
         $customizer_repeater_wpbm_decoded = json_decode($customizer_repeater_wpbm);
-        $wpbm_woo_search = $wpbm_post_search = $wpbm_custom_search = false;
+        $wpbm_woo_search = $wpbm_post_search = $wpbm_custom_search = $wpbm_custom_menu = false;
         $search_icon = 'fa-search';
         $wpbm_link_target = get_option( 'wpbottommenu_target' ) ? 'target=_blank' : '';
-        foreach($customizer_repeater_wpbm_decoded as $repeater_item){
+        foreach ( $customizer_repeater_wpbm_decoded as $repeater_item ) {
+
+            $tag = 'a';
 
             if ( $repeater_item->choice == "wpbm-woo-search" || $repeater_item->choice == "wpbm-post-search" || $repeater_item->choice == "wpbm-custom-search" ):
-                if( get_option( 'wpbottommenu_iconset', 'fontawesome' ) == 'fontawesome' ){
+                $tag = 'div';
+                if ( get_option( 'wpbottommenu_iconset', 'fontawesome' ) == 'fontawesome' ) {
                     $search_icon = 'fa ' . $repeater_item->subtitle;
                 } elseif ( get_option( 'wpbottommenu_iconset', 'fontawesome' ) == 'fontawesome2' || get_option( 'wpbottommenu_iconset', 'fontawesome' ) == 'svg' ) {
                     $search_icon = $repeater_item->subtitle;
                 }
             ?>
-                <a href="javascript:void(0);" title="<?php echo esc_attr( $repeater_item->title ); ?>" class="wp-bottom-menu-item wp-bottom-menu-search-form-trigger">
+                <<?php echo esc_attr( $tag ); ?> title="<?php echo esc_attr( $repeater_item->title ); ?>" class="wp-bottom-menu-item wp-bottom-menu-search-form-trigger">
             <?php elseif ( $repeater_item->choice == "wpbm-menu" ): ?>
-                <a href="javascript:void(0);" title="<?php echo esc_attr( $repeater_item->title ); ?>" class="wp-bottom-menu-item wp-bottom-menu-nav-trigger">
+                <?php $tag = 'div'; ?>
+                <<?php echo esc_attr( $tag ); ?> title="<?php echo esc_attr( $repeater_item->title ); ?>" class="wp-bottom-menu-item wp-bottom-menu-nav-trigger">
+            <?php elseif ( $repeater_item->choice == "wpbm-onclick" ): ?>
+                <?php $tag = 'div'; ?>
+                <<?php echo esc_attr( $tag ); ?> onclick="<?php echo esc_attr( $repeater_item->text ); ?>" title="<?php echo esc_attr( $repeater_item->title ); ?>" class="wp-bottom-menu-item">
             <?php else: ?>
                 <?php 
-                    $wpbm_item_url = $wpbm_item_active = '';
+                    $wpbm_item_url = '';
+                    $classes = array('wp-bottom-menu-item');
                     switch($repeater_item->choice){
                         case "wpbm-homepage":
                             $wpbm_item_url = esc_url( home_url() );
                             if ( is_front_page() ){
-                                $wpbm_item_active = 'active';
+                                array_push( $classes, 'active' );
                             }
                         break;
                         case "wpbm-woo-cart":
@@ -268,16 +287,24 @@ final class WPBottomMenu{
 								$wpbm_item_url = '#';
 							}  
                         break;
+                        case "wpbm-page-back":
+							$wpbm_item_url = 'javascript:void(0)';
+                            array_push( $classes, 'wpbm-page-back' );
+                        break;
                         default:
-                            $wpbm_item_url = esc_url( $repeater_item->link );
+                            $wpbm_item_url = esc_url( $this->translated_menu_title($repeater_item->link) );
                     }
 
                     if ( url_to_postid($wpbm_item_url) === get_the_ID() ){
-                        $wpbm_item_active = 'active';
+                        array_push( $classes, 'active' );
+                    } elseif ( class_exists('WooCommerce') && is_shop() && url_to_postid($wpbm_item_url) === 0 ) {
+                        if ( $wpbm_item_url !== home_url() ) {
+                            array_push( $classes, 'active' );
+                        }
                     }
                     
                 ?>
-                <a href="<?php echo $wpbm_item_url; ?>" class="wp-bottom-menu-item <?php echo esc_attr( $wpbm_item_active ); ?>" <?php echo esc_attr( $wpbm_link_target ); ?>>
+                <<?php echo esc_attr( $tag ); ?> href="<?php echo esc_url( $wpbm_item_url ); ?>" class="<?php echo esc_attr( join( ' ', $classes ) ); ?>" <?php echo esc_attr( $wpbm_link_target ); ?>>
             <?php endif; ?>
                     
                     <div class="wp-bottom-menu-icon-wrapper">
@@ -292,18 +319,20 @@ final class WPBottomMenu{
                         <?php elseif( get_option( 'wpbottommenu_iconset', 'fontawesome' ) == 'fontawesome2' ): ?>
                             <i class="wp-bottom-menu-item-icons <?php echo esc_attr( $repeater_item->subtitle ); ?>"></i>
                         <?php else: ?>
-                        <?php echo html_entity_decode( $repeater_item->subtitle ); ?>
+                        <?php echo wp_kses( html_entity_decode( $repeater_item->subtitle ), $svg_allowed_tags ); ?>
                         <?php endif; ?>
                     </div>
                     <?php if( !get_option( 'wpbottommenu_disable_title', false ) ): ?>
                         <?php if( get_option( 'wpbottommenu_show_cart_total', false ) && $repeater_item->choice == "wpbm-woo-cart" && class_exists( 'WooCommerce' ) ): ?>
-                                <span class="wp-bottom-menu-cart-total"><?php WC()->cart->get_cart_total(); ?></span>
-                            <?php else: ?>
-                                <span><?php echo $repeater_item->title; ?></span>
+                            <span class="wp-bottom-menu-cart-total"><?php WC()->cart->get_cart_total(); ?></span>
+                        <?php elseif( get_option( 'wpbottommenu_show_account_name' ) && $repeater_item->choice == "wpbm-woo-account" && class_exists( 'WooCommerce' ) && is_user_logged_in() ): ?>
+                            <?php echo esc_html( wp_get_current_user()->first_name ? wp_get_current_user()->first_name : wp_get_current_user()->user_login ); ?>
+                        <?php else: ?>
+                            <span><?php echo esc_html( $this->translated_menu_title($repeater_item->title) ); ?></span>
                         <?php endif; ?>
                     <?php endif; ?>
                     
-                </a>
+                </<?php echo esc_attr( $tag ); ?>>
             <?php
 
             if ( $repeater_item->choice == "wpbm-woo-search" && !$wpbm_woo_search )
@@ -315,33 +344,36 @@ final class WPBottomMenu{
             if ( $repeater_item->choice == "wpbm-custom-search" && !$wpbm_custom_search )
                 $wpbm_custom_search = true;
 
+            if ( $repeater_item->choice == "wpbm-menu" && !$wpbm_custom_menu )
+                $wpbm_custom_menu = true;
+
         }
         ?>
     </div>
 
-    <?php if ( $repeater_item->choice == "wpbm-menu" ) : ?>
-
+    <?php if ( $wpbm_custom_menu ) : ?>
         <div class="wp-bottom-menu-nav-wrapper">
-        <a href="javascript:void(0)" class="wpbm-nav-close">&times;</a>
+        <span class="wpbm-nav-close">&times;</span>
             <?php 
-
-            wp_nav_menu( array(
-                'menu'           => 'wpbm_custom',
-                'container'      => 'ul',
-                'menu_id'        => 'wpbm-nav',
-                'menu_class'     => 'wpbm-nav-items',
-            ) );
-
+                if ( has_nav_menu( 'wpbm_custom' ) ) {
+                    wp_nav_menu( array(
+                        'theme_location' => 'wpbm_custom',
+                        'container'      => 'ul',
+                        'menu_id'        => 'wpbm-nav',
+                        'menu_class'     => 'wpbm-nav-items',
+                    ) );
+                } else {
+                    esc_html_e( 'Add a menu in "WP Dashboard->Appearance->Menus" and select Display location "WP Bottom Menu"', 'wp-bottom-menu' );
+                }
             ?>
         </div>
-
     <?php endif;
     
     if ( $wpbm_woo_search || $wpbm_post_search || $wpbm_custom_search ): ?>
         <div class="wp-bottom-menu-search-form-wrapper" id="wp-bottom-menu-search-form-wrapper">
         <form role="search" method="get" action="<?php echo esc_url( home_url( '/'  ) ); ?>" class="wp-bottom-menu-search-form">
             <?php if ( get_option( 'wpbottommenu_iconset', 'fontawesome' ) == 'svg' ) : ?>
-                <?php echo html_entity_decode( $search_icon ); ?>
+                <?php echo wp_kses( html_entity_decode( $search_icon ), $svg_allowed_tags ); ?>
             <?php else : ?>
                 <i class="<?php echo esc_attr( $search_icon ); ?>"></i>
             <?php endif; ?>
@@ -362,12 +394,20 @@ final class WPBottomMenu{
                     }
                 }
             } ?>
-            <input type="search" class="search-field" placeholder="<?php if( get_option( 'wpbottommenu_placeholder_text', 'Search' ) ) echo get_option( 'wpbottommenu_placeholder_text', 'Search' ); else echo esc_attr_x( 'Search', 'wp-bottom-menu' ); ?>" value="<?php echo get_search_query(); ?>" name="s" />
+            <input type="search" class="search-field" placeholder="<?php if( get_option( 'wpbottommenu_placeholder_text', 'Search' ) ) echo esc_attr( get_option( 'wpbottommenu_placeholder_text', 'Search' ) ); else echo esc_attr_x( 'Search', 'placeholder', 'wp-bottom-menu' ); ?>" value="<?php echo get_search_query(); ?>" name="s" />
         </form>
         </div>
     <?php endif;
         
-    } 
+    }
+
+    function translated_menu_title( $title ) {
+        if ( function_exists('pll__') ) {
+            return pll__( $title );
+        }
+
+        return $title;
+    }
 
     function display_condition(){
 
@@ -402,6 +442,7 @@ register_activation_hook( __FILE__, 'wp_bottom_menu_plugin_activate' );
 
 function wp_bottom_menu_plugin_deactivate() {
 	/* If you want all settings to be deleted when the plugin is deactive, activate this field. 
+    TODO : Add reset all settings option
 
     delete_option(' customizer_repeater_wpbm' );
     delete_option( 'wpbottommenu_display_px' );

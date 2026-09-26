@@ -2,8 +2,8 @@
 Contributors: Socialdude
 Tags: Redirect, Redirection, 301, 404, Redirects
 Requires at least: 4.6
-Tested up to: 6.8.1
-Stable tag: 1.2.7
+Tested up to: 6.9.4
+Stable tag: 1.3.0
 License: GPLv3
 Requires PHP: 5.6
 
@@ -95,6 +95,28 @@ Vietnamese: [Đặt 301, 307, 404, một chuyển hướng khác.](https://vi.wo
 
 == Changelog ==
 
+= 1.3.0 =
+
+* Tested up to WordPress 6.9.4
+* [FIX] Resolve deprecation warnings by casting values to string
+* [FIX] Ensure review banner is hidden on excluded pages and sanitize URLs
+
+= 1.2.9 =
+
+* Excluded preview links from URL checks to avoid triggering banner logic on preview pages.
+* Added support for `important` notification type and updated plain structure alerts to use it.
+* Improved banner dismiss functionality and URL matching logic for better accuracy.
+* Adjusted URL matching logic to correctly handle additional characters in URLs.
+
+= 1.2.8 =
+* Tested up to WordPress 6.9.1
+* Added “URLs with new string” option for the “Starts with” rule.
+* Improved UI/UX for better responsiveness and overall user experience.
+* Tested with WordPress WordPress 6.9.
+* Fixed minor bugs and stability issues.
+* Resolved an N+1 query issue, significantly improving performance on large sites with many redirections.
+* Disabled the “Ignore parameters” option for plain permalink structures to avoid confusion.
+
 = 1.2.7 =
 * Enqueued tooltip CSS and JS files in IRRPSettings class for enhanced user experience.
 * Removed unnecessary comments regarding tooltips in single-redirection.php layout.
@@ -170,106 +192,14 @@ Vietnamese: [Đặt 301, 307, 404, một chuyển hướng khác.](https://vi.wo
 * Updated opt-in module
 * Improved RegExp redirections 
 * Adjusted few typos in notifications
-* Added more detailed notifications 
-* Prevented possibility of two 'is-404' redirections
-* Prevented possibility of two 'all-urls' redirections
-* Updated Carousel module
+* [... and more ...]
 
-= 1.1.6 =
-* Added custom permission for plugin access: redirect_redirection_admin
-* Changed way how advanced options section works
-* Improved user experience in terms of adding new rules and editing them
-* Improved stability of redirections (to be sensitive enough in corner cases)
-* Updated banner module to exclude conflicts with other plugins
-* Resolved warnings and notices in PHP 8.2
-* Tested with WordPress 6.3.1
-* Added review module
-
-= 1.1.5 =
-* Improved UTF-8 URLs matching for additonal languages.
-* Fixed redirection with parameters (simple & advanced)
-* Added nonce verification for plugin deinstallation
-
-= 1.1.4 =
-* Limited access to the plugin to site administrators only
-* Added nonce verification
-* Added possibility to add redirection headers
-* Fixed deactivation feedback
-* Adjusted minor arrow display issues
-* Tested with WP 6.2-Beta2
-* Fixed UTF-8 URLs redirections
-* Removed BF module
-* Updated carrousel & opt-in module
-
-= 1.1.3 =
-* Adjusted PHP compatibility
-
-= 1.1.2 =
-* Added black-friday theme (only for that period)
-* Tested up to WordPress 6.1.1
-
-= 1.1.1 =
-* Reverted change of template redirection priority
-
-= 1.1.0 =
-* Tested up to WP v6.1-RC5
-* Added optional opt-in module
-* Updated try it option in readme
-* Fixed issue with logs clean-up - database errors PHP 8+
-* Removed unnecessary files from codebase
-* Adjusted redirection, it won't redirect twice before destination site
-
-= 1.0.9 =
-* Fixed issues with version 1.0.8 where template redirection support was required
-
-= 1.0.8 =
-* Fixed local redirect loops (e.g. homepage -> post)
-* Adjusted our URL validator
-* Changed hook of redirect execution
-* Removed unwanted error_logging
-* Tested with WordPress 6.0.1
-
-= 1.0.7 =
-* Tested with WordPress Beta 6.0
-* Improved database management
-* Added new notifications and notices
-* Allowed redirections inside wp-admin
-* Added all-urls rule for redirection
-* Added support for PHP 5.6 (older sites)
-* Added carrousel
-
-= 1.0.6 =
-* Added Redirection & 404 Logs feature; fixed an issue with redirection to another website and the issue with the set cookie
-* Tested with PHP 8.0 and 8.1
-* Tested with WordPress 5.9
-
-= 1.0.5 =
-* Added redirection by browser language
-* Fixed bugs with language detection
-
-= 1.0.4 =
-* Added redirection rule 404s to Random Similar Post
-
-= 1.0.3 =
-* Added redirection rule 404s to Specific URL
-
-= 1.0.2 =
-* Make plugin translatable ready
-* Tested up to WordPress 5.8
-
-= 1.0.1 =
-* Fixed mb functions on servers without mbstring extenstion
-* Added auto redirection on activation
-* Added screenshots
-
-= 1.0.0 =
-* Initial release
+= previous =
+Old changelog has been removed due to WordPress limitation of 5000 characters.
 
 == Upgrade Notice ==
 
-= 1.2.7 =
-* Enqueued tooltip CSS and JS files in IRRPSettings class for enhanced user experience.
-* Removed unnecessary comments regarding tooltips in single-redirection.php layout.
-* Ensured tooltip functionality is ready for input fields in redirection settings.
-* Increase the redirections per page to 30 instead of 10
-* Tested with WordPress 6.8.1
+= 1.3.0 =
+
+* [FIX] Resolve deprecation warnings by casting values to string
+* [FIX] Ensure review banner is hidden on excluded pages and sanitize URLs

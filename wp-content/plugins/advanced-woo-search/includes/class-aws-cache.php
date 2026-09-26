@@ -83,6 +83,18 @@ if ( ! class_exists( 'AWS_Cache' ) ) :
                 }
             }
 
+            /**
+             * Filters cache option name
+             *
+             * Allow integrations to vary the cache bucket by criteria that are not
+             * reflected in the user role ( e.g. membership based restrictions ).
+             *
+             * @since 3.65
+             * @param string $cache_option_name Cache option name
+             * @param string $s                 Search string
+             */
+            $cache_option_name = apply_filters( 'aws_cache_name', $cache_option_name, $s );
+
             return $cache_option_name;
 
         }
@@ -92,9 +104,7 @@ if ( ! class_exists( 'AWS_Cache' ) ) :
          */
         public function is_cache_table_not_exist() {
 
-            global $wpdb;
-
-            return ( $wpdb->get_var( "SHOW TABLES LIKE '{$this->cache_table_name}'" ) != $this->cache_table_name );
+            return AWS()->option_vars->is_cache_table_not_exists();
 
         }
 
@@ -108,8 +118,11 @@ if ( ! class_exists( 'AWS_Cache' ) ) :
             $charset_collate = $wpdb->get_charset_collate();
 
             $sql = "CREATE TABLE {$this->cache_table_name} (
+                      cacheid BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
                       name VARCHAR(100) NOT NULL,
-                      value LONGTEXT NOT NULL
+                      value LONGTEXT NOT NULL,
+                      PRIMARY KEY (cacheid),
+                      KEY name (name)
                 ) $charset_collate;";
 
             require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );

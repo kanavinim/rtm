@@ -1,217 +1,287 @@
 === Variation Swatches for WooCommerce ===
 Contributors: ThemeHigh
 Donate link: https://themehigh.com/
-Tags: variation swatches, woocommerce variation swatches, wooCommerce variation, woocommerce attributes, variation swatches for woocommerce, variations
+Tags: Variation Swatches, Variation Swatches for WooCommerce, WooCommerce Variation Swatches, WooCommerce Attributes, WooCommerce Variation
 Requires at least: 5.3
-Tested up to: 6.0
-Requires PHP: 7.0
-Stable tag: 2.3.0
+Tested up to: 7.1
+Requires PHP: 7.4
+Stable tag: 2.4.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Variation swatches for WooCommerce plugin let you add button, image,radio and color variation swatches for the variable product attributes in your online store.
+Variation Swatches for WooCommerce plugin adds button, Image, radio, and color swatches to your product attribute & enhance the product selection.
 
 == Description ==
 
-= Introduction =
+🔥 **#1 Plugin for Adding Variation Swatches to WooCommerce Products**
 
-WooCommerce Variation Swatches plugin enables you to convert default WooCommerce product attribute drop-downs into stylish swatches. This fantastic plugin helps you exhibit product variants (based on color, size, texture, etc.) in style, assisting customers to choose their preferred variant quickly.
+The **WooCommerce Product Variation Swatches** plugin lets you configure & display product variations visually. This plugin improves product presentation, reduces customer confusion, and boosts conversions by providing a visually engaging and intuitive way to browse and choose product attributes, ensuring a smoother shopping journey across all devices.
 
-Using this variation swatches for WooCommerce plugin, you can create swatches of 4 types to display the product attributes as square or circle icons. 
+==Why do you need Variation Swatches in your Store? ==
+Default WooCommerce variation dropdowns can be dull and unengaging, making it harder for customers to visualize product options. Variation Swatches solve this by replacing standard dropdowns with attractive color, image, and label/button swatches, allowing customers to quickly and easily select product variations like size, color, or material. This helps in improving user experience and boosting conversions.
 
-The 4 swatch types are:
+✳️ **Better Shopping Experience →** Customers can visually select variations instead of guessing.               
+✳️ **Faster Decision-Making →** Eliminates confusion and speeds up the buying process.
+✳️ **More Professional Store Design →**Gives your WooCommerce store a sleek, modern look.
+✳️ **Higher Conversion Rates→** By making it easier for customers to find and select the products they want, swatches can contribute to higher conversion rates
+✳️ **Reduced Returns→**Clear visual representation of product variations can help prevent customers from ordering the wrong item, leading to fewer returns. 
+✳️ **Works Seamlessly with WooCommerce Themes →** Compatible with almost all major themes and plugins.
 
-= 💎 Color
-= 💎 Image
-= 💎 Label/Button
-= 💎 Radio
 
-⭐ [How it Works](https://www.themehigh.com/docs/variation-swatches-free-documentation/)|[Try Demo](https://flydemos.com/wpvs/) | [Documents](https://www.themehigh.com/docs/docs-category/variation-swatches-for-woocommerce/) | [Pro Version](https://www.themehigh.com/product/woocommerce-product-variation-swatches/) ⭐
+==🔥 EXPLORE WHAT OUR FREE VERSION OFFERS  ==
 
-= 👉 Instantly convert attributes into swatches =
-You can convert default woocommerce variation drop-downs into variation swatches instantly with a single click if you want to convert it altogether.
+[Try Demo](https://flydemos.com/wpvs/?utm_source=wpvs_free&utm_medium=readme&utm_campaign=try_demo)| [Documentation](https://www.themehigh.com/docs/variation-swatches-free-documentation/?utm_source=wpvs_free&utm_medium=readme&utm_campaign=wpvs_free_doc)| [Get Pro ](https://www.themehigh.com/product/woocommerce-product-variation-swatches/?utm_source=wpvs_free&utm_medium=readme&utm_campaign=wpvs_upgrade_link)
 
-= 👉 Swatch Designs =
-This unique feature of the Variation swatches plugin lets you create multiple design types for an attribute and switch between them easily. For each design type, you can define the icon details, customize the hover & border details, style the tooltip details, and much more.
+= ✅  SWATCH  TYPES =
+The free version offers four essential swatch types, allowing you to display product variations seamlessly
 
-[Live Demo](https://flydemos.com/wpvs/)
+	1.  Color
+	2.  Image
+	3.  Label/Button
+	4.  Radio
+	
 
-= 👉 Choose selection style =
-The variation swatches plugin lets you highlight the selected swatch with a checkmark. Also, you can customize the checkmark with an apt color and suitable size.
+[​​Video tutorial](https://youtu.be/icrlkqJAv_M?si=GZwiodoVjuCPeRjN)
 
-[Live Demo](https://flydemos.com/wpvs/product/shoes/)
+= ✅ AUTO CONVERT ALL VARIATION DROPDOWNS TO LABEL/BUTTON  SWATCHES =
 
-= 👉 Display behavior of unavailable and out-of-stock variants =
-Set the unavailable and out-of-stock variant’s swatches with three custom options - 
-1. Hide 
-2. Blur
-3. Blur with a cross
+The selected swatch dropdown variation will automatically be converted into label swatches
 
-= 👉 Swatches for Custom Product Attributes =
-This feature enables you to set up swatches for custom product attributes of variable products. You can customize these custom attributes with the three swatch types and their properties.
+= ✅ CUSTOMIZATION OPTIONS FOR SWATCHES =
 
-= 👉 Tooltips for Variation Swatches =
-Show the **term name** of attributes as tooltips with a **custom display color** when someone hovers over a swatch icon.
+This plugin offers a wide range of customization options allowing you to create common attribute styling like set icon **height**, **width**, **shape & border color** also other styling options like
 
-= ⭐ Compatible Themes =
+- **HOVER/SELECTION STYLING:** Add a fixed amount to the total price when the field is selected.
+    1.  **Hover Style:** You can adjust the border color upon hover
 
-A few themes that are compatible with the Variation swatches for WooCommerce plugin are:
+    2. **Selection style:**You can change the border color, tick color and tick size of the selected swatch.
 
-	Store Front, Flatsome, Divi Builder, Astra, Ocean Wp, WoodMart, Porto, 
-	Enfold, Kedence, Motor, Hestia, Sydney, Neve, Spacious, Zakra
+   [​​Video tutorial](https://youtu.be/lNByg0uGh4g?si=0h3uCMXrpMxapG2Z)
 
-Besides this list, the variation swatches plugin is also compatible with other popular themes in the market.
+**👉Note:** Additionally you can customize the selection style for color and image swatches and button/label swatches separately.
 
-= ⭐ Compatible Plugins =
+- **Color & Image swatch styling:** For color and image swatches you can customize the appearance of the selected swatch using two options
+	1.  Border on selection
+	2. Checkmark with border 
 
-Some popular WooCommerce plugins that are compatible with Variation swatches plugin are:
+- **Button/label swatch styling:** Customize the appearance of the selected button and label swatches with three options
+	1.  Border on selection
+	2. Checkmark with border 
+	3. Background with font color
 
-	Yith WooCommerce Quick View, WooCommerce Product Bundle, WooCommerce Composit products,
-	 WPC Smart Quick View for woocommerce by,  WPClever, Eelementor Page Builder Plugin
+- **TOOLTIP STYLING**
+The term name of an attribute can be displayed as a tooltip, to which the following changes can be made
 
-= 👉 Round and Square Attribute Variation Swatch =
-The Variation Swatches plugin lets you choose between round or square icons for your product variation swatches. So, based on your store theme, the suitable icon shape can be chosen.
+    1.  Enable/Disable Tooltip
+    2.  Set the text color for term name
+    3.  Set the background color for term name
 
-= 👉 Display Selected Variation Name =
-Using this Variation Swatches plugin, you can display the chosen variation name besides the attribute label.  
+   [​​Video tutorial](https://youtu.be/-k34-0bCwFs?si=hugPYlqKRcy0Fniu)
 
-= 👉 Customize Swatches =
-The plugin provides you various customization options like editing font size, background color, icon height, icon width, etc as per your requirements.
+- **SWATCH TYPES SPECIFIC STYLING**
+	**1. Button/ Label swatches:** You can customize the appearance of button and label swatches by adjusting the following parameters:
 
-= 👉 Show swatches as dropdown =
-This unique feature of the plugin lets you display both the image and color swatches as a simple dropdown. From this color or image swatch dropdown, the shoppers can search and find the corresponding term.
+    - Set Icon height & width
+    - Set Icon font size
+    - Set Icon background & text color
 
-[Live Demo](https://flydemos.com/wpvs/product/modern-sofa-set/)
+	**2. Color/ Image swatches:**
+    - Enable/ disable swatch drop-down style
 
-= 👉 Enable Swatches in Additional Info =
-Using the variation swatches plugin, you can show the additional info as image or color swatches even for the simple product.
+**🔥 Explore our [Pro version]((https://www.themehigh.com/product/woocommerce-product-variation-swatches/?utm_source=wpvs_free&utm_medium=readme&utm_campaign=wpvs_upgrade_link))
+ for even more advanced swatch customization!**
 
-= 👉 Set AJAX Variation Threshold =
-The plugin allows you to set the Ajax variation threshold value. So, based on this threshold value, the product availability check can be done through Ajax method or JavaScript. 
+= ✅ OPTION TO SELECT ROUND AND SQUARE VARIATION SWATCH SHAPES =
 
-[See how these features works!](https://www.themehigh.com/docs/variation-swatches-free-documentation/)
---------------------------------------------
-https://www.youtube.com/watch?v=rkvXZZa1fdw
---------------------------------------------
+The Variation Swatches plugin lets you choose both round and square icons for your product variation swatches. So, based on your store theme, a suitable icon shape can be chosen.
 
-= ☞ Other Features =
+= ✅ DISPLAY OPTIONS FOR UNAVAILABLE & OUT-OF-STOCK VARIANTS =
+WooCommerce notifies users about out-of-stock variants only after selection, which can be frustrating. 
 
-*   Set border color for 'selected' and 'hover' of swatches.
-*   Disable variation swatches plugin stylesheet to apply a theme default style.
-*   You can enable or disable 'Clear selection on reselection' option.
-*   Compatible with most of the quick view popup.
-*   Compatible with most popular plugins and themes.
-*   Supports additional CSS.
-*   Lazy load option to speed up the page loading and improve the store performance.
-*   Allow users to import & export chosen variation swatches along with WooCommerce default product import-export.
-*   REST API support.
+**👉Note:** This plugin lets you display Unavailable & Out-of-stock variants instantly with  options like:
 
-== Other Popular plugins from Themehigh ==
+- **Unavailable Variants**
 
-**[Checkout Field Editor For WooCommerce](https://wordpress.org/plugins/woo-checkout-field-editor-pro/)**: This Checkout Plugin from Themehigh lets you add 20 different types of custom checkout fields to your WooCommerce Checkout page that helps you to collect more information about your customers.
+	1. Hide – Remove the swatch.
+	2. Blur – Keep it visible but faded.
+	3. Blur with a Cross – Mark it with a strikethrough.
 
-**[Extra Product Options For WooCommerce](https://wordpress.org/plugins/woo-extra-product-options/)**: This Custom Product addons plugin lets you quickly add additional fields (19 custom field types) and sections to your WooCommerce Product page.
+- **Out-of-stock Variants**
+	1. Blur – Keep it visible but faded.
+	2. Blur with cross  – Mark it with a strikethrough.
+   
+= ✅ Enable Swatches in Additional Info =
+Once enabled, the swatches will automatically appear in the additional information, enhancing product presentation
 
-**[Multi-Step Checkout Options For WooCommerce](https://wordpress.org/plugins/woo-multistep-checkout/)**: The Multistep checkout plugin helps you to split the regular WooCommerce checkout process with simpler steps by creating a better experience for your customers.
 
-**[Email Customizer For WooCommerce](https://wordpress.org/plugins/email-customizer-for-woocommerce/)**: Email Customizer, an intuitive template builder that lets you customise your WooCommerce transactional emails using different elements like text, image, divider, etc.
+= ✅ Clear on reselect =
+Once enabled, it allows a customer to easily clear a chosen variation by reselecting it.
 
-Join [Themehigh Community](https://www.facebook.com/groups/themehigh/) to get help from similar people
+**👉Note:** Styling of the clear button is available in the [Pro version]((https://flydemos.com/wpvs))
 
-== 💎💎 Premium Features ==
-The premium version of the Variation Swatches for WooCommerce comes with a handful of extra features for swatches display.
+= ✅ Enable Lazy Load for Swatches =
+Optimize performance by **loading swatch images** only when they come into view, ensuring faster page speed for variation-rich stores.
 
-With the extra features and customizations, your variation swatches can get along with any WooCommerce theme you use.
+= ✅ Set AJAX Variation Threshold =
+The plugin allows you to set the Ajax variation threshold value. So, based on this threshold value, the product availability check can be done through Ajax method or JavaScript.
 
---------------------------------------------
-[Upgrade to Premium Now!](https://www.themehigh.com/product/woocommerce-product-variation-swatches/?utm_source=wordpress&utm_medium=referral&utm_content=tracking)
+[GET FULL ACCESS WITH PREMIUM NOW !](https://www.themehigh.com/product/woocommerce-product-variation-swatches/?utm_source=wpvs_free&utm_medium=readme&utm_campaign=wpvs_upgrade_link)
 
-Check out the demo for a more detailed overview of the features. 
-🔗 [Live Demo](https://flydemos.com/wpvs/?utm_source=wordpress&utm_medium=referral&utm_content=tracking)
---------------------------------------------
+== 🔥 SEE  OUR  PREMIUM FEATURES ==
+Want to give your store a more polished and seamless shopping experience? The **pro version** unlocks more flexibility, better styling options, and smarter ways to showcase your variations. It’s all about making product selection easier and more engaging for your customers. 
 
-= ☞ Swatches on Shop Page/Archive Pages =
-By displaying variation swatches on your WooCommerce Shop page/Archive Page, make your shoppers quickly understand the variations which are available and which are not.
+[Try Demo](https://flydemos.com/wpvs/?utm_source=wpvs_free&utm_medium=readme&utm_campaign=try_demo)| [Documentation](https://www.themehigh.com/docs/category/variation-swatches-for-woocommerce/?utm_source=wpvs_free&utm_medium=readme&utm_campaign=wpvs_pro_doc)| [Get Pro ](https://www.themehigh.com/product/woocommerce-product-variation-swatches/?utm_source=wpvs_free&utm_medium=readme&utm_campaign=wpvs_upgrade_link) 
 
-= ☞ Add Multiple Swatch Design =
-Swatch Design is a unique feature that allows you to create multiple design types for any attribute swatches by styling the icon details, tooltip, hover and border details, etc. So, even for a single website, several design types can be created.
+= ✅  ADDITIONAL SWATCH TYPE =
 
-= ☞ Swatch Display Options =
-Swatches can be displayed in five different ways besides the default style: Dropdown, Slider, Accordion, Horizontal Scroller, and Vertical Scroller. 
+ In addition to Color, Image, Label/Button & Radio swatches available in the free version, the pro version introduces **Image with Label** providing a clearer and more informative way to display variations. 
+   
+= ✅ CONVERT DEFAULT SWATCHES TO IMAGE SWATCHES = 
+The Variation Swatches plugin lets you convert the product variation dropdown into image swatches in a single click.
+ 
+=  ✅ ADVANCED SWATCHES CUSTOMIZATION & STYLING =
+The Pro version provides **advanced design flexibility**, allowing you to create multiple unique styles for different attributes compared to the free version.
+ **👉Note:** This plugin offers a wide range of customization options allowing you to create common attribute styling like icon height, width, icon shapes other than round & square you can also customise the icon roundness, set border color & also set appearance for swatches, which we will explore! 
 
-[Slider Demo](https://flydemos.com/wpvs/product/cool-t-shirts/)| [Scroller Demo](https://flydemos.com/wpvs/product/matte-lipstick/)
+- **HOVER/SELECTION STYLING:** Along with the general styling options in the free version,the pro version allows you to set the selection Hover style in two additional ways
 
-= ☞ Individual Attribute Settings = 
-With individual attribute settings, you can override the global settings for individual swatches.
+    1. Border Style:
+    2. Enlarge Style:
 
-= ☞ Additional Tooltips =
-You can set an **image, term name, or description** as a tooltip for swatches.
-[Description Tooltip Demo](https://flydemos.com/wpvs/product/football-boots/)| [Image Tooltip demo](https://flydemos.com/wpvs/product/thermosteel-water-bottles/)
+- **TOOLTIP STYLING:**
+Apart from the general tooltip styling, the pro version offers more advanced styling such as:
+    1. Image Tooltip: Set border color, height & width for image
+    2. Term Tooltip: Set text color, background color & font size
+    3. Description Tooltip: Set text color, background color, font size and enable/disable box-shadow
 
-= ☞ Default Swatches to Variation Image Swatches =
-The Variation Swatches plugin lets you convert the product variation selection dropdown into variation image swatches in a single click.
+- **SWATCH TYPES SPECIFIC STYLING:** The free version offers styling only for one swatch type Button/ Label swatches. However, the pro comes with an option for customising like
 
-= ☞ Separate Style Customization = 
-Custom styling can be done for individual swatches with the premium version of the plugin. You can style the icon height, width, and roundness, and also the border color, color on hover and color on selected.
+	**1. Radio swatch styling** 
 
-= ☞ Extra Styling for Tooltips =
-With options to display images and descriptions as tooltips, you also have options to style them according to your WordPress theme and product pages.
+	- Set inner and outer color for the radio swatch upon hover. 
+	- Set both inner & outer color for the selected swatches.
 
-= ☞ Bicolor Swatches =
-Display dual colored products with a bicolor swatch just like a color swatch instead 2 colors appear inside the icon.
+	**2. Select swatch**
+			
+	- Enable/ disable swatch drop-down style
 
-= ☞ Out of Stock Styling =
-The "Out of Stock" text, which is the default behavioral style, is used to notify any out-of-stock variant. In addition to the default style other behavioral styles like Blur, Blur with Cross, Blur with Cancel, and Hide are available. 
 
-= ☞ Stock Left Alert =
-With a minimum stock left alert, you can call the attention of shoppers to the limited stock of any product in your WooCommerce store.
-[Live Demo](https://flydemos.com/wpvs/product/football-boots/)
+- **ADDITIONAL DISPLAY STYLING:** You can also set the display styling for
 
-= ☞ Get Product Variations as URL =
-Option to create product variation links for quick purchase.
+	**1. Featured Swatches styling:** set height, width & font size of the featured icon
+	**2. Additional info page swatches styling:** set height & width of swatches icon in the additional info section
+	**3. Shop page swatches styling:** set height, width & font size for swatches on the shop page
 
-= ☞ Show swatches on filter widgets=
-The Variation Swatches plugin lets you display attributes as swatches on filter widgets.
+- **ATTRIBUTE DESCRIPTION STYLING:** Set font size & font color for attribute description
 
-= ☞ Stock Left Alert on Shop Page = 
-Display the stock left on the WooCommerce shop page, so that the shoppers can grab products of limited numbers. Also, you can set the minimum value for receiving the stock left alert.
+=  ✅ FLEXIBLE SWATCH DISPLAY OPTIONS =
+Beyond the default style, swatches can be displayed in five unique ways, allowing for a more dynamic and user-friendly shopping experience. 
 
-= ☞ Search Option for Swatch Designs & Attributes =
-Both the swatch designs and attributes section includes a search option that lets you find any specific design or attribute in no time.
+- Dropdown
+- Slider
+- Accordion
+- Horizontal Scroller
+- Vertical Scroller
 
-= ☞ Display Swatches on Cart & Checkout =
-Display the chosen image and color variations in a swatch form on the cart and checkout page.
+=  ✅ DISPLAY SWATCHES ON SHOP/ ARCHIVE PAGE =
+By displaying variation swatches on your **WooCommerce Shop page/Archive page**, your shoppers can quickly understand the variations that are available and that are not.
 
---------------------------------------------
-*Explore the complete features by visiting the [Variation Swatches for WooCommerce](https://www.themehigh.com/product/woocommerce-product-variation-swatches/?utm_source=wordpress&utm_medium=referral&utm_content=tracking) plugin's official page.*
+=  ✅ MULTI-COLOR VARIATION SWATCHES (BICOLOR) =
+Showcase **dual-colored products** using bicolor swatches, where two colors appear inside a single icon. This feature is perfect for products with two-tone variations, making it easier for shoppers to visualize their options.
 
-Check how it works ([Live Demo](https://flydemos.com/wpvs/?utm_source=wordpress&utm_medium=referral&utm_content=tracking))
---------------------------------------------
+= ✅ ADDITIONAL DISPLAY OPTIONS FOR OUT-OF-STOCK VARIANTS =
+The Pro version offers two extra display options
 
-== Why ThemeHigh ==
-Frequent updates are made to improve the plugin with a talented group of developers. Moreover, the dedicated support team will help you set up and customize your dream store with all available features and hooks.
+- **Hide the variation and blur with cancel**: to indicate out-of-stock variants
+- **Styling options**: to customize their appearance for a seamless shopping experience.
+
+= ✅ SET STOCK LEFT ALERT =
+Alert shoppers when stock reaches a minimum level, creating urgency and encouraging faster purchases
+
+  **👉Note:** You can also display the stock left on the **WooCommerce shop page**, allowing shoppers to grab limited-stock products. Additionally, set a minimum value to trigger the stock left alert.
+
+= ✅ GENERATE PRODUCT VARIATION LINK =
+The pro version lets you generate direct links for specific variations making purchases faster and more convenient for customers.
+=  ✅ QUICK SEARCH FOR SWATCH DESIGN & ATTRIBUTES =
+You can easily locate specific **select swatch** designs and attributes using the **built-in search option**, saving time and enhancing your experience.
+=  ✅ DISPLAY SWATCHES ON CART & CHECKOUT =
+ Display the chosen image and color variations as a swatch on the cart and checkout page.
+
+=  ✅ CLEAR BUTTON STYLING =
+While the free version only has the option to clear on reset, the pro version of the variation swatch plugin helps in styling the clear button for your store themes
+
+= ✅ SUPPORTED PLUGINS & THEMES =
+
+👉 PLUGINS
+
+*  Yith WooCommerce Quick View
+*  WooCommerce Product Bundle
+*  WooCommerce Composite Products
+*  WPC Smart Quick View for WooCommerce by WPClever
+*  Elementor Page Builder Plugin
+
+👉 THEMES
+
+*   Store Front
+*   Flatsome
+*   Divi Builder
+*   Astra
+*   WoodMart
+*   OceanWP 
+*   Porto
+*   Enfold
+*   Kedence
+*   Motor
+*   Hestia
+*   Sydney
+*   Neve
+*   Spacious
+*   Zakra etc..
+
+== Why ThemeHigh? ==
+At themehigh, we specialize in providing thoughtful solutions to help you create your store in the easiest and simplest way possible, providing you with a smooth and enjoyable customization experience.
 
 🏆 2 Million+ Customers
 🏆 Quickest Turn-around Support
 🏆 Most Lightweight Plugins
 
-**See a few reviews below;**
+==🔥  Explore More ==
+If you like the Variation Swatches for WooCommerce, then consider checking out our other WordPress Plugins: 
 
-> jackofallspades (@jackofallspades) ⭐⭐⭐⭐⭐
->I’m trying something about 10 plugins, and this one is the best. Best functionality, smooth animation and excellent support. Thank you!
+👉 [Checkout Field Editor (Checkout Manager) for WooCommerce:](https://wordpress.org/plugins/woo-checkout-field-editor-pro/)
+This Checkout Plugin from Themehigh lets you add 20 different types of custom checkout fields.
+ 👉[Extra Product Options For WooCommerce: ](https://www.themehigh.com/product/woocommerce-extra-product-options/)
+This Custom Product addons plugin lets you quickly add additional fields (19 custom field types) and sections to your WooCommerce Product page.
+👉 [Email Customizer for WooCommerce | Drag and Drop Email Templates Builder:](https://wordpress.org/plugins/email-customizer-for-woocommerce/)
+Email Customizer is a plugin that helps you effortlessly customise your WooCommerce transactional emails using its intuitive drag-and-drop builder.
+👉 [MultiStep Checkout for WooCommerce:](https://wordpress.org/plugins/woo-multistep-checkout/)
+The Multistep checkout plugin helps you split the regular WooCommerce checkout process into multiple steps and create a simpler and more organized checkout experience.
 
-> francescol (@francescol) ⭐⭐⭐⭐⭐
-> Great plugin! I needed a help with some issue but the support it was very excellent. 5 stars you really deserve.
+**Happy Users of Variation Swatches Plugin**
+> **Reza Manouchehri (@rezamnchr)**⭐⭐⭐⭐⭐
+> I found this plugin the most useful among other ones, [ReadMore](https://wordpress.org/support/topic/useful-plugin-for-variation-swatches/)
 
-> amrankalpaka (@amrankalpaka) ⭐⭐⭐⭐⭐
->They have excellent features for variation swatches. Great work!
+> **indagraf (@indagraf )**⭐⭐⭐⭐
+> Very good plugin but the support is even better.
+Good vibes and great professionalism in the support.
+Recommended 100%.
 
-For more info on ThemeHigh and Variation Swatches for WooCommerce plugin in specific, check out the following:
+> **myangelnz (@myangelnz)** ⭐⭐⭐⭐⭐
+> I use the product options extension and it is fantastic! Does all you need and possibly more. I love the control you have with the options. Any issues or customisations I needed were completed efficiently and well. Thank You Theme High!
 
-*   The [Variation Swatches for WooCommerce](https://www.themehigh.com/product/woocommerce-product-variation-swatches/?utm_source=wordpress&utm_medium=referral&utm_content=tracking) premium plugin homepage.
-*   The [Knowledgebase](https://help.themehigh.com/hc/en-us/categories/900000374206-Variation-Swatches-For-WooCommerce-).
-*   Other [WordPress Plugins](https://www.themehigh.com/plugins/?utm_source=wordpress&utm_medium=referral&utm_content=tracking) by the ThemeHigh team.
-*   Follow ThemeHigh on [Facebook](https://www.facebook.com/ThemeHigh-319611541768603/?utm_source=wordpress&utm_medium=referral&utm_content=tracking), [LinkedIn](https://www.linkedin.com/company/themehigh/?utm_source=wordpress&utm_medium=referral&utm_content=tracking), [Twitter](https://twitter.com/themehigh/?utm_source=wordpress&utm_medium=referral&utm_content=tracking) & [YouTube](https://www.youtube.com/channel/UC-_uMXaC_21j1Y2_nGjTyvg/?utm_source=wordpress&utm_medium=referral&utm_content=tracking).
+> **dragoso (@dragoso)** ⭐⭐⭐⭐⭐
+> Support is super speedy and the PRO plugin is totally awesome and works like a charm. Very happy with the purchase! Thank you guys!
+
+> **reza.sabourinejad (@rezasabourinejad)** ⭐⭐⭐⭐⭐
+> Very high quality plugin with excellent features. Many features of this plugin are available in other plugins as premium features. But here you have everything available for free. Thanks to the plugin development and support team
+
+== OTHER USEFUL LINKS==
+👉 [VIEW ALL FEATURES](https://www.themehigh.com/product/woocommerce-product-variation-swatches/?utm_source=wpvs_free&utm_medium=readme&utm_campaign=wpvs_upgrade_link) 
+👉 [GET DOCUMENTATION](https://www.themehigh.com/docs/category/variation-swatches-for-woocommerce/?utm_source=wpvs_free&utm_medium=readme&utm_campaign=wvs_pro_doc)
+👉 [GET THEMEHIGH SUPPORT](https://www.themehigh.com/docs/support/?utm_source=wpvs_free&utm_medium=readme&utm_campaign=wpvs_support)
+👉 [JOIN COMMUNITY](https://www.facebook.com/groups/themehigh/)
+👉 FOLLOW US ON [Facebook](https://www.facebook.com/ThemeHigh-319611541768603/), [LinkedIn](https://www.linkedin.com/company/themehigh/), [Twitter](https://twitter.com/themehigh/) & [YouTube](https://www.youtube.com/channel/UC-_uMXaC_21j1Y2_nGjTyvg/).
+[Reddit](https://www.reddit.com/r/themehigh)
 
 == Installation ==
 = Minimum Requirements =
@@ -230,64 +300,33 @@ For more info on ThemeHigh and Variation Swatches for WooCommerce plugin in spec
 Manual installation method requires downloading the 'Product variation swatches for WooCommerce' plugin and uploading it to your web server via your FTP application. The WordPress codex contains [instructions on how to do this here](https://wordpress.org/support/article/managing-plugins/#manual-plugin-installation).
 
 == Frequently Asked Questions ==
-=How to setup Swatches settings in Product Variation Swatches for WooCommerce?=
-<ol>
-<li>Navigate to Dashboard → Products → Swatches Options</li>
-<li>Under Swatches Options, navigate to Global Settings →Attribute Settings.</li>
-<li>Set properties for icon and label like shape, height & width.</li>
-<li>Save the changes to save the Swatches settings.</li>
-</ol>
+There’s a lot of help available on the main plugin website. See:
 
-=What is a tooltip for a swatch and how does this work in WooCommerce Variation Swatches?=
-The tooltip is used to set hover element for each term of an attribute/variation.
+🔗 [Plugin Features](https://www.themehigh.com/product/woocommerce-product-variation-swatches/?utm_source=wordpress&utm_medium=referral&utm_content=tracking) 
+🔗 [Help Docs](https://www.themehigh.com/docs/category/extra-product-option-for-woocommerce/?utm_source=wepo_free&utm_medium=readme&utm_campaign=help_docs)
+🔗 [ThemeHigh Support](https://www.themehigh.com/docs/?utm_source=wepo_free&utm_medium=readme&utm_campaign=get_support)
 
-To set tooltip for swatches,
-<ol>
-<li>Navigate to Swatches Options → Global Settings  → Tooltip Settings.</li>
-<li>Enable the checkbox Enable tooltip.</li>
-<li>Save the changes.</li>
-</ol>
+= How to set up Swatches settings in Product Variation Swatches for WooCommerce? =
+Navigate to **Dashboard → Products → Swatches Options → Product Attributes**.
+ Click the **Edit button** next to an attribute and select the desired Swatch Type (Color, Image, or Label). After making your selection, click **Save** Changes to apply the Swatches settings.
+= What is the difference between Global and local attributes? =
+*  **Global Attributes:** Once defined, these attributes will be available to add for all the products. They will be listed in the attributes section of the product, from where you can choose them from the dropdown.
+* **Local Attributes:** While global attributes are available to select for all products, local attributes are those that are custom-added to a particular product from the attributes section inside the product details.
 
-Note: Free version will let you have Term name in the tooltip, you can have Image, description as well in the tooltip when using the Premium version of WooCommerce Product Variation Swatches
+= What is a tooltip, and how does it work in WooCommerce Variation Swatches?=
+The tooltip is used to set the hover element for each term of an attribute/variation.
+To set the tooltip for swatches:
 
-=Where can I enter the term image/color/label in WooCommerce Variation Swatches?=
-<ol>
-<li>Navigate to Products → Attributes</li>
-<li>To add a New Attribute and then configure the term (image/color/label), follow steps 3-7. If you already have an attribute saved, you can skip the steps and directly go to step 6.</li>
-<li>Using Add New Attribute section add a new attribute. Fill in the desired attribute name.</li>
-<li>Choose the attribute type from the type drop down. You can choose between attribute type Color /Image /Label /Radio(available in Premium Version)</li>
-<li>Click on Add Attribute button to add the attribute.</li>
-<li>Once the attribute is added, you can now configure the Terms as per the attribute type selected for the attribute.</li>
-<li>Click on Configure Terms, you now add in the terms.
-  <ul>
-  	<li>Attribute type Label - You will be asked to enter the Label Display Term Name along with default term data.</li>
-  	<li>Attribute type Image - You will be asked to upload the term image along with default term data.</li>
-  	<li>Attribute type Color - You will be asked to pick the term colour along with default term data.</li>
-  </ul>
-</li>
-</ol>
+*  Navigate to Swatches Options → Swatches Designs→ Tooltip Styling
+* Enable the checkbox → Enable tooltip.
+* Save the changes.
 
-=Is there an option to set swatches for local attributes in WooCommerce Variation Swatches?=
-Yes, Under the edit products option you can set swatches for local attributes in Swatches Settings Tab.
+**👉Note:** In the free version, only the attribute term name is displayed as a tooltip. The premium version allows displaying images and descriptions in tooltips.
 
-=How to set up different styles for different swatches?=
-<ul>
-<li>Navigate to Dashboard → Products → Swatches Options</li>
-<li>Select Swatches Design tab</li>
-<li>Choose any of the designs and you can customize the attribute styling, hover and border styling, tooltip styling, and swatch type specific styling.</li>
-Note: The plugin's free version only provides 4 swatches designs, whereas the Premium version lets you add as many as you like.
-<li>Once you've done styling Swatches Design, go to Product Attributes</li> 
-<li>Select any attribute, and from the 'Design Type' dropdown menu, select the design you styled.</li>
-</ul>
+=  How to set a variation as default when the page loads? =
+You can achieve this by providing the default variation in the “**Default Form Values**” field inside the **Products>>Edit product>> Variations**.
 
-=How to set up different selection styles/ checkmark styles for swatches?=
-<ul>
-<li>Select a design from the Swatches Design tab.</li>
-<li>Click on the 'Hover and Border Styling' option, and then under Selection Style choose a swatch selection style you prefer.</li>
-<li>Set the size and color of the tick if the chosen style is 'Checkmark with border'</li>
-</ul>
-
-=What else to do if swatches do not work on particular pages/pages created with the builder?=
+=How to display swatches on the custom pages?=
 Please add the below filter  in your child theme's functions.php
 
 	add_filter(‘thwvsf_enqueue_public_scripts', ‘enqueue_public_script’);
@@ -297,12 +336,27 @@ Please add the below filter  in your child theme's functions.php
 		}
 	}
 
+=How to set up different styles for different swatches?=
+The plugin provides a feature: Class for modifying the styling properties of the fields.
 
-=Can I set an image as a tooltip?=
-With the free version of WooCommerce Variation Swatches, you only have the option to set term name as a tooltip. If you need Images as the tooltip, you have to Upgrade to Premium Version of WooCommerce Product Variation Swatches.
+* Navigate to Dashboard → Products → Swatches Options
+* Select the Swatches Design tab
+* Choose any of the designs, and you can customize the attribute styling, hover and border styling, tooltip styling, and swatch-type-specific styling.
+* **Note**: The plugin’s free version only provides 4 swatches designs, whereas the Premium version lets you add as many as you like. Once you’ve done styling Swatches Design, go to Product Attributes
+* Select any attribute, and from the ‘Design Type’ dropdown menu, select the design you styled.
 
-=Is there an option to display the number of products left in the stock?=
-Upgrade to Premium version to display the number of products left in the stock. Stock left alert (min count) can also be set as per your preference when using WooCommerce Variation Swatches.
+= How to set up different selection styles/ checkmark styles for swatches?=
+* Select a design from the **Swatches Design tab**.
+* Click on the **Hover and Border Styling** option, and then under **Selection Style**, choose a **swatch selection style** you prefer.
+* You can set the size and color of the tick if the chosen style is **Checkmark with border**
+
+= Can I set an image as a tooltip? =
+With the free version of **WooCommerce Variation Swatches**, you only have the option to set the **term name as a tooltip**. If you need Images as the tooltip, you have to Upgrade to Premium Version of WooCommerce Product Variation Swatches.
+
+= Is there an option to display the number of products left in the stock? =
+Upgrade to the Premium version to display the number of products left in stock. Stock left alert (min count) can also be set as per your preference when using WooCommerce Variation Swatches.
+
+
 
 == Screenshots ==
 1. Color swatch preview 
@@ -324,119 +378,17 @@ Upgrade to Premium version to display the number of products left in the stock. 
 
 == Changelog ==
 
-= 2.3.0 =
-* Added Compatibility with Woodmart, Porto, Kadence, Motor, and Enfold themes. 
-* Added Compatibility with Pi-direct checkout plugin. 
-* Added WooCommerce 6.9 compatibility.
+= 2.4.5 =
+* Added WooCommerce 11.0 compatibility.
+* Added WordPress 7.1 compatibility.
 
-= 2.2.0 =
-* Added compatibility with [WooCommerce Product Bundles](https://woocommerce.com/products/product-bundles/) plugin.
-* Added compatibility with [WooCommerce Composite Products](https://woocommerce.com/products/composite-products/) plugin.
-* Added WooCommerce 6.8 compatibility.
+= 2.4.4 =
+* Added WooCommerce 10.8 compatibility.
+* Added WordPress 7.0 compatibility.
 
-= 2.1.0 =
-* Added a new feature to allow users to import and export variation swatches along with WooCommerce default product import-export.
-* Added WooCommerce 6.6 compatibility.
+= 2.4.3 =
+* Improved overall security and stability.
+* Added WooCommerce 10.6 compatibility.
+* Added WordPress 6.9 compatibility.
 
-= 2.0.9 =
-* Added WooCommerce 6.5.1 compatibility.
-* Added WordPress 6.0 compatibility.
-
-= 2.0.8 =
-* Added WooCommerce 6.3.1 compatibility.
-* Added filter for variation separator.
-* Added REST API support.
-
-= 2.0.7 =
-* Added swatches on the additional info tab for simple products.
-* Added WooCommerce 6.1.0 compatibility.
-* Added lazy loading for image swatch type.
-* Added swatches as a dropdown feature.
-
-= 2.0.6 =
-* Added an option for displaying the swatches in the Additional information tab.
-
-= 2.0.5 =
-* Added  WPC Smart Quick View for woocommerce by WPClever  compatibility.
-
-= 2.0.4 =
-* Fixed the issue of out-of-stock behavior of default selected variations.
-* Fixed the issue of selected attribute labels not shown for default selected variations. 
-* Added WooCommerce 5.9.0 compatibility.
-* Added new selection styles for color, image and label swatches.
-
-= 2.0.3 =
-* Fixed the Flatsome quick view issue.
-* Added Radio button as a new variation swatch type.
-* Added WooCommerce 5.6.0 compatibility.
-* Added WordPress 5.8 compatibility.
-
-= 2.0.2 =
-* Added product attributes tab in the Swatches Options settings.
-* Added terms settings option in the product attributes tab.
-* Added an option to show the selected variation name beside the attribute label.
-* Added WooCommerce version - 5.4.1 compatibility.
-
-
-= 2.0.1 =
-* Fixed issue in the Custom Attribute Settings
-
-= 2.0.0 =
-* Settings screen UI improved.
-* Added Swatches Designs feature to create multiple sets of swatch designs and assign the same to individual attributes.
-* WooCommmerce 5.2.2 compatibility added.
-
-= 1.2.0 =
-* Fixed issue of custom attribute tab expanding for multiple word attribute.
-* Fixed the Attribute link used in the local attribute area.
-* Fixed issue default variation selection while loading the page for local attributes.
-* Removed multiple id used in the plugin.
-* Added OceanWP quick view compatibility.
-* Improved the last active tab opened in the admin settings.
-* WordPress 5.6 style issue corrected for buttons.
-* WooCommerce 4.8.0 compatibility added.
-
-= 1.1.1 =
-* Added missing alt attribute to all image tag used in the plugin.
-* WooCommmerce 4.7.0 compatibility added.
-
-= 1.1.0 =
-* Settings screen UI improved.
-* New option to easily convert all the default swatches to label swatches.
-* New label specific settings.
-* New options to style active and hover behaviour for a variation
-* New options to set out of stock behaviour.
-* Added Ajax threshold settings.
-* Added clear on reselect settings.
-* Added option for disabling the plugin style sheet.
-* Added option for adding swatches type the local attributes in the single product page.
-* WooCommmerce 4.5.2 compatibility added.
-
-= 1.0.7 =
-* WooCommmerce 4.3.0 compatibility added.
-
-= 1.0.6 =
-* WooCommmerce 4.0.1 compatibility added.
-
-= 1.0.5 =
-* WooCommmerce 3.9.1 compatibility added.
-
-= 1.0.4 =
-* Added compatibility with WordPress 5.3.0 and WooCommmerce 3.8.0.
-* Added compatibility with OceanWP theme.
-* Added compatibility with Hestia theme.
-* Added Blur style for unavailable variation.
-* Added Compatibility with bundled product plugin By WPclever.net.
-* Fixed issue with Flatsome quick view.
-
-= 1.0.3 =
-* WooCommerce compatible version updated.
-
-= 1.0.2 =
-* WooCommerce version 3.6.1 compatibility added.
-
-= 1.0.1 =
-* Swatch styles improved.
-
-= 1.0.0 =
-* Initial Release
+[See full changelog](https://plugins.svn.wordpress.org/product-variation-swatches-for-woocommerce/trunk/changelog.txt)

@@ -2,7 +2,7 @@
   top: 50px;
   right: 20px;
   margin-left: 20px;
-  max-width: 300px;
+  max-width: 450px;
   background: var(--primary);
   color: var(--primary-invert);
   display: flex;
@@ -29,6 +29,10 @@
 
 .custom-notification--error {
   background: var(--custom-notification--error-color);
+}
+
+.custom-notification--warning {
+  background: var(--custom-notification--warning-color);
 }
 
 .custom-notification--close {

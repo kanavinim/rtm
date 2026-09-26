@@ -43,7 +43,55 @@ if (!class_exists('AWS_WPML')) :
          */
         public function __construct() {
 
+            add_action( 'wp_after_insert_post', array( $this, 'wp_after_insert_post' ), 10, 4 );
+
+            add_action( 'wpml_pro_translation_completed', array( $this, 'translation_created' ), 9999, 1 );
+            add_action( 'wpml_translation_job_saved', array( $this, 'translation_created' ), 9999, 1 );
+            add_action( 'icl_make_duplicate', array( $this, 'icl_make_duplicate' ), 9999, 4 );
+
             add_filter( 'aws_indexed_data', array( $this, 'indexed_data_trans_fallback' ), 1, 2 );
+
+            add_filter( 'aws_indexed_data', array( $this, 'fix_visibility_for_quick_edit' ), 1, 2 );
+
+            add_action( 'aws_index_before_scrapping', array( $this, 'aws_index_before_scrapping' ), 1, 4 );
+            add_action( 'aws_index_after_scrapping', array( $this, 'aws_index_after_scrapping' ), 1, 4 );
+
+        }
+
+        /*
+         * Index duplicated product
+         */
+        public function wp_after_insert_post( $post_id, $post, $update, $post_before ) {
+
+            if ( $post_id && $post->post_type === 'product' && $post->post_status === 'publish' && ! $update && isset( $_REQUEST['action'] ) && $_REQUEST['action'] === 'make_duplicates' ) {
+
+                do_action( 'aws_reindex_product', $post_id );
+
+            }
+
+        }
+
+        /*
+         * Index new product translation
+         * Translations created with WPML translation editor are inserted with wp_insert_post()
+         * and not with WC product object save, so no other index update hooks are fired for them
+         */
+        public function translation_created( $post_id ) {
+
+            if ( $post_id && get_post_type( $post_id ) === 'product' ) {
+
+                do_action( 'aws_force_reindex_product', $post_id );
+
+            }
+
+        }
+
+        /*
+         * Index new duplicated product translation
+         */
+        public function icl_make_duplicate( $master_post_id, $lang, $post_array, $post_id ) {
+
+            $this->translation_created( $post_id );
 
         }
 
@@ -105,6 +153,46 @@ if (!class_exists('AWS_WPML')) :
             }
 
             return $data;
+
+        }
+
+        /*
+         * Fix visibility change bug when using quick edit
+         */
+        public function fix_visibility_for_quick_edit( $data, $id ) {
+
+            if ( is_ajax() && isset( $_REQUEST['action'] ) && $_REQUEST['action'] === 'inline-save' && isset( $_REQUEST['_visibility'] ) && $_REQUEST['_visibility'] ) {
+                $data['visibility'] = esc_attr( $_REQUEST['_visibility'] );
+            }
+
+            return $data;
+
+        }
+
+        /*
+         * Switch language during index if needed
+         */
+        public function aws_index_before_scrapping( $product, $id, $lang, $options ) {
+
+            global $sitepress;
+
+            if ( $sitepress ) {
+                $current_lang = $sitepress->get_current_language();
+                if ( $current_lang !== $lang ) {
+                    $this->data['current_lang'] = $current_lang;
+                    $sitepress->switch_lang( $lang );
+                }
+            }
+
+        }
+
+        public function aws_index_after_scrapping( $product, $id, $lang, $options ) {
+
+            global $sitepress;
+
+            if ( $sitepress && isset( $this->data['current_lang'] ) ) {
+                $sitepress->switch_lang( $this->data['current_lang'] );
+            }
 
         }
 

@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * UR_Setting_Country Class
+ * UR_Setting_Country Class.
  *
  * @package  UserRegistration/Form/Settings
  */
@@ -53,10 +53,10 @@ class UR_Setting_Country extends UR_Field_Settings {
 				'required'    => false,
 				'default'     => '',
 				'placeholder' => __( 'Custom Class', 'user-registration' ),
-				'tip'         => __( 'Class name to embed in this field.', 'user-registration' ),
+				'tip'         => __( 'Add a CSS class for custom styling.', 'user-registration' ),
 			),
 			'selected_countries' => array(
-				'label'    => __( 'Selected Countries', 'user-registration' ),
+				'label'    => __( 'Choose Available Countries', 'user-registration' ),
 				'data-id'  => $this->field_id . '_selected_countries',
 				'name'     => $this->field_id . '[selected_countries][]',
 				'class'    => $this->default_class . ' ur-settings-selected-countries',
@@ -65,7 +65,18 @@ class UR_Setting_Country extends UR_Field_Settings {
 				'multiple' => true,
 				'required' => true,
 				'options'  => UR_Form_Field_Country::get_instance()->get_country(),
-				'tip'      => __( 'Select countries to give as options.', 'user-registration' ),
+				'tip'      => __( 'Select the countries that will be available as options in the dropdown.', 'user-registration' ),
+			),
+				'enable_state' => array(
+				'label'       => __( 'Enable State', 'user-registration' ),
+				'data-id'     => $this->field_id . '_enable_state',
+				'name'        => $this->field_id . '[enable_state]',
+				'class'       => $this->default_class . ' ur-settings-enable-state',
+				'type'        => 'toggle',
+				'required'    => false,
+				'default'     => 'no',
+				'placeholder' => '',
+				'tip'         => __( 'Enable State.', 'user-registration' ),
 			),
 			'default_value'      => array(
 				'label'    => __( 'Default Value', 'user-registration' ),
@@ -74,12 +85,20 @@ class UR_Setting_Country extends UR_Field_Settings {
 				'class'    => $this->default_class . ' ur-settings-default-value',
 				'type'     => 'select',
 				'required' => false,
-				'default'  => 'AF',
+				'default'  => '',
 				'options'  => $this->get_default_value_options(),
 				'tip'      => __( 'Default value for this field.', 'user-registration' ),
 			),
 		);
 
+		/**
+		 * Filter to modify the country custom advance settings.
+		 *
+		 * @param string $fields Custom country fields.
+		 * @param int field_id Custom field id.
+		 * @param class default_class Default class for fields.
+		 * @return string $fields.
+		 */
 		$fields = apply_filters( 'country_custom_advance_settings', $fields, $this->field_id, $this->default_class );
 		$this->render_html( $fields );
 	}
@@ -98,7 +117,9 @@ class UR_Setting_Country extends UR_Field_Settings {
 				UR_Form_Field_Country::get_instance()->get_country(),
 				array_flip( $selected_countries )
 			);
+			$value = array_merge( array( '' => apply_filters( 'user_registration_default_country_option', esc_html__( 'None', 'user-registration' ) ) ), $value );
 		}
+		$value = array_merge( array( '' => apply_filters( 'user_registration_default_country_option', esc_html__( 'None', 'user-registration' ) ) ), $value );
 
 		return $value;
 	}

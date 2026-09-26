@@ -1,68 +1,68 @@
 jQuery(document).ready(function($) {
+	/**
+	 * Notices in checkout
+	 */
 	$( document.body ).on( 'updated_checkout', function() {
-		// Clear existing notices
-		$( '.conditional-shipping-notice' ).remove();
+		let noticesEl = $( '#wcs-notices-pending' );
 
-		if ( typeof conditionalShippingNotices !== 'undefined' ) {
-			var shippingRow = $( 'tr.woocommerce-shipping-totals td:eq(0)' );
+		if ( noticesEl.length > 0 ) {
+			// Clear existing notices
+			$( '#wcs-notices' ).remove();
 
-			if ( shippingRow.length > 0 ) {
-				// Add notices
-				$.each( conditionalShippingNotices, function( index, notice ) {
-					shippingRow.append( notice );
-				} );
+			let shippingMethods = $( '.woocommerce-shipping-totals ul.woocommerce-shipping-methods' );
+			
+			if ( shippingMethods.length > 0 ) {
+				shippingMethods.after( noticesEl );
+				noticesEl.css( 'display', 'block' ).attr( 'id', 'wcs-notices' );
 			}
 		}
 	} );
 
+	/**
+	 * Notices in cart
+	 */
+	 $( document.body ).on( 'wcs_updated_cart', function() {
+		let noticesEl = $( '#wcs-notices-pending' );
 
-	var wcsDebug = {
-		init: function() {
-			this.toggleDebug();
-			this.setInitial();
+		if ( noticesEl.length > 0 ) {
+			// Clear existing notices
+			$( '#wcs-notices' ).remove();
 
-			var self = this;
-			$( document.body ).on( 'updated_checkout', function( data ) {
-				self.setInitial();
-			} );
-		},
+			let shippingMethods = $( '.woocommerce-shipping-totals ul.woocommerce-shipping-methods' );
+			
+			if ( shippingMethods.length > 0 ) {
+				shippingMethods.after( noticesEl );
+				noticesEl.css( 'display', 'block' ).attr( 'id', 'wcs-notices' );
+			}
+		}
+	} );
+	$( document.body ).trigger( 'wcs_updated_cart' );
+	$( document.body ).on( 'updated_cart_totals', function() {
+		$( document.body ).trigger( 'wcs_updated_cart' );
+	} );
 
-		/**
-		 * Toggle debug on click
-		 */
-		toggleDebug: function() {
-			var self = this;
-
-			$( document.body ).on( 'click', '#wcs-debug-header', function( e ) {
-				if ( $( '#wcs-debug-contents' ).is( ':visible' ) ) {
-					$( '#wcs-debug' ).toggleClass( 'closed', true );
-				} else {
-					$( '#wcs-debug' ).toggleClass( 'closed', false );
-				}
-
-				$( '#wcs-debug-contents' ).slideToggle( 200, function() {
-					self.saveStatus();
+	/**
+	 * Trigger checkout update if some field that is used
+	 * for conditions is updated. Some fields such as email
+	 * don't trigger checkout update by default
+	 */
+	function wcsTriggerCheckoutUpdate() {
+		if ( typeof conditional_shipping_settings != 'undefined' ) {
+			$.each( conditional_shipping_settings.trigger_fields, function( index, value ) {
+				$( document.body ).on( 'change', 'input[name="' + value + '"]', function() {
+					$( document.body ).trigger( 'update_checkout' );
 				} );
+
+				if ( value.indexOf('shipping_') !== -1 ) {
+					var billingValue = value.replace( 'shipping', 'billing' );
+					if ( $.inArray( billingValue, conditional_shipping_settings.trigger_fields ) === -1 ) {
+						$( document.body ).on( 'change', 'input[name="' + billingValue + '"]', function() {
+							$( document.body ).trigger( 'update_checkout' );
+						} );
+					}
+				}
 			} );
-		},
-
-		/**
-		 * Save debug open / closed status to cookies
-		 */
-		saveStatus: function() {
-			Cookies.set( 'wcs_debug_status', $( '#wcs-debug-contents' ).is( ':visible' ) );
-		},
-
-		/**
-		 * Set initial stage for debug
-		 */
-		setInitial: function() {
-			var status = Cookies.get( 'wcs_debug_status' );
-
-			$( '#wcs-debug-contents' ).toggle( status === 'true' );
-			$( '#wcs-debug' ).toggleClass( 'closed', $( '#wcs-debug-contents' ).is( ':hidden' ) );
 		}
 	}
-
-	wcsDebug.init();
+	wcsTriggerCheckoutUpdate();
 });

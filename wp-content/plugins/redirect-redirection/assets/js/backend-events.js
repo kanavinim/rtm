@@ -228,7 +228,6 @@ jQuery(document).ready(function ($) {
 
         /* set a fixed width for the dropdown */
         const textElement = $(".custom-dropdown-toggle__text", dropdown);
-        textElement.width((textElement.width()) + "px");
 
         if (isMultiple) {
             const selectedItemIds = JSON.parse(selectedItemId);
@@ -380,7 +379,7 @@ jQuery(document).ready(function ($) {
 
         /* set a fixed width for the dropdown */
         const textElement = $(".custom-dropdown-toggle__text", dropdown);
-        textElement.width((textElement.width()) + "px");
+        if (dropdown.attr("data-multiple") === "true") textElement.width((textElement.width()) + "px");
 
         /* remove previously selected item */
         const previouslySelectedItem = $(".custom-dropdown__li--selected", dropdown);
@@ -461,7 +460,7 @@ jQuery(document).ready(function ($) {
 
     const specialHeaderDropdownOptions = {
         "contain": ["new-permalink-structure", "regex-match", "random-similar-post"],
-        "start-with": ["urls-with-new-string", "urls-with-removed-string", "new-permalink-structure", "regex-match", "random-similar-post"],
+        "start-with": ["urls-with-removed-string", "new-permalink-structure", "regex-match", "random-similar-post"],
         "end-with": ["new-permalink-structure", "regex-match", "random-similar-post"],
         "have-permalink-structure": ["a-specific-url", "urls-with-new-string", "urls-with-removed-string", "regex-match", "random-similar-post"],
         "regex-match": ["urls-with-new-string", "urls-with-removed-string", "new-permalink-structure", "random-similar-post"],
@@ -852,15 +851,6 @@ jQuery(document).ready(function ($) {
         }
     });
 
-    $(document).on("change", ".ir-custom-dropdown-value.ir-criteria", function (e) {
-        const regexHelpCriteria = document.querySelector('.ir-criterias .regex-help');
-
-        if (regexHelpCriteria.classList.contains('show') && this.value !== 'regex-match' && this.value != '') {
-            regexHelpCriteria.classList.remove('show');
-        } else if (!regexHelpCriteria.classList.contains('show') && this.value === 'regex-match') {
-            regexHelpCriteria.classList.add('show');
-        }
-    });
 
     // Default options listener
     (function () {
@@ -902,19 +892,59 @@ jQuery(document).ready(function ($) {
     })();
 
     function initializeTooltips() {
-        $('.ir-instant-edit-from, .ir-instant-edit-to').tooltipster({
-            theme: 'tooltipster-sidetip',
-            animation: 'fade',
-            delay: 200,
-            trigger: 'hover',
-            interactive: true, 
-            functionFormat: function(instance, helper, content) {
-                return $(helper.origin).val();
-            }
-        });
+        const $tooltipElements = $('.ir-instant-edit-from, .ir-instant-edit-to');
+        if ($tooltipElements.length && typeof $tooltipElements.tooltipster === 'function') {
+            $tooltipElements.tooltipster({
+                theme: 'tooltipster-sidetip',
+                animation: 'fade',
+                delay: 200,
+                trigger: 'hover',
+                interactive: true, 
+                functionFormat: function(instance, helper, content) {
+                    return $(helper.origin).val();
+                }
+            });
+        }
     }
 
+    function initializeCustomSwitches() {
+        $('.custom-switch').each(function() {
+            const switchElement = $(this);
+            const width = switchElement.find('.custom-switch-slider span.off').is(':visible') ? switchElement.find('.custom-switch-slider span.off').outerWidth() : measureHiddenWidth(switchElement.find('.custom-switch-slider span.off'), switchElement);
+            switchElement.css('min-width', width + 40 + 'px');
+        });
+    }
+    function measureHiddenWidth($el,parent) {
+        if (!$el.length) return 0;
+
+        // Clone the element
+        const $clone = $el.clone()
+            .css({
+            visibility: 'hidden',
+            position: 'absolute',
+            display: 'inline-block',
+            left: '-9999px',
+            top: '-9999px'
+            })
+            .appendTo(parent);
+
+
+        const width = $clone.outerWidth();
+        $clone.remove();
+
+        return width;
+    }
+
+
+    window.initializeCustomSwitches = initializeCustomSwitches;
+
+    
+    window.addEventListener('resize', function () {
+        initializeCustomSwitches();
+    });
+
     initializeTooltips();
+    initializeCustomSwitches();
 
     $(document).ajaxComplete(function() {
         initializeTooltips();

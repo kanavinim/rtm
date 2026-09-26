@@ -9,10 +9,6 @@
 
 .rsssl-learning-mode-delete {
   cursor: pointer;
-  background: none;
-  border: none;
-  font-size: 1.5em;
-  font-weight: 700;
 }
 .rsssl-locked-overlay {
   .rsssl-open {
@@ -28,6 +24,11 @@
     }
     &.rsssl-learning-mode {
       background-color: var(--rsp-color-open);
+
+    }
+    &.rsssl-learning-mode-error {
+      background-color: var(--rsp-color-error);
+      color:#fff;
 
     }
     &.rsssl-disabled, &.rsssl-learning-mode-disabled {

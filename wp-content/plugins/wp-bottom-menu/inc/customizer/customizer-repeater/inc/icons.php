@@ -1,3 +1,4 @@
+<?php defined( 'ABSPATH' ) || exit; ?>
 <div class="iconpicker-popover popover bottomLeft">
     <div class="arrow"></div>
     <div class="popover-title">

@@ -16,6 +16,9 @@ if(!class_exists('THWVSF_Admin')):
      private $plugin_name;
      private $version;
      private $taxonomy;
+     protected $screen_id;
+     protected $attr_taxonomies;
+     protected $product_attr_type;
     /**
      * Initialize the class and set its properties.
      *
@@ -80,11 +83,13 @@ if(!class_exists('THWVSF_Admin')):
     
     public function add_screen_id($ids){
         $ids[] = 'woocommerce_page_th_product_variation_swatches_for_woocommerce';
+        // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch
         $ids[] = strtolower( __('WooCommerce', 'woocommerce') ) .'_page_th_product_variation_swatches_for_woocommerce';
         return $ids;
     }
 
     public function plugin_action_links($links) {
+        // phpcs:ignore WordPress.WP.I18n.MissingArgDomain
         $premium_link = '<a href="https://www.themehigh.com/product/woocommerce-product-variation-swatches">'. __('Premium plugin') .'</a>';
         $settings_link = '<a href="'.admin_url('edit.php?post_type=product&page=th_product_variation_swatches_for_woocommerce').'">'. __('Settings','product-variation-swatches-for-woocommerce') .'</a>';
         array_unshift($links, $premium_link);
@@ -166,13 +171,15 @@ if(!class_exists('THWVSF_Admin')):
         add_action( 'admin_notices' ,array($this,'output_review_request_link'));
         add_action( 'admin_footer', array( $this, 'review_banner_custom_js') );
 
-        add_action( 'admin_head', array( $this,  'sib_form_banner_custom_css') );
-        add_action( 'admin_notices' ,array($this,'output_sib_form_popup'));
-        add_action( 'admin_footer', array( $this,'sib_form_banner_custom_js') );
+        //add_action( 'admin_head', array( $this,  'sib_form_banner_custom_css') );
+        //add_action( 'admin_notices' ,array($this,'output_sib_form_popup'));
+        //add_action( 'admin_footer', array( $this,'sib_form_banner_custom_js') );
+        add_action('admin_footer', array($this,'quick_links'));
+        add_action('admin_footer', array($this,'diplay_discount_popup'));
 
         add_action( 'wp_ajax_dismiss_thwvsf_review_request_notice', array($this, 'dismiss_thwvsf_review_request_notice'));
-        add_action( 'wp_ajax_dismiss_thwvsf_sib_form', array($this, 'dismiss_thwvsf_sib_form'));
-        add_action( 'wp_ajax_subscribed_thwvsf_sib_form', array($this, 'subscribed_thwvsf_sib_form'));
+        //add_action( 'wp_ajax_dismiss_thwvsf_sib_form', array($this, 'dismiss_thwvsf_sib_form'));
+        //add_action( 'wp_ajax_subscribed_thwvsf_sib_form', array($this, 'subscribed_thwvsf_sib_form'));
        
         add_filter( 'product_attributes_type_selector', array( $this,'add_attribute_types' ) );
         //Create select field in attribute to choose design
@@ -207,6 +214,17 @@ if(!class_exists('THWVSF_Admin')):
         add_action('wp_ajax_thwvs_deactivation_reason', array($this, 'thwvs_deactivation_reason'));
 
         //add_action( 'admin_footer' ,array($this,'output_sendinblue_form'));
+        add_action( 'woocommerce_before_add_attribute_fields', array($this,'add_swatches_options_link'),10);
+        add_action( 'woocommerce_before_edit_attribute_fields', array($this,'add_swatches_options_link' ),10);
+    }
+
+    public function add_swatches_options_link(){
+        $url = admin_url('admin.php?page=th_woocommerce_product_variation_swatches');
+        ?>
+        <div class='th-swatch-option-link'>
+            <a href="<?php echo esc_url(admin_url('edit.php?post_type=product&page=th_product_variation_swatches_for_woocommerce'))?>" > <?php esc_html_e('Manage Swatches', 'product-variation-swatches-for-woocommerce') ?></a>
+        </div>
+        <?php
     }
 
     public function add_attribute_types( $types ) {
@@ -464,6 +482,7 @@ if(!class_exists('THWVSF_Admin')):
             unset( $columns['cb'] );
         }
 
+        // phpcs:ignore WordPress.WP.I18n.NoEmptyStrings,WordPress.WP.I18n.TextDomainMismatch
         $new_columns['thumb'] = __( '', 'woocommerce' );
 
         $columns = array_merge( $new_columns, $columns );
@@ -494,12 +513,12 @@ if(!class_exists('THWVSF_Admin')):
         }
     }
 
-    public function get_attribute_by_taxonomy($taxonomy){
+    // public function get_attribute_by_taxonomy($taxonomy){
 
-        global $wpdb;
-        $attr = substr( $taxonomy, 3 );
-        $attr = $wpdb->get_row( "SELECT * FROM " . $wpdb->prefix . "woocommerce_attribute_taxonomies WHERE attribute_name = '$attr'" );
-    }
+    //     global $wpdb;
+    //     $attr = substr( $taxonomy, 3 );
+    //     $attr = $wpdb->get_row( "SELECT * FROM " . $wpdb->prefix . "woocommerce_attribute_taxonomies WHERE attribute_name = '$attr'" );
+    // }
 
     public function thwvsf_product_option_terms($attribute_taxonomy, $i ) {
 
@@ -513,13 +532,16 @@ if(!class_exists('THWVSF_Admin')):
             }
 
             ?>
-            <select multiple="multiple" data-placeholder="<?php esc_attr_e( 'Select terms', 'woocommerce' ); ?>" class="multiselect attribute_values wc-enhanced-select" name="attribute_values[<?php echo esc_attr( $i ); ?>][]">
+            <select multiple="multiple" data-placeholder="<?php
+            // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- WooCommerce core string.
+            esc_attr_e( 'Select terms', 'woocommerce' ); ?>" class="multiselect attribute_values wc-enhanced-select" name="attribute_values[<?php echo esc_attr( $i ); ?>][]">
             <?php
                 $args      = array(
                     'orderby'    => 'name',
                     'hide_empty' => 0,
                 );
             
+                // phpcs:ignore WordPress.WP.DeprecatedParameters.Get_termsParam2Found
                 $all_terms = get_terms( $taxonomy, apply_filters( 'woocommerce_product_attribute_terms', $args ) );
                     if ( $all_terms ) :
                         $options = array();
@@ -530,27 +552,33 @@ if(!class_exists('THWVSF_Admin')):
                         foreach ( $all_terms as $term ) :
                         
                             $options = ! empty( $options ) ? $options : array();
-
+                            // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
                             echo '<option value="' . esc_attr( $term->term_id ) . '" ' . wc_selected( has_term( absint( $term->term_id ), $taxonomy, $product_id ), true, false ) . '>' . esc_attr( apply_filters( 'woocommerce_product_attribute_term_name', $term->name, $term ) ) . '</option>';
                         endforeach;
                     endif;
                 ?>
             </select>
            
-            <button class="button plus select_all_attributes"><?php esc_html_e( 'Select all', 'woocommerce' ); ?></button>
-            <button class="button minus select_no_attributes"><?php esc_html_e( 'Select none', 'woocommerce' ); ?></button>
+            <button class="button plus select_all_attributes"><?php
+            // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- WooCommerce core string.
+            esc_html_e( 'Select all', 'woocommerce' ); ?></button>
+            <button class="button minus select_no_attributes"><?php
+            // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- WooCommerce core string.
+            esc_html_e( 'Select none', 'woocommerce' ); ?></button>
             
             <?php
              $taxonomy = wc_attribute_taxonomy_name( $attribute_taxonomy->attribute_name );
              $attr_type = $attribute_taxonomy->attribute_type;
 
             if ( (  $attribute_taxonomy->attribute_type == 'label' || $attribute_taxonomy->attribute_type == 'image' || $attribute_taxonomy->attribute_type == 'color')){ ?>
-                <button class="button fr plus thwvsf_add_new_attribute"  data-attr_taxonomy="<?php echo esc_attr($taxonomy); ?>"  data-attr_type="<?php echo esc_attr($attr_type )?>"  data-dialog_title="<?php printf( esc_html__( 'Add new %s', '' ), esc_attr($attribute_taxonomy->attribute_label ) ) ?>">  <?php esc_html_e( 'Add new', '' ); ?>  </button> 
+                <button class="button fr plus thwvsf_add_new_attribute"  data-attr_taxonomy="<?php echo esc_attr($taxonomy); ?>"  data-attr_type="<?php echo esc_attr($attr_type )?>"  data-dialog_title="<?php
+                // phpcs:ignore WordPress.WP.I18n.MissingTranslatorsComment
+                printf( esc_html__( 'Add new %s', 'product-variation-swatches-for-woocommerce' ), esc_attr($attribute_taxonomy->attribute_label ) ) ?>">  <?php esc_html_e( 'Add new', 'product-variation-swatches-for-woocommerce' ); ?>  </button> 
 
              <?php  
 
             }else{?>
-                <button class="button fr plus add_new_attribute"><?php esc_html_e( 'Add new', 'woocommerce' ); ?></button> <?php
+                <button class="button fr plus add_new_attribute"><?php esc_html_e( 'Add new', 'product-variation-swatches-for-woocommerce' ); ?></button> <?php
             }
         }
     }
@@ -605,8 +633,10 @@ if(!class_exists('THWVSF_Admin')):
                     <div data-taxonomy="<?php echo esc_attr( $attribute->get_taxonomy() ); ?>" class="woocommerce_attribute wc-metabox closed" rel="<?php echo esc_attr( $attribute->get_position() ); ?>">
                
                         <h3>
-                            <div class="handlediv" title="<?php esc_attr_e( 'Click to toggle', 'woocommerce' ); ?>"></div>
-                            <strong class="attribute_name"><?php echo wc_attribute_label($attribute_name); ?></strong>
+                            <div class="handlediv" title="<?php
+                            // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- WooCommerce core string.
+                            esc_attr_e( 'Click to toggle', 'woocommerce' ); ?>"></div>
+                            <strong class="attribute_name"><?php /** phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped */ echo wc_attribute_label($attribute_name); ?></strong>
                         </h3>
                         <div class="thwvsf_custom_attribute wc-metabox-content  <?php echo 'thwvs-'.esc_attr($attribute_name); ?> hidden">
                             <table cellpadding="0" cellspacing="0">
@@ -627,7 +657,7 @@ if(!class_exists('THWVSF_Admin')):
                                                     foreach ($type_options as $key => $value) { 
                                                         $default = (isset($type) &&  $type == $key) ? 'selected' : '';
                                                         ?>
-                                                        <option value="<?php echo esc_attr($key); ?>" <?php echo $default ?> > <?php echo esc_html($value); ?> </option>
+                                                        <option value="<?php echo esc_attr($key); ?>" <?php echo esc_attr($default); ?> > <?php echo esc_html($value); ?> </option>
                                                     <?php
                                                     }?>
                                                 </select>
@@ -652,7 +682,7 @@ if(!class_exists('THWVSF_Admin')):
 
                                                         $default = (isset($design_type) &&  $design_type == $key) ? 'selected' : '';
                                                         ?>
-                                                        <option value="<?php echo esc_attr($key); ?>" <?php echo $default ?> > <?php echo esc_html($value); ?> </option>
+                                                        <option value="<?php echo esc_attr($key); ?>" <?php echo esc_attr($default); ?> > <?php echo esc_html($value); ?> </option>
                                                     <?php
                                                     }?>
                                                 </select>
@@ -684,8 +714,8 @@ if(!class_exists('THWVSF_Admin')):
                     ?>
                     <div class="inline notice woocommerce-message">
 
-                        <p><?php esc_html_e('No custom attributes added yet.','woocommerce-product-variation-swatches');
-                       esc_html_e(' You can add custom attributes from the', 'woocommerce-product-variation-swatches'); ?> <a onclick="thwvsfTriggerAttributeTab(this)" href="#woocommerce-product-data"><?php  esc_html_e(' Attributes','woocommerce-product-variation-swatches'); ?> </a> <?php esc_html_e('tab','woocommerce-product-variation-swatches'); ?></p>
+                        <p><?php esc_html_e('No custom attributes added yet.','product-variation-swatches-for-woocommerce');
+                       esc_html_e(' You can add custom attributes from the', 'product-variation-swatches-for-woocommerce'); ?> <a onclick="thwvsfTriggerAttributeTab(this)" href="#woocommerce-product-data"><?php  esc_html_e(' Attributes','product-variation-swatches-for-woocommerce'); ?> </a> <?php esc_html_e('tab','product-variation-swatches-for-woocommerce'); ?></p>
                     </div>
                    <?php
                 }
@@ -708,7 +738,7 @@ if(!class_exists('THWVSF_Admin')):
         $attribute_name = sanitize_title($attribute->get_name());
         $display_status = $type == 'label' ?'display: table': 'display: none' ;
         ?>
-        <table class="thwvsf-custom-table thwvsf-custom-table-label" style="<?php echo $display_status ; ?>">
+        <table class="thwvsf-custom-table thwvsf-custom-table-label" style="<?php echo esc_attr($display_status); ?>">
             <?php
             $i= 0;
             foreach ($attribute->get_options() as $term) {
@@ -717,11 +747,11 @@ if(!class_exists('THWVSF_Admin')):
                 ?>
                 <tr class="thwvsf-term-name">
                     <td colspan="2">
-                        <h3 class="thwvsf-local-head <?php echo $open;?>" data-type="<?php echo esc_attr($type); ?>" data-term_name="<?php echo  esc_attr($term); ?>" onclick="thwvsf_open_body(this,event)"><?php echo esc_html($term); ?></h3>
+                        <h3 class="thwvsf-local-head <?php echo esc_attr($open);?>" data-type="<?php echo esc_attr($type); ?>" data-term_name="<?php echo  esc_attr($term); ?>" onclick="thwvsf_open_body(this,event)"><?php echo esc_html($term); ?></h3>
                         <table class="thwvsf-local-body-table">
                             <tbody class="thwvsf-local-body thwvsf-local-body-<?php echo esc_attr($term); ?>" style="<?php echo esc_attr($css); ?>">
                                 <tr> 
-                                    <td width="30%"><?php _e('Term Name', 'product-variation-swatches-for-woocommerce') ?></td>
+                                    <td width="30%"><?php esc_html_e('Term Name', 'product-variation-swatches-for-woocommerce') ?></td>
                                     <td width="70%"><?php echo esc_html($term); ?></td>
                                 </tr>
                                 <tr class="form-field"> 
@@ -759,14 +789,14 @@ if(!class_exists('THWVSF_Admin')):
                 ?>
                 <tr class="thwvsf-term-name">
                     <td colspan="2">
-                        <h3 class="thwvsf-local-head <?php echo $open;?>" data-term_name="<?php echo $term; ?>" onclick="thwvsf_open_body(this,event)"><?php echo esc_html($term); ?></h3>
+                        <h3 class="thwvsf-local-head <?php echo esc_attr($open);?>" data-term_name="<?php echo esc_attr($term); ?>" onclick="thwvsf_open_body(this,event)"><?php echo esc_html($term); ?></h3>
                         <table class="thwvsf-local-body-table">
-                            <tbody class="thwvsf-local-body thwvsf-local-body-<?php echo esc_attr($term); ?>" style="<?php echo $css; ?>">
+                            <tbody class="thwvsf-local-body thwvsf-local-body-<?php echo esc_attr($term); ?>" style="<?php echo esc_attr($css); ?>">
                                 <tr> 
                                     <td width="30%">Term Name</td>
-                                    <td width="70%"><?php echo $term; ?></td>
+                                    <td width="70%"><?php echo esc_html($term); ?></td>
                                 </tr>
-                                <tr class="form-field"> <td><?php _e('Term Image', 'product-variation-swatches-for-woocommerce') ?></td>
+                                <tr class="form-field"> <td><?php esc_html_e('Term Image', 'product-variation-swatches-for-woocommerce') ?></td>
                                     <td>
                                         <?php $term_field = $this->get_custom_fields_settings($post_id,$attribute_name,$term,'term_value'); 
 
@@ -901,11 +931,11 @@ if(!class_exists('THWVSF_Admin')):
             <table>
      
                 <tr>
-                    <td><span><?php _e('Name:', 'product-variation-swatches-for-woocommerce');?></span></td>
+                    <td><span><?php esc_html_e('Name:', 'product-variation-swatches-for-woocommerce');?></span></td>
                     <td><input type="text"  name= "attribute_name" class="thwvsf-class" value="" style="width:225px; height:40px;"/></td>
                 </tr>
                 <tr>
-                    <td><span><?php _e('Color:', 'product-variation-swatches-for-woocommerce');?></span></td>
+                    <td><span><?php esc_html_e('Color:', 'product-variation-swatches-for-woocommerce');?></span></td>
                     <td class="locl-attr-terms">
                         <div class="thwvsf_settings_fields_form thwvs-col-div">
                             <span class="thpladmin-colorpickpreview color_preview"></span>
@@ -1061,10 +1091,10 @@ if(!class_exists('THWVSF_Admin')):
             return;
         }
 
-        /*$current_screen = get_current_screen();
+        $current_screen = get_current_screen();
         if($current_screen->id !== 'product_page_th_product_variation_swatches_for_woocommerce'){
             return;
-        }*/
+        }
 
         $thwvsf_reviewed = get_user_meta( get_current_user_id(), 'thwvsf_reviewed', true );
         if($thwvsf_reviewed){
@@ -1126,7 +1156,7 @@ if(!class_exists('THWVSF_Admin')):
                 padding-right: 180px;
             }
             .thwvsf-review-content p {
-                padding-bottom: 14px;
+                padding-bottom: 6px;
             }
             .thwvsf-notice-action{ 
                 padding: 8px 18px 8px 18px;
@@ -1214,14 +1244,16 @@ if(!class_exists('THWVSF_Admin')):
                 <img src="<?php echo esc_url(THWVSF_ASSETS_URL_ADMIN .'images/review-left.png'); ?>" alt="themehigh">
             </div>
             <div class="thwvsf-review-content">
-                <h3><?php esc_html_e('Tell us how it was!', 'woocommerce-product-variation-swatches'); ?></h3>
-                <p><?php  esc_html_e('Thank you for choosing the Variation Swatches Plugin. We would love to hear about your experience while using it. Could you please leave us a review on WordPress to help us spread the word and boost our motivation?', 'product-variation-swatches-for-woocommerce'); ?></p>
+                <h3><?php esc_html_e('Tell us how it was!', 'product-variation-swatches-for-woocommerce'); ?></h3>
+                <p><?php
+                // phpcs:ignore WordPress.WP.I18n.MissingArgDomain
+                esc_html_e('Thank you for going with our Variation Swatches Plugin. We genuinely treasure your support and we would love to hear about your experience with the plugin to help us improve it. If you’ve enjoyed using our plugin, we kindly request that you take a moment to leave a positive feedback on WordPress &#x2764;&#xfe0f;.'); ?></p>
                 <div class="action-row">
                     <a class="thwvsf-notice-action thwvsf-yes" onclick="window.open('https://wordpress.org/support/plugin/product-variation-swatches-for-woocommerce/reviews/?rate=5#new-post', '_blank')" style="margin-right:16px; text-decoration: none">
                         <?php esc_html_e("Ok, You deserve it", 'product-variation-swatches-for-woocommerce'); ?>
                     </a>
                     <a class="thwvsf-notice-action thwvsf-done" href="<?php echo esc_url($reviewed_url); ?>" style="margin-right:16px; text-decoration: none">
-                        <?php _e('Already, Did', 'product-variation-swatches-for-woocommerce'); ?>
+                        <?php esc_html_e('Already, Did', 'product-variation-swatches-for-woocommerce'); ?>
                     </a>
 
                     <a class="thwvsf-notice-action thwvsf-remind" href="<?php echo esc_url($remind_url); ?>" style="margin-right:16px; text-decoration: none">
@@ -1233,7 +1265,7 @@ if(!class_exists('THWVSF_Admin')):
             <div class="thwvsf-themehigh-logo">
                 <span class="logo" style="float: right">
                     <a target="_blank" href="https://www.themehigh.com">
-                        <img src="<?php echo esc_url(THWVSF_ASSETS_URL_ADMIN.'images/logo.svg'); ?>" style="height:19px;margin-top:4px;" alt="themehigh"/>
+                        <img src="<?php echo esc_url(THWVSF_ASSETS_URL_ADMIN.'images/th-logo-name.svg'); ?>" style="height:19px;margin-top:4px;" alt="themehigh"/>
                     </a>
                 </span>
             </div>
@@ -1269,6 +1301,11 @@ if(!class_exists('THWVSF_Admin')):
 
                             <main class="form-container main-full">
                                 <p class="thwvs-title-text"><?php echo __('If you have a moment, please let us know why you want to deactivate this plugin', 'product-variation-swatches-for-woocommerce'); ?></p>
+                                
+                                <p class="thwvs-privacy-cnt"><?php echo __('In case your swatches are not working properly, click ', 'product-variation-swatches-for-woocommerce'); ?> 
+                                    <a class="thwvs-privacy-link" target="_blank" href="<?php echo esc_url('https://wordpress.org/plugins/product-variation-swatches-for-woocommerce/#what%20else%20to%20do%20if%20swatches%20do%20not%20work%20on%20particular%20pages%2Fpages%20created%20with%20the%20builder%3F');?>"><?php echo __('here', 'product-variation-swatches-for-woocommerce'); ?></a> <?php echo __('to get an appropriate solution', 'product-variation-swatches-for-woocommerce' ) ?>
+                                </p>
+
                                 <ul class="deactivation-reason" data-nonce="<?php echo wp_create_nonce('thwvs_deactivate_nonce'); ?>">
                                     <?php 
                                     if($deactivation_reasons){
@@ -1506,7 +1543,7 @@ if(!class_exists('THWVSF_Admin')):
                         reason_input += '</div>';
                     }else if('reviewlink' == type){
                         reason_input += '<div class="reason-input wpvs-review-link">';
-                        reason_input += '<input type="hidden" value="<?php _e('Upgraded', 'product-variation-swatches-for-woocommerce');?>">';
+                        reason_input += '<input type="hidden" value="<?php esc_html_e('Upgraded', 'product-variation-swatches-for-woocommerce');?>">';
                         reason_input += '</div>';
                     }
 
@@ -1567,13 +1604,6 @@ if(!class_exists('THWVSF_Admin')):
     private function get_deactivation_reasons(){
         return array(
 
-            'upgraded_to_wpvs_pro' => array(
-                'radio_val'          => 'upgraded_to_wpvs_pro',
-                'radio_label'        => __('Upgraded to premium.', 'product-variation-swatches-for-woocommerce'),
-                'reason_type'        => 'reviewlink',
-                'reason_placeholder' => '',
-            ),
-
             'feature_missing'=> array(
                 'radio_val'          => 'feature_missing',
                 'radio_label'        => __('A specific feature is missing', 'product-variation-swatches-for-woocommerce'),
@@ -1615,6 +1645,12 @@ if(!class_exists('THWVSF_Admin')):
                 'radio_label'        => __('It’s a temporary deactivation - I’m troubleshooting an issue', 'product-variation-swatches-for-woocommerce'),
                 'reason_type'        => 'checkbox',
                 'reason_placeholder' => __('Could you please mention the plugin?', 'product-variation-swatches-for-woocommerce'),
+            ),
+            'upgraded_to_wpvs_pro' => array(
+                'radio_val'          => 'upgraded_to_wpvs_pro',
+                'radio_label'        => __('Upgraded to premium.', 'product-variation-swatches-for-woocommerce'),
+                'reason_type'        => 'reviewlink',
+                'reason_placeholder' => '',
             ),
 
             'other' => array(
@@ -1676,7 +1712,7 @@ if(!class_exists('THWVSF_Admin')):
         wp_send_json_success();
     }
 
-    public function dismiss_thwvsf_sib_form(){
+    /*public function dismiss_thwvsf_sib_form(){
         check_ajax_referer( 'thwvsf_sib_security', 'security' );
         $capability = THWVSF_Utils::thwvsf_capability();
         if(!current_user_can($capability)){
@@ -1989,9 +2025,145 @@ if(!class_exists('THWVSF_Admin')):
             }(jQuery))
         </script>
         <?php
+    }*/
+
+    public function quick_links(){
+
+       $current_screen = get_current_screen();
+       if($current_screen->id !== 'product_page_th_product_variation_swatches_for_woocommerce'){
+            return;
+        } 
+        ?>
+
+        <div class="th_quick_widget-float">
+            <div id="myDIV" class="th_quick_widget">
+                <div class="th_whead">
+                    <div class="th_whead_close_btn" onclick="thwvsfwidgetClose()">
+                        <img src="<?php echo THWVSF_URL.'admin/assets/images/th-icon-cross.svg'; ?>" alt="th-icon" class="">
+                    </div>
+                    <!-- -----------------------------Widget head icon ----------------------------->
+                    <div class="th_whead_icon">
+                       <img src="<?php echo THWVSF_URL.'admin/assets/images/th-icon-purple.svg'; ?>" alt="th-logo" class="">
+                    </div>
+                    <!--------------------------Whidget heading section ---------------------------->
+                    <div class="th_quick_widget_heading">
+                        <div class="th_whead_t1"><p>Welcome, we're</p><p><b style="font-size: 28px;">ThemeHigh</b></p></div>
+                        </div>
+                    </div>
+                    <!-- --------------------Widget Body--------------------------------------- -->
+                    <div class="th_quick_widget_body">
+                        <ul>
+                            <li>
+                                <div class="list_icon" style="background-color: rgba(199, 0, 255, 0.15);">
+                                    <img src="<?php echo THWVSF_URL.'admin/assets/images/th-icon-bulb.svg'; ?>" alt="th-icon" class="">
+                                </div>
+                                <a href="https://app.loopedin.io/variation-swatches-for-woocommerce/ideas" target="_blank" class="quick-widget-doc-link">Request a feature</a></li>
+                            <li>
+                                <div class="list_icon" style="background-color: rgba(255, 183, 67, 0.15);">
+                                    <img src="<?php echo THWVSF_URL.'admin/assets/images/th-icon-upgrade.svg'; ?>" alt="th-icon" class="">
+                                </div>
+                                <a href="https://www.themehigh.com/product/woocommerce-product-variation-swatches/?utm_source=free&utm_medium=quicklinks&utm_campaign=wpvs_upgrade_link" target="_blank" class="quick-widget-doc-link">Upgrade to Premium</a></li>
+                            <li>
+
+                                <div class="list_icon" style="background-color: rgba(5, 15, 250, 0.15);">
+                                    <img src="<?php echo THWVSF_URL.'admin/assets/images/th-icon-join.svg'; ?>" alt="th-icon" class="">
+                                </div><a href="https://www.facebook.com/groups/740534523911091" target="_blank" class="quick-widget-community-link">Join our Community</a>
+                            </li>
+                            <li>
+                                <div class="list_icon" style="background-color: rgba(152, 190, 0, 0.15);">
+                                    <img src="<?php echo THWVSF_URL.'admin/assets/images/th-icon-speaker.svg'; ?>" alt="" class="">
+                                </div><a href="https://wordpress.org/support/plugin/product-variation-swatches-for-woocommerce/" target="_blank" class="quick-widget-support-link">Get support</a></li>
+                            <li>
+                                <div class="list_icon" style="background-color: rgba(255, 0, 0, 0.15);">
+                                   <img src="<?php echo THWVSF_URL.'admin/assets/images/th-icon-video.svg'; ?>" alt="th-icon" class=""> 
+                                </div>
+                            <a href="https://www.themehigh.com/docs/variation-swatches-free-documentation/" target="_blank" class="quick-widget-youtube-link" >Video Tutorial</a></li>
+                        </ul>
+                    </div>
+                </div>
+            <div id="myWidget" class="widget-popup" onclick="thwvsfwidgetPopUp()">
+                <span id="th_quick_border_animation"></span>
+                <div class="widget-popup-icon" id="th_arrow_head">
+                    <img src="<?php echo THWVSF_URL.'admin/assets/images/th-icon-white.svg'; ?>" alt="th-icon" class="">
+                </div>
+            </div>
+            </div>
+        <?php
     }
 
-    public function sib_form_banner_custom_css(){
+    public function thwvsf_discount_popup_actions() {
+		$nonce = isset($_GET['thwvsf_discount_popup_nonce']) ? sanitize_text_field( wp_unslash($_GET['thwvsf_discount_popup_nonce'])) : false;
+		if(!wp_verify_nonce($nonce, 'thwvsf_discount_popup_security')){
+			die();
+		}
+		$thwvsf_dissmis_feature_popup = isset($_GET['thwvsf_discount_popup_dismiss']) ? sanitize_text_field( wp_unslash($_GET['thwvsf_discount_popup_dismiss'])) : false;
+		
+		if ($thwvsf_dissmis_feature_popup) {
+			update_user_meta( get_current_user_id(), 'thwvsf_discount_popup' , true);
+		}
+	}
+
+    public function diplay_discount_popup(){
+
+        $now = time();
+        $thwvsf_since = get_option('thwvsf_since');
+        if(!$thwvsf_since){
+            update_option('thwvsf_since', $now, 'no' );
+        }
+        $thwvsf_since = $thwvsf_since ? $thwvsf_since : $now;
+		// $render_time = apply_filters('thwvsf_show_discount_popup_render_time' , 3 * MONTH_IN_SECONDS);
+		$render_time  = apply_filters('thwvsf_show_discount_popup_render_time', 10 * DAY_IN_SECONDS);
+		$render_time = $thwvsf_since + $render_time;
+		if (isset($_GET['thwvsf_discount_popup_dismiss'])) {
+			$this->thwvsf_discount_popup_actions();
+		}
+		$discount_popup = get_user_meta( get_current_user_id(),'thwvsf_discount_popup', true);
+
+		$show_discount_popup = isset($discount_popup) ? $discount_popup : false;
+		if (!$show_discount_popup && ($now > $render_time)) {
+			$this->secret_discount_popup();
+		}
+    }
+
+    public function secret_discount_popup(){
+		$admin_url  = 'edit.php?post_type=product&page=th_product_variation_swatches_for_woocommerce';
+        $dismiss_url = $admin_url . '&thwvsf_discount_popup_dismiss=true&thwvsf_discount_popup_nonce=' . wp_create_nonce( 'thwvsf_discount_popup_security');
+
+		$url = "https://www.themehigh.com/?edd_action=add_to_cart&download_id=24&cp=lyCDSy_wvs&utm_source=free&utm_medium=premium_tab&utm_campaign=wpvs_upgrade_link";
+
+        $current_screen = get_current_screen();
+       if($current_screen->id !== 'product_page_th_product_variation_swatches_for_woocommerce'){
+            return;
+        } 
+
+		?>
+			<div id="thwvsf-pro-discount-popup" class="thwvsf-pro-discount-popup" style="display:none">
+				<div id="thwvsf-discount-popup-wrapper" class="thwvsf-discount-popup-wrapper">
+					<div class="thwvsf-pro-offer">
+						<div class="thwvsf-discount-popup-close">
+							<a id="thwvsf-discount-close-btn" class="thwvsf-discount-close-btn" href="<?php echo esc_url($dismiss_url); ?>"><img class="close-btn-img-popup" src="<?php echo esc_url(THWVSF_URL .'admin/assets/images/close.svg'); ?>"></a>
+						</div>
+						<div class="thwvsf-discount-desc">
+							<p class="thwvsf-discount-desc-first">Exclusive offer for you.</p>
+							<p class="thwvsf-discount-desc-middle">Flat 50% off</p>
+							<p class="thwvsf-discount-desc-last">on your plan upgrade.</p>
+							<p class="thwvsf-discount-exp-date">Grab it before the offer Ends.</b></p>
+						</div>
+					</div>
+					<div class="thwvsf-pro-claim-offer">
+						<div class="thwvsf-pro-offer-desc">
+							<p class="thwvsf-pro-offer-para">Upgrade to Variation Swatches Pro and transform your product variations! Unlock advanced swatch styles, tooltips, and customization options for a seamless shopping experience that boosts conversions.</p>
+						</div>
+						<div class="claim-discount-btn-div">
+							<a id="claim-discount-btn" class="claim-discount-btn" href="<?php echo esc_url($url); ?>" onclick="thwvsfPopUpClose(this)" target="_blank" rel="noopener noreferrer">Claim Now</a>
+						</div>
+					</div>
+				</div>
+			</div>	
+		<?php
+	}
+
+    /*public function sib_form_banner_custom_css(){
         ?>
         <style>
 
@@ -2000,12 +2172,10 @@ if(!class_exists('THWVSF_Admin')):
                 border: none;
                 background: linear-gradient(288.17deg, #45108A 2.28%, #3D065F 29.57%, #10054D 101.35%);
                 border-radius: 10px;
-                /*padding: 10px 25px 15px 0px;*/
                 overflow: hidden;
                 display: flex;
                 align-items: center;
                 margin-bottom: 20px;
-                /*font-family: 'Roboto';*/
             }
 
             #thwvsf_subscription_request_notice .notice-dismiss::before{
@@ -2024,7 +2194,6 @@ if(!class_exists('THWVSF_Admin')):
            
             .thwvsf-sub-content h3{
 
-                /*font-family: 'Roboto';*/
                 font-style: normal;
                 font-weight: 700;
                 font-size: 17px;
@@ -2032,8 +2201,6 @@ if(!class_exists('THWVSF_Admin')):
                 color: #FFFFFF;
             }
             .thwvsf-sub-content p{
-
-                /*font-family: 'Roboto';*/
                 font-style: normal;
                 font-weight: 300;
                 font-size: 14px;
@@ -2053,7 +2220,6 @@ if(!class_exists('THWVSF_Admin')):
                 background: #FFFFFF;
                 border-radius: 5px;
                 padding: 15px 30px 15px 30px;
-                /*font-family: 'Roboto';*/
                 font-style: normal;
                 font-weight: 500;
                 font-size: 14px;
@@ -2074,15 +2240,10 @@ if(!class_exists('THWVSF_Admin')):
                 border-radius: 50%;
                 right: -3%;
                 top: 50%;
-
             }
             .thwvsf-th-logo span{
                 position: absolute;
-                /* top: 31px; */
                 right: 50%;
-                /* border: none; */
-                /* margin: 0; */
-                /* padding: 10px; */
                 background: none;
                 color: #787c82;
                 cursor: pointer;
@@ -2106,24 +2267,7 @@ if(!class_exists('THWVSF_Admin')):
                 display: none;
             }
             .thpladmin-modal .sib-form{
-
-                /*position: absolute;
-                background: #fff;
-                border-radius: 2px;
-                overflow: hidden;
-                left: 50%;
-                top: 50%;
-                transform: translate(-50%,-50%);
-                width: 50%;
-                max-width: 800px;
-                min-height: 560px;
-                height: 70vh;
-                max-height: 640px;
-                animation: appear-down 250ms ease-in-out;
-                border-radius: 15px;*/
-
                 position: absolute;
-               /* background: #fff;*/
                 overflow: hidden;
                 left: 50%;
                 top: 50%;
@@ -2131,29 +2275,21 @@ if(!class_exists('THWVSF_Admin')):
                 width: 80%;
                 max-width: 960px;
                 min-height: 560px;
-                /*height: 80vh;*/
                 max-height: 640px;
                 animation: appear-down 250ms ease-in-out;
                 border-radius: 15px;
 
             }
 
-            .modal-content{
+            .sib-form .modal-content{
 
                 max-width: 960px;
-                /*height: 80vh;*/
                 max-height: 640px;
                 min-height: 560px;
                 position: relative;
             }
             
             .sib-left-col{
-
-                /*margin: 24px 0;
-                background: #fff;
-                position: absolute;
-                height: 100%;
-                overflow: auto;*/
                 padding: 30px;
                 background: #fff;
                 position: absolute;
@@ -2166,7 +2302,6 @@ if(!class_exists('THWVSF_Admin')):
             }
 
             .sib-right-col{
-                /*left: 490px;*/
                 width: 260px;
                 right: 0;
                 padding: 30px;
@@ -2180,7 +2315,6 @@ if(!class_exists('THWVSF_Admin')):
 
             .declaration-text{
                 background-color: transparent;
-                /*font-family: 'Roboto';*/
                 font-style: normal;
                 font-weight: 400;
                 font-size: 13px;
@@ -2192,7 +2326,6 @@ if(!class_exists('THWVSF_Admin')):
                 text-align: center;
             }
             .sib-form-title, .sib-form-title p{
-                /*font-family: 'Roboto';*/
                 font-style: normal;
                 font-weight: 700;
                 font-size: 18px;
@@ -2202,8 +2335,6 @@ if(!class_exists('THWVSF_Admin')):
             }
 
             .sib-form-subtitle p{
-
-                /*font-family: 'Roboto';*/
                 font-style: normal;
                 font-weight: 400;
                 font-size: 14px;
@@ -2271,7 +2402,6 @@ if(!class_exists('THWVSF_Admin')):
             }
 
             #sib-container input::placeholder {
-                /*font-family: 'Roboto';*/
                 font-style: normal;
                 font-weight: 400;
                 font-size: 14px;
@@ -2284,7 +2414,6 @@ if(!class_exists('THWVSF_Admin')):
 
             .entry__choice p{
                 display: inline-block;
-                /*font-family: 'Roboto';*/
                 font-style: normal;
                 font-weight: 400;
                 font-size: 13px;
@@ -2292,7 +2421,6 @@ if(!class_exists('THWVSF_Admin')):
                 color: #000000;
             }
             .entry__specification{
-                /*font-family: 'Roboto';*/
                 font-style: normal;
                 font-weight: 400;
                 font-size: 12px;
@@ -2311,7 +2439,6 @@ if(!class_exists('THWVSF_Admin')):
                 border-radius: 5px;
                 border-width: 0px;
                 width: calc(100%);
-                /* height: 40px; */
                 min-height: 30px;
                 padding: 15px;
                 text-align: center
@@ -2320,19 +2447,6 @@ if(!class_exists('THWVSF_Admin')):
             .input--hidden {
                 display: none !important;
             }
-            /*.sib-close{
-                position: absolute;
-                color: #ffffff;
-                font-size: 15px;
-                right: 8px;
-                top: 8px;
-                cursor: pointer;
-                z-index: 10;
-                border: 1px solid #ffffff;
-                border-radius: 100%;
-                padding: 0px 5px 4px;
-            }*/
-
             .sib-close{
 
                 position: absolute;
@@ -2397,7 +2511,6 @@ if(!class_exists('THWVSF_Admin')):
             }
 
             .sib-form-btn{
-                /*margin-top: 20px;*/
                 padding: 8px 16px 8px 8px;
             }
 
@@ -2453,7 +2566,7 @@ if(!class_exists('THWVSF_Admin')):
 
         </style> 
         <?php
-    }
+    }*/
  
 }
 endif;

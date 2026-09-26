@@ -46,6 +46,7 @@ if ( ! class_exists( 'AWS_Avada' ) ) :
 
             if ( AWS()->get_settings( 'seamless' ) === 'true' ) {
                 add_action( 'wp_head', array( $this, 'avada_head_action' ) );
+                add_action( 'wp_footer', array( $this, 'avada_wp_footer' ) );
             }
 
             add_filter( 'aws_posts_per_page', array( $this, 'avada_posts_per_page' ), 2 );
@@ -84,22 +85,33 @@ if ( ! class_exists( 'AWS_Avada' ) ) :
 
             </style>
 
-            <script>
+        <?php }
 
+        public function avada_wp_footer() { ?>
+
+            <script>
                 window.addEventListener('load', function() {
-                    var awsSearch = document.querySelectorAll(".fusion-menu .fusion-main-menu-search a, .fusion-flyout-menu-icons .fusion-icon-search");
-                    if ( awsSearch ) {
-                        for (var i = 0; i < awsSearch.length; i++) {
-                            awsSearch[i].addEventListener('click', function() {
-                                window.setTimeout(function(){
-                                    document.querySelector(".fusion-menu .fusion-main-menu-search .aws-search-field, .fusion-flyout-search .aws-search-field").focus();
-                                }, 100);
-                            }, false);
-                        }
+                    var awsSearch = document.querySelectorAll(
+                        ".fusion-menu .fusion-main-menu-search a, .fusion-flyout-menu-icons .fusion-icon-search"
+                    );
+
+                    if (!awsSearch.length) {
+                        return;
                     }
 
-                }, false);
-
+                    for (var i = 0; i < awsSearch.length; i++) {
+                        awsSearch[i].addEventListener('click', function() {
+                            window.setTimeout(function() {
+                                var field = document.querySelector(
+                                    ".fusion-menu .fusion-main-menu-search .aws-search-field, .fusion-flyout-search .aws-search-field, .fusion-main-menu.search-open .aws-search-field"
+                                );
+                                if (field) {
+                                    field.focus();
+                                }
+                            }, 100);
+                        });
+                    }
+                });
             </script>
 
         <?php }
@@ -185,7 +197,7 @@ if ( ! class_exists( 'AWS_Avada' ) ) :
                     'name'       => esc_attr__( 'AWS Search', 'advanced-woo-search' ),
                     'shortcode'  => 'aws_search_form',
                     'icon'       => 'fusiona-search',
-                    'help_url'   => 'https://advanced-woo-search.com/',
+                    'help_url'   => 'https://kramakit.com/plugins/advanced-woo-search/',
                     'params'     => array(),
                 )
             );

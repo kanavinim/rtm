@@ -14,20 +14,16 @@ if (!class_exists('rsssl_multisite')) {
             self::$_this = $this;
 
             register_activation_hook( __DIR__ . "/" . rsssl_plugin, array($this, 'activate'));
-	        add_action('network_admin_menu', array($this, 'add_plus_ones') );
+	        add_action( 'network_admin_menu', array( $this, 'add_multisite_menu' ) );
             /*filters to make sure WordPress returns the correct protocol */
             add_filter("admin_url", array($this, "check_admin_protocol"), 20, 3);
             add_filter('home_url', array($this, 'check_site_protocol'), 20, 4);
             add_filter('site_url', array($this, 'check_site_protocol'), 20, 4);
-            add_action('network_admin_menu', array(&$this, 'add_multisite_menu'));
 	        add_action('plugins_loaded', array($this, 'maybe_redirect_old_settings_url'), 10);
 
 	        if ( is_network_admin() ) {
                 add_action('network_admin_notices', array($this, 'show_notices'), 10);
             }
-
-            $plugin = rsssl_plugin;
-	        add_filter( "network_admin_plugin_action_links_$plugin", array($this, 'plugin_settings_link') );
 
             //If WP version is 5.1 or higher, use wp_insert_site hook for multisite SSL activation in new blogs
             if( version_compare(get_bloginfo('version'),'5.1', '>=') ) {
@@ -37,11 +33,6 @@ if (!class_exists('rsssl_multisite')) {
             }
 
 	        add_filter('rsssl_notices', array($this, 'add_multisite_notices'));
-        }
-
-        static function this()
-        {
-            return self::$_this;
         }
 
 	    /**
@@ -57,37 +48,6 @@ if (!class_exists('rsssl_multisite')) {
 			    wp_redirect(add_query_arg(['page' => 'really-simple-security'], network_admin_url('settings.php') ) );
 			    exit;
 		    }
-	    }
-
-	    /**
-	     *
-	     * @since 3.1.6
-	     *
-	     * Add an update count to the WordPress admin Settings menu item
-	     * Doesn't work when the Admin Menu Editor plugin is active
-	     *
-	     */
-
-	    public function add_plus_ones()
-	    {
-		    if (!rsssl_user_can_manage()) {
-			    return;
-		    }
-
-		    $count = RSSSL()->admin->count_plusones();
-			if ( $count > 0 ) {
-				global $menu;
-				foreach( $menu as $index => $menu_item ){
-					if (!isset($menu_item[2]) || !isset($menu_item[0])) continue;
-					if ( $menu_item[2]==='settings.php' ){
-						$pattern = '/<span.*>([1-9])<\/span><\/span>/i';
-						if (preg_match($pattern, $menu_item[0], $matches)){
-							if (isset($matches[1])) $count = (int) $count + (int) $matches[1];
-						}
-						$menu[$index][0] = __('Settings') .  "<span class='update-plugins rsssl-update-count'><span class='update-count'>$count</span></span>";
-					}
-				}
-			}
 	    }
 
 	    /**
@@ -111,7 +71,7 @@ if (!class_exists('rsssl_multisite')) {
 		        'score' => 30,
 		        'output' => array(
 			        'true' => array(
-				        'msg' =>__('SSL is enabled networkwide.', 'really-simple-ssl'),
+				        'msg' =>__('SSL is enabled networkwide', 'really-simple-ssl'),
 				        'icon' => 'success'
 			        ),
 			        'false' => array(
@@ -128,9 +88,9 @@ if (!class_exists('rsssl_multisite')) {
 		        'score' => 30,
 		        'output' => array(
 			        'no-server-variable' => array(
-				        'msg' => __('You run a Multisite installation with subfolders, which prevents this plugin from fixing your missing server variable in the wp-config.php.', 'really-simple-ssl') . " "
-                                .__('Because the $_SERVER["HTTPS"] variable is not set, your website may experience redirect loops.', 'really-simple-ssl') . " "
-                                .__('Activate networkwide to fix this.', 'really-simple-ssl'),
+				        'msg' => __('You run a Multisite installation with subfolders, which prevents this plugin from fixing your missing server variable in the wp-config.php', 'really-simple-ssl') . " "
+                                .__('Because the $_SERVER["HTTPS"] variable is not set, your website may experience redirect loops', 'really-simple-ssl') . " "
+                                .__('Activate networkwide to fix this', 'really-simple-ssl'),
 				        'icon' => 'warning',
 				        'plusone' => true,
 			        ),
@@ -143,7 +103,7 @@ if (!class_exists('rsssl_multisite')) {
 		        'output' => array(
 			        'true' => array(
 				        'title' => __("SSL activation in progress", "really-simple-ssl"),
-				        'msg' => __('A networkwide SSL activation process has been started, but has not been completed. Please go to the SSL settings page to complete the process.', 'really-simple-ssl').'&nbsp;'.
+				        'msg' => __('A networkwide SSL activation process has been started, but has not been completed. Please go to the SSL settings page to complete the process', 'really-simple-ssl').'&nbsp;'.
 				                 '<a href="'.add_query_arg(['page'=>'really-simple-security'], network_admin_url('settings.php') ).'">'.__('View settings page','really-simple-ssl').'</a>',
 				        'icon' => 'warning',
 				        'plusone' => true,
@@ -160,7 +120,7 @@ if (!class_exists('rsssl_multisite')) {
 			        'subdomains-no-wildcard' => array(
 				        'msg' => __("You run a Multisite installation with subdomains, but your site doesn't have a wildcard certificate.", 'really-simple-ssl') . " "
 				                 . __("This leads to issues when activating SSL networkwide since subdomains will be forced over SSL as well while they don't have a valid certificate.", 'really-simple-ssl') . " "
-				                 . __("Activate SSL per site or install a wildcard certificate to fix this.", 'really-simple-ssl'),
+				                 . __("Activate SSL per site or install a wildcard certificate to fix this", 'really-simple-ssl'),
 				        'icon' => 'warning',
 				        'dismissible' => true,
 				        'plusone' => true,
@@ -199,31 +159,6 @@ if (!class_exists('rsssl_multisite')) {
                 return 'subdomains-no-wildcard';
 		    }
 		    return 'success';
-	    }
-
-	    /**
-         * Add settings link on plugins overview page
-	     *
-	     * @param array $links
-         *
-         * @return array
-	     * @since  2.0
-	     * @access public
-	     */
-
-	    public function plugin_settings_link(array $links): array {
-		    $url = add_query_arg(array('page' => 'really-simple-security'), network_admin_url('settings.php') );
-		    $settings_link = '<a href="' . $url . '">' . __("Settings", "really-simple-ssl") . '</a>';
-		    array_unshift($links, $settings_link);
-
-		    $support = apply_filters('rsssl_support_link', '<a target="_blank" href="https://wordpress.org/support/plugin/really-simple-ssl/">' . __('Support', 'really-simple-ssl') . '</a>');
-		    array_unshift($links, $support);
-
-		    if ( ! defined( 'rsssl_pro_version' ) ) {
-			    $upgrade_link = '<a style="color:#2271b1;font-weight:bold" target="_blank" href="https://really-simple-ssl.com/pro#multisite">' . __( 'Improve security - Upgrade', 'really-simple-ssl' ) . '</a>';
-			    array_unshift( $links, $upgrade_link );
-		    }
-		    return $links;
 	    }
 
 	    /**
@@ -269,24 +204,48 @@ if (!class_exists('rsssl_multisite')) {
             Only when plugin is network activated.
         */
 
-        public function add_multisite_menu()
-        {
-            if ( !is_multisite() || !rsssl_is_networkwide_active() ) {
-				return;
-            }
-	        $count = RSSSL()->admin->count_plusones();
-	        $update_count = $count > 0 ? "<span class='update-plugins rsssl-update-count'><span class='update-count'>$count</span></span>" : "";
+	    public function add_multisite_menu() {
+		    if ( ! is_multisite() || ! rsssl_is_networkwide_active() ) {
+			    return;
+		    }
 
-	        $page_hook_suffix = add_submenu_page(
-				'settings.php',
-				"SSL",
-				"SSL".$update_count,
-				'manage_security',
-				"really-simple-security",
-				'rsssl_settings_page'
-	        );
-	        add_action( "admin_print_scripts-{$page_hook_suffix}", 'rsssl_plugin_admin_scripts' );
-        }
+		    if ( ! rsssl_user_can_manage() ) {
+			    return;
+		    }
+
+		    $count = RSSSL()->admin->count_plusones();
+		    $update_count = $count > 0 ? "<span class='update-plugins rsssl-update-count'><span class='update-count'>$count</span></span>" : "";
+
+		    $icon_svg = '<?xml version="1.0" encoding="UTF-8"?>
+<svg id="rss-menu-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 -15 100 130" width="28" height="28">
+    <defs>
+        <style>.cls-1{fill:#fff;stroke-width:0px;}</style>
+    </defs>
+    <g fill="none" stroke-width="2">
+        <path class="cls-1" d="M72.92,26.6h-13v-9.4c0-7.6-6.1-13.7-13.7-13.7s-13.8,6.1-13.8,13.7v9.4h-13.1v-9.4C19.32,2.4,31.32,-9.6,46.12,-9.6s26.8,12,26.8,26.8v9.4h0Z"/>
+        <rect class="cls-1" x="10.02" y="84.6" width="72.3" height="5.6"/>
+        <path class="cls-1" d="M82.32,82H10.02V31.8c0-2.9,2.3-5.2,5.2-5.2h61.9c2.9,0,5.2,2.3,5.2,5.2V82h0ZM64.62,37.8c-2.2-2.2-5.9-2.2-8.2,0l-15.7,15.3l-4.9-4.9c-2.2-2.2-5.9-2.2-8.2,0l-1.9,1.9c-2.2,2.2-2.2,5.9,0,8.2l8.5,8.5c0.1,0.2,0.3,0.4,0.5,0.6l1.9,1.9l4.2,4l3.5-3.5c0.2-0.1,0.4-0.3,0.6-0.5l1.9-1.9c0.2-0.2,0.4-0.4,0.5-0.6l19.1-18.9c2.2-2.2,2.2-5.9,0-8.2l-1.8-1.9Z"/>
+    </g>
+</svg>';
+
+		    $icon_base64 = 'data:image/svg+xml;base64,' . base64_encode($icon_svg);
+
+		    $page_hook_suffix = add_menu_page(
+			    __( "Security", "really-simple-ssl" ),
+			    __( "Security", "really-simple-ssl" ) . $update_count,
+			    'manage_security',
+			    'really-simple-security',
+			    'rsssl_settings_page',
+			    $icon_base64,
+			    100 // This will place it near the bottom of the menu
+		    );
+
+		    add_action( "admin_print_scripts-{$page_hook_suffix}", 'rsssl_plugin_admin_scripts' );
+		    // Update the page title to prevent issues with an empty title causing strip_tags deprecation warnings
+		    add_action("load-{$page_hook_suffix}", 'rsssl_set_admin_page_title');
+		    add_action('admin_head', 'rsssl_override_wordpress_svg_size');
+
+	    }
 
 	    /**
 	     * Check if an SSL process is active
@@ -344,7 +303,7 @@ if (!class_exists('rsssl_multisite')) {
 				$percentage = 100;
             }
 
-            return intval($percentage);
+            return (int) $percentage;
         }
 
 	    /**
@@ -426,43 +385,6 @@ if (!class_exists('rsssl_multisite')) {
                     restore_current_blog(); //switches back to previous blog, not current, so we have to do it each loop
                     update_site_option('rsssl_siteprocessing_progress', $current_offset+$nr_of_sites);
                 }
-            }
-        }
-
-	    /**
-	     * Deactivate SSL on all subsites
-	     *
-	     * @return void
-	     */
-
-        public function deactivate()
-        {
-	        if (!rsssl_user_can_manage()) {
-		        return;
-	        }
-			$ssl_was_enabled = rsssl_get_option('ssl_enabled');
-	        delete_site_option('rsssl_network_activation_status');
-	        update_option('ssl_enabled', false);
-			//main site first
-	        $site_id = get_main_site_id();
-			switch_to_blog($site_id);
-			RSSSL()->admin->deactivate_site($ssl_was_enabled);
-	        restore_current_blog();
-
-	        //because the deactivation should be a one click procedure, chunking this would cause difficulties
-	        $args = array(
-		        'number' => $this->get_total_blog_count(),
-		        'offset' => 0,
-	        );
-	        $sites = get_sites($args);
-            foreach ($sites as $site) {
-	            switch_to_blog($site->blog_id);
-	            update_site_meta($site->blog_id, 'rsssl_ssl_activated', false );
-				//we already did the main site
-				if ( !is_main_site() ) {
-					RSSSL()->admin->deactivate_site($ssl_was_enabled);
-				}
-                restore_current_blog();
             }
         }
 
@@ -563,23 +485,19 @@ if (!class_exists('rsssl_multisite')) {
         /**
          * Test if a domain has a subfolder structure
          *
-         * @since  2.2
-         *
          * @param string $domain
          *
-         * @access private
+         * @access public
          *
          * @return bool
+         * @since  2.2
+         *
          */
 
-        public function is_subfolder($domain)
-        {
+        public function is_subfolder(string $domain): bool {
             //remove slashes of the http(s)
             $domain = preg_replace("/(http:\/\/|https:\/\/)/", "", $domain);
-            if (strpos($domain, "/") !== FALSE) {
-                return true;
-            }
-            return false;
+	        return strpos( $domain, "/" ) !== false;
         }
 
         /**
@@ -593,18 +511,26 @@ if (!class_exists('rsssl_multisite')) {
 
         public function show_notices()
         {
+			if ( !rsssl_user_can_manage() ) {
+				return;
+			}
+
             //prevent showing the review on edit screen, as gutenberg removes the class which makes it editable.
             $screen = get_current_screen();
-	        if ( $screen && $screen->base === 'post' ) return;
+	        if ( $screen && $screen->base === 'post' ) {
+				return;
+	        }
 
 	        if ( !$this->is_settings_page() ) {
 		        $notices = RSSSL()->admin->get_notices_list( array('admin_notices'=>true) );
 		        foreach ( $notices as $id => $notice ){
-			        $notice = $notice['output'];
-			        $class = ( $notice['status'] !== 'completed' ) ? 'error' : 'updated';
-			        $more_info = isset($notice['url']) ? $notice['url'] : false;
-			        $dismiss_id = isset($notice['dismissible']) && $notice['dismissible'] ? $id : false;
-			        echo RSSSL()->admin->notice_html( $class.' '.$id, $notice['msg'], $more_info, $dismiss_id);
+			        $notice           = $notice['output'];
+			        $class            = 'open' === $notice['status'] ? 'warning' : 'error';
+			        $more_info        = $notice['url'] ?? false;
+			        $logo             = $notice['logo'] ?? false;
+			        $dismiss_id       = isset( $notice['dismissible'] ) && $notice['dismissible'] ? $id : false;
+			        $dashboard_button = isset( $notice['dashboard_button'] ) && $notice['dashboard_button'] ? $id : false;
+			        echo RSSSL()->admin->notice_html( $class . ' ' . $id, $notice['msg'], $more_info, $logo, $dismiss_id, $dashboard_button );
 		        }
             }
         }

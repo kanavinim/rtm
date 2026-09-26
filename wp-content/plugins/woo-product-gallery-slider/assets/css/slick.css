@@ -71,7 +71,7 @@
 .wpgs-nav .slick-next {
 }
 .wpgs-nav .slick-prev {
-    margin-left: 8px;
+    margin-left: 4px;
 }
 .wpgs-nav .slick-slide {
     margin-left: 5px;
@@ -81,9 +81,6 @@
 .wpgs-nav .slick-active img {
     opacity: 0.7;
     transition: all ease-in 0.3s;
-}
-.slick-track{
-    transition: none;
 }
 .wpgs-nav .slick-current img {
     opacity: 1;

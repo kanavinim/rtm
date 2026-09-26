@@ -41,13 +41,15 @@ if ( ! class_exists( 'AWS_Versions' ) ) :
         public function setup() {
 
             $current_version = get_option( 'aws_plugin_ver' );
-            $reindex_version = get_option( 'aws_reindex_version' );
+            $reindex_version = ( function_exists('AWS') && AWS()->option_vars )
+                ? AWS()->option_vars->get_reindex_version()
+                : get_option( 'aws_reindex_version' );
 
-            if ( ! ( $reindex_version ) && current_user_can( 'manage_options' ) ) {
+            if ( ! ( $reindex_version ) && current_user_can( AWS_Helpers::user_admin_capability() ) ) {
                 add_action( 'admin_notices', array( $this, 'admin_notice_no_index' ) );
             }
 
-            if ( $reindex_version && version_compare( $reindex_version, '1.23', '<' ) && current_user_can( 'manage_options' ) ) {
+            if ( $reindex_version && version_compare( $reindex_version, '1.23', '<' ) && current_user_can( AWS_Helpers::user_admin_capability() ) ) {
                 add_action( 'admin_notices', array( $this, 'admin_notice_reindex' ) );
             }
 
@@ -149,7 +151,7 @@ if ( ! class_exists( 'AWS_Versions' ) ) :
 
                 if ( version_compare( $current_version, '1.43', '<' ) ) {
 
-                    if ( ! AWS_Helpers::is_table_not_exist() ) {
+                    if ( ! AWS()->option_vars->is_index_table_not_exists() ) {
 
                         global $wpdb;
                         $table_name =  $wpdb->prefix . AWS_INDEX_TABLE_NAME;
@@ -431,6 +433,244 @@ if ( ! class_exists( 'AWS_Versions' ) ) :
 
                 }
 
+                if ( version_compare( $current_version, '2.76', '<' ) ) {
+
+                    $settings = get_option( 'aws_settings' );
+
+                    if ( $settings ) {
+                        if ( ! isset( $settings['index_shortcodes'] ) ) {
+                            $settings['index_shortcodes'] = 'true';
+                            update_option( 'aws_settings', $settings );
+                        }
+
+                    }
+
+                }
+
+                if ( version_compare( $current_version, '3.00', '<' ) ) {
+
+                    $settings = get_option( 'aws_settings' );
+
+                    if ( $settings ) {
+                        if ( ! isset( $settings['search_words_num'] ) ) {
+                            $settings['search_words_num'] = 6;
+                            update_option( 'aws_settings', $settings );
+                        }
+
+                    }
+
+                }
+
+                if ( version_compare( $current_version, '3.05', '<' ) ) {
+
+                    $settings = get_option( 'aws_settings' );
+
+                    if ( $settings ) {
+                        if ( ! isset( $settings['fuzzy'] ) ) {
+                            $settings['fuzzy'] = 'true';
+                            update_option( 'aws_settings', $settings );
+                        }
+
+                    }
+
+                }
+
+                if ( version_compare( $current_version, '3.34', '<' ) ) {
+
+                    $settings = get_option( 'aws_settings' );
+
+                    if ( $settings ) {
+                        if ( ! isset( $settings['search_page_highlight'] ) ) {
+                            $settings['search_page_highlight'] = 'false';
+                            update_option( 'aws_settings', $settings );
+                        }
+
+                    }
+
+                }
+
+                if ( version_compare( $current_version, '3.43', '<' ) ) {
+
+                    $settings = get_option( 'aws_settings' );
+
+                    if ( $settings ) {
+
+                        $update = false;
+                        $search_archives_new = array();
+
+                        if ( isset( $settings['search_archives'] )  ) {
+
+                            $available_archives = array( 'archive_category', 'archive_tag' );
+
+                            foreach ( $available_archives as $search_archive_name ) {
+                                $val = '0';
+                                if ( isset( $settings['search_archives'][$search_archive_name] ) && $settings['search_archives'][$search_archive_name] ) {
+                                    if ( is_array( $settings['search_archives'][$search_archive_name] ) && isset( $settings['search_archives'][$search_archive_name]['value'] ) ) {
+                                        break;
+                                    }
+                                    $val = '1';
+                                }
+
+                                $update = true;
+
+                                $search_archives_new[$search_archive_name]['value'] = $val;
+
+                            }
+
+                        }
+
+                        $settings['search_archives'] = $search_archives_new;
+
+                        if ( $update ) {
+                            update_option( 'aws_settings', $settings );
+                        }
+
+                    }
+
+                }
+
+                if ( version_compare( $current_version, '3.45', '<' ) ) {
+
+                    $settings = get_option( 'aws_settings' );
+
+                    if ( $settings ) {
+
+                        $update = false;
+
+                        $search_in_new = array();
+                        $index_new = array();
+
+                        // Search In options update
+                        if ( isset( $settings['search_in'] )  ) {
+
+                            $available_search_in = array( 'title', 'content', 'sku', 'excerpt',  'category', 'tag', 'id' );
+
+                            foreach ( $available_search_in as $search_in_name ) {
+
+                                $val = '0';
+                                if ( isset( $settings['search_in'][$search_in_name] ) && $settings['search_in'][$search_in_name] ) {
+                                    if ( is_array( $settings['search_in'][$search_in_name] ) && isset( $settings['search_in'][$search_in_name]['value'] ) ) {
+                                        break;
+                                    }
+                                    $val = '1';
+                                }
+
+                                $update = true;
+
+                                $search_in_new[$search_in_name]['value'] = $val;
+
+                            }
+
+                        }
+
+                        // Index Sources options update
+                        if ( isset( $settings['index_sources'] )  ) {
+
+                            $available_index_sources = array( 'title', 'content', 'sku', 'excerpt', 'category', 'tag', 'id' );
+
+                            foreach ( $available_index_sources as $search_source_name ) {
+
+                                $val = '0';
+                                if ( isset( $settings['index_sources'][$search_source_name] ) && $settings['index_sources'][$search_source_name] ) {
+                                    if ( is_array( $settings['index_sources'][$search_source_name] ) && isset( $settings['index_sources'][$search_source_name]['value'] ) ) {
+                                        break;
+                                    }
+                                    $val = '1';
+                                }
+
+                                $update = true;
+
+                                $index_new[$search_source_name]['value'] = $val;
+
+                            }
+
+                        }
+
+                        $settings['search_in'] = $search_in_new;
+                        $settings['index_sources'] = $index_new;
+
+                        if ( $update ) {
+                            update_option( 'aws_settings', $settings );
+                        }
+
+                    }
+
+                }
+
+                if ( version_compare( $current_version, '3.59', '<' ) ) {
+
+                    $settings = get_option( 'aws_settings' );
+
+                    if ( $settings ) {
+
+                        $update = false;
+
+                        if ( isset( $settings['search_in'] )  ) {
+
+                            $search_in_def_weights = AWS_Helpers::get_default_relevance_scores();
+
+                            foreach( $search_in_def_weights as $source_name => $source_weight ) {
+                                if ( isset( $settings['search_in'][$source_name] ) && is_array( $settings['search_in'][$source_name] ) && ! isset( $settings['search_in'][$source_name]['weight'] ) ) {
+                                    $update = true;
+                                    $settings['search_in'][$source_name]['weight'] = $source_weight;
+                                }
+                            }
+
+                        }
+
+                        if ( ! isset( $settings['search_archives_count'] ) ) {
+                            $settings['search_archives_count'] = 'true';
+                            $update = true;
+                        }
+
+                        if ( ! isset( $settings['search_archives_empty'] ) ) {
+                            $settings['search_archives_empty'] = 'false';
+                            $update = true;
+                        }
+
+                        if ( ! isset( $settings['search_archives_heading'] ) ) {
+                            $settings['search_archives_heading'] = 'false';
+                            $update = true;
+                        }
+
+                        if ( ! isset( $settings['search_archives_hierarchy'] ) ) {
+                            $settings['search_archives_hierarchy'] = 'false';
+                            $update = true;
+                        }
+
+                        if ( $update ) {
+                            update_option( 'aws_settings', $settings );
+                        }
+
+                    }
+
+                }
+
+                if ( version_compare( $current_version, '3.60', '<' ) ) {
+
+                    $settings = get_option( 'aws_settings' );
+
+                    if ( $settings ) {
+
+                        $update = false;
+
+                        if ( ! isset( $settings['show_result_cats'] ) ) {
+                            $settings['show_result_cats'] = 'false';
+                            $update = true;
+                        }
+
+                        if ( $update ) {
+                            update_option( 'aws_settings', $settings );
+                        }
+
+                    }
+
+                }
+
+            }
+
+            if ( $current_version && $current_version !== AWS_VERSION ) {
+                do_action( 'aws_new_plugin_version_released', AWS_VERSION );
             }
 
             update_option( 'aws_plugin_ver', AWS_VERSION );
@@ -440,10 +680,18 @@ if ( ! class_exists( 'AWS_Versions' ) ) :
         /**
          * Admin notice for table first reindex
          */
-        public function admin_notice_no_index() { ?>
+        public function admin_notice_no_index() {
+
+            $button = '<a class="button button-secondary" href="'.esc_url( admin_url('admin.php?page=aws-options') ).'">'.esc_html__( 'Go to Settings Page', 'advanced-woo-search' ).'</a>';
+            if ( isset( $_GET['page'] ) && $_GET['page'] === 'aws-options' ) {
+                $button = '';
+            }
+            ?>
+
             <div class="updated notice is-dismissible">
-                <p><?php printf( esc_html__( 'Advanced Woo Search: Please go to the plugin setting page and start indexing your products. %s', 'advanced-woo-search' ), '<a class="button button-secondary" href="'.esc_url( admin_url('admin.php?page=aws-options') ).'">'.esc_html__( 'Go to Settings Page', 'advanced-woo-search' ).'</a>'  ); ?></p>
+                <p><?php printf( esc_html__( 'Advanced Woo Search: Please go to the plugin setting page and start indexing your products. %s', 'advanced-woo-search' ), $button ); ?></p>
             </div>
+
         <?php }
 
         /**

@@ -145,7 +145,6 @@ var thwvsf_public_base = (function($, window, document) {
 		switch(type){
 			case 'radio':
 				value = $("input[type=radio][name="+name+"]:checked").val();
-
 				break;
 			case 'checkbox':
 				if(elm.data('multiple') == 1){
@@ -205,7 +204,7 @@ var thwvsf_public = (function($){
 			$form.on( 'change.thwvsf_variation_form', 'input[type="radio"].thwvsf-rad', { swatches_form : this }, this.onselectradio);
 
 			$form.on( 'check_variations.thwvsf_variation_form', { swatches_form : this }, this.onFindVariation );
-			$form.on( 'click.thwvsf_variation_form', '.reset_variations', { swatches_form: this }, this.onReset );
+			$form.on( 'click.thwvsf_variation_form keydown.thwvsf_variation_form', '.reset_variations', { swatches_form: this }, this.onReset );
 			$form.on( 'change.thwvs_variation_form', '.variations .thwvs-select', { swatches_form: this }, this.onchangeselect);
 			if(thwvsf_public_var.selectWoo_enable){
 				self.enableSwatchDropDown(self.$attributeFields, $form);
@@ -223,6 +222,14 @@ var thwvsf_public = (function($){
 		};
 
 		swatches_form.prototype.onReset = function( event ) {
+			  if (event.type === 'keydown') {
+				// Only trigger on Enter (13) or Space (32) keys
+				if (event.which !== 13 && event.which !== 32) {
+					return;
+				}
+				// Prevent default browser behavior for space/enter
+				event.preventDefault();
+			}
 
 			var form = event.data.swatches_form;
 			form.$form.find('.thwvsf_fields .thwvsf-checkbox').removeClass( 'thwvsf-selected' );
@@ -233,6 +240,7 @@ var thwvsf_public = (function($){
 			form.$form.find('.thwvsf-rad').prop("checked", false);
 			form.$form.find('.thwvsf-rad').attr('checked',false);
 			form.$form.find('.thwvsf-rad-li > label').removeClass( 'thwvsf-selected' );
+			form.$form.find('.thwvsf-wrapper-ul[role="listbox"] [role="option"]').attr('aria-selected', 'false');
 			var $element = $( this );
 			
 			var $button = $element.parents('.variations_form').siblings('.thwvsf_add_to_cart_button');	
@@ -256,7 +264,7 @@ var thwvsf_public = (function($){
 			if ( ! $select.find( 'option[value="'+opt_val+'"]').length ) {
 				$element.siblings( '.thwvsf-checkbox' ).removeClass( 'thwvsf-selected' );
 				$select.val( '' ).change();
-				alert('123');
+				alert('No combination');
 				return false;
 			}
 
@@ -334,24 +342,28 @@ var thwvsf_public = (function($){
 				if(current_attr_select.hasClass('wc-bundle') ){
 					var current_attr_name  = 'attribute_'+current_attr_select.attr('id');
 				}
-				
-				var $current_attr = form.$form.find('.'+ current_attr_name);
-			
+
+				var $current_attr = form.$form.find('.thwvsf-checkbox'+'[data-attribute_name= "'+ current_attr_name +'"]');
+				//var $current_attr = form.$form.find('.'+current_attr_name);
 				$current_attr.addClass('deactive');
+
 				var options = current_attr_select.children( 'option');
 
 				options.each( function(i,option){
 			 		var opt_val = option.value;			 		
 			 		if(opt_val != ''){
-			 			opt_val = opt_val.replace(/[^a-z0-9_-]/gi, "");
-			 			var $current_opt = form.$form.find('.'+ current_attr_name + '[data-value="'+ opt_val +'"]');
-			 			if($current_opt.length > 0 ){
+			 			//var $current_opt = form.$form.find("[data-value='" + opt_val + "']");
+			 			var $current_opt = form.$form.find('[data-value="' + opt_val + '"]');
 
+			 			if($current_opt.length == 0){
+			 				$current_opt = form.$form.find('option[value="' + opt_val + '"]');
+			 			}
+			 			
+			 			if($current_opt.length > 0 ){
 			 				$current_opt.removeClass('deactive');
 			 			}else{
-			 				opt_val = opt_val.replace(/[^a-z0-9_-]/gi, "");
-			 				
-			 				var $current_opt = form.$form.find('.'+ current_attr_name +'.'+ opt_val);
+			 				//opt_val = opt_val.replace(/[^a-z0-9_-]/gi, "");
+			 				var $current_opt = form.$form.find('.thwvsf-checkbox'+'.'+ opt_val);
 			 				$current_opt.removeClass('deactive');
 			 			}
 			 		}
@@ -369,32 +381,29 @@ var thwvsf_public = (function($){
 					var variation = variations[i];
 					var variation_attributes =  variation.attributes;
 
-					var attribute_key = Object.keys(variation_attributes);
-					var attr_item_name = attribute_key[0];
-
-					var attr_item_name_class = attr_item_name.replace(/[^a-z0-9_-]/gi, "");
-
-					var current_attr_select = $(attributeFields);
+					var attribute_key = Object.keys(variation_attributes),
+						attr_item_name = attribute_key[0],
+						attr_item_name_class = attr_item_name,
+						current_attr_select = $(attributeFields);
 
 					if($(attributeFields).hasClass('wc-bundle') ){
 						attr_item_name_class = 'attribute_'+current_attr_select.attr('id');
 					}
+					attr_item_name_class = attr_item_name_class.replace(/[^a-z0-9_-]/gi, "");
 
-					var attribute_value = variation_attributes[attr_item_name];
-				
-					var attribute_value_class = attribute_value.replace(/[^a-z0-9_-]/gi, "");
+					var attribute_value = variation_attributes[attr_item_name],
+						attribute_value_class = attribute_value.replace(/[^a-z0-9_-]/gi, "");
 	 
 					var is_in_stock = variation.is_in_stock;
 
 					var attr_option_class = '';
-					if(attr_item_name_class){
+					if(attribute_value_class){
 
 						attr_option_class = '.' + attr_item_name_class;
-						if(attribute_value_class){
-							attr_option_class = attr_option_class + '.' + attribute_value_class;
-						}
+						attr_option_class = attr_option_class + '.' + attribute_value_class;
+						
 					}else{
-						attr_option_class = '.' + attr_item_name + '[data-value="'+ attribute_value +'"]';
+						attr_option_class = '.' + attr_item_name_class + '[data-value="'+ attribute_value +'"]';
 					}
 
 					if(!is_in_stock && out_of_stock != 'default'){
@@ -464,20 +473,22 @@ var thwvsf_public = (function($){
 									if(jQuery.inArray(current_attr_name,selected_term_names) == -1){
 
 										var current_attr_val = variation_attributes[current_attr_name];
+
 										var attr_item_name_class = current_attr_name.replace(/[^a-z0-9_-]/gi, "");
-										var attribute_value_class = current_attr_val.replace(/[^a-z0-9_-]/gi, "");
 
 										var current_attr_select = $('select.cls_'+attr_item_name_class);
-										
 										if(current_attr_select.hasClass('wc-bundle') ){	
 											attr_item_name_class  = 'attribute_'+current_attr_select.attr('id');
 										}
+
+										attr_item_name_class = attr_item_name_class.replace(/[^a-z0-9_-]/gi, "");
+										var attribute_value_class = current_attr_val.replace(/[^a-z0-9_-]/gi, "");
 
 										var attr_option_class = '';
 										if(attribute_value_class){
 											attr_option_class = '.' + attr_item_name_class + '.' + attribute_value_class
 										}else{
-											attr_option_class = '.' + attr_item_name_class + '[data-value="'+ attribute_value +'"]';
+											attr_option_class = '.' + attr_item_name_class + '[data-value="'+ current_attr_val +'"]';
 										}
 
 										var is_in_stock = variation.is_in_stock;
@@ -523,16 +534,16 @@ var thwvsf_public = (function($){
 												attr_item_name_class = de_attr_name.replace(/[^a-z0-9_-]/gi, ""),
 												attribute_value_class = current_os_attr_val.replace(/[^a-z0-9_-]/gi, "");
 
-											var current_attr_select = $('select.cls_'+de_attr_name);
+											var current_attr_select = $('select.cls_'+attr_item_name_class);
 											if(current_attr_select.hasClass('wc-bundle') ){	
 												attr_item_name_class  = 'attribute_'+current_attr_select.attr('id');
 											}
-
+											attr_item_name_class = attr_item_name_class.replace(/[^a-z0-9_-]/gi, "");
 											var attr_option_class = '';
 											if(attribute_value_class){
 												attr_option_class = '.' + attr_item_name_class + '.' + attribute_value_class
 											}else{
-												attr_option_class = '.' + attr_item_name_class + '[data-value="'+ os_attr_value +'"]';
+												attr_option_class = '.' + attr_item_name_class + '[data-value="'+ current_os_attr_val +'"]';
 											}
 
 											form.$form.find(attr_option_class).addClass('out_of_stock');
@@ -734,15 +745,17 @@ var thwvsf_public = (function($){
     }
 
     $(document).on('click', '.owp-quick-view', function(e) {
-		var check = function(){
-	    	var html = $('html');
-	      	if(html.hasClass('owp-qv-open')){
-	        	init_thwvsf();
-	      	}else {
-	        	setTimeout(check, 1000);
-	      	}
-	    }
-	    check();
+		
+	    var check = function(){
+		    if($('#owp-qv-wrap').hasClass('is-visible')){
+		    	
+		    	init_thwvsf();
+
+		    }else{
+		    	setTimeout(check, 1000);
+		    }
+		}
+		check();
 	});
     
     if("pi_dcw" === thwvsf_public_var.is_quick_view ){
@@ -751,6 +764,7 @@ var thwvsf_public = (function($){
 	        $( document ).ajaxComplete( function( event, request, options ) {
 
 	        	if ( request && 4 === request.readyState && 200 === request.status && ($(event.target).find('.pisol-quick-view-box').length > 0)) {
+					
 					initialize_thwvsf();
 				}
 
@@ -759,7 +773,148 @@ var thwvsf_public = (function($){
 	    });
 	}
 
-    return {
+    
+	 function initSwatchAccessibility() {
+        $('.thwvsf-wrapper-ul[role="listbox"]').each(function() {
+            var listbox = this;
+            var options = $(listbox).find('[role="option"]');
+            var currentIndex = 0;
+
+            // Find initially selected item or default to first
+            var selectedIndex = options.index(options.filter('[aria-selected="true"]'));
+            if (selectedIndex >= 0) {
+                currentIndex = selectedIndex;
+            }
+
+            // Set initial tabindex
+            options.attr('tabindex', '-1');
+            $(options[currentIndex]).attr('tabindex', '0');
+
+            // Handle keyboard navigation
+            $(listbox).on('keydown', '[role="option"]', function(e) {
+                var currentOption = $(this);
+                currentIndex = options.index(currentOption);
+
+                switch (e.key) {
+                    case 'ArrowRight':
+                    case 'ArrowDown':
+                        e.preventDefault();
+                        moveToNext();
+                        break;
+                    case 'ArrowLeft':
+                    case 'ArrowUp':
+                        e.preventDefault();
+                        moveToPrevious();
+                        break;
+                    case ' ':
+                    case 'Enter':
+                        e.preventDefault();
+                        selectOption(currentIndex);
+                        break;
+                    case 'Home':
+                        e.preventDefault();
+                        moveToFirst();
+                        break;
+                    case 'End':
+                        e.preventDefault();
+                        moveToLast();
+                        break;
+                }
+            });
+
+            // Handle click selection - don't prevent default to allow original handler
+            options.on('click', function(e) {
+                currentIndex = options.index(this);
+                updateFocus();
+                // Don't call selectOption here - let the original handler do the work
+                // Just update the accessibility attributes
+                updateSelectionState(currentIndex);
+            });
+
+            function moveToNext() {
+                currentIndex = (currentIndex + 1) % options.length;
+                updateFocus();
+            }
+
+            function moveToPrevious() {
+                currentIndex = (currentIndex - 1 + options.length) % options.length;
+                updateFocus();
+            }
+
+            function moveToFirst() {
+                currentIndex = 0;
+                updateFocus();
+            }
+
+            function moveToLast() {
+                currentIndex = options.length - 1;
+                updateFocus();
+            }
+
+            function updateFocus() {
+                options.attr('tabindex', '-1');
+                $(options[currentIndex]).attr('tabindex', '0').focus();
+            }
+
+            function selectOption(index) {
+                const selectedOption = $(options[index]);
+                
+                // Update accessibility attributes
+                updateSelectionState(index);
+                
+                // Trigger the original click event to maintain existing functionality
+                selectedOption.trigger('click.thwvsf_variation_form');
+            }
+
+            function updateSelectionState(index) {
+                // Clear previous selections
+                options.attr('aria-selected', 'false');
+                
+                // Select current option
+                $(options[index]).attr('aria-selected', 'true');
+            }
+        });
+    }
+	// Re-initialize after AJAX updates and listen for selection changes
+    // $(document.body).on('woocommerce_update_variation_values', function() {
+    //     setTimeout(initSwatchAccessibility, 100);
+    // });
+
+    // Initialize on page load
+    initSwatchAccessibility();
+
+	$(document).on('keydown', '.thwvsf-rad', function(e) {
+    var $radios = $(this).closest('.thwvsf-rad-li').find('.thwvsf-rad');
+    var currentIndex = $radios.index(this);
+    var nextIndex;
+    
+    switch(e.which) {
+        case 37: // Left arrow
+        case 38: // Up arrow
+            e.preventDefault();
+            nextIndex = currentIndex > 0 ? currentIndex - 1 : $radios.length - 1;
+            $radios.eq(nextIndex).focus().prop('checked', true).trigger('change');
+            updateTabIndex($radios, nextIndex);
+            break;
+            
+        case 39: // Right arrow  
+        case 40: // Down arrow
+            e.preventDefault();
+            nextIndex = currentIndex < $radios.length - 1 ? currentIndex + 1 : 0;
+            $radios.eq(nextIndex).focus().prop('checked', true).trigger('change');
+            updateTabIndex($radios, nextIndex);
+            break;
+    }
+});
+
+function updateTabIndex($radios, focusedIndex) {
+    $radios.attr('tabindex', '-1');
+    $radios.eq(focusedIndex).attr('tabindex', '0');
+}
+	
+
+
+	return {
 		initialize_thwvsf : initialize_thwvsf,
 	};
 

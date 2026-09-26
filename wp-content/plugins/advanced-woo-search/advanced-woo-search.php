@@ -3,12 +3,14 @@
 /*
 Plugin Name: Advanced Woo Search
 Description: Advance ajax WooCommerce product search.
-Version: 2.68
+Version: 3.71
 Author: ILLID
-Author URI: https://advanced-woo-search.com/
+Plugin URI: https://kramakit.com/
+Author URI: https://kramakit.com/
 Text Domain: advanced-woo-search
+Requires Plugins: woocommerce
 WC requires at least: 3.0.0
-WC tested up to: 7.1.0
+WC tested up to: 11.1.0
 */
 
 
@@ -44,6 +46,16 @@ final class AWS_Main {
      */
     public $cache = null;
 
+    /**
+     * @var AWS_Main Table updates instance
+     */
+    public $table_updates = null;
+
+    /**
+     * @var AWS_Main Candition vars
+     */
+    public $option_vars = null;
+
 	/**
 	 * Main AWS_Main Instance
 	 *
@@ -66,11 +78,11 @@ final class AWS_Main {
 
         $this->define_constants();
 
+        $this->set_options_vars();
+
         $this->data['settings'] = get_option( 'aws_settings' );
 
 		add_filter( 'widget_text', 'do_shortcode' );
-
-		add_shortcode( 'aws_search_form', array( $this, 'markup' ) );
 
 		add_action( 'wp_enqueue_scripts', array( $this, 'load_scripts' ) );
 
@@ -84,6 +96,8 @@ final class AWS_Main {
 
         add_filter( 'wcml_multi_currency_ajax_actions', array( $this, 'add_wpml_ajax_actions' ) );
 
+        add_action( 'before_woocommerce_init', array( $this, 'declare_wc_features_support' ) );
+
         if ( $this->get_settings('seamless') === 'true' ) {
             add_filter( 'get_search_form', array( $this, 'markup_filter' ), 999999 );
             add_filter( 'get_product_search_form', array( $this, 'markup_filter' ), 999999 );
@@ -96,7 +110,7 @@ final class AWS_Main {
      */
     private function define_constants() {
 
-        $this->define( 'AWS_VERSION', '2.68' );
+        $this->define( 'AWS_VERSION', '3.71' );
 
         $this->define( 'AWS_DIR', plugin_dir_path( AWS_FILE ) );
         $this->define( 'AWS_URL', plugin_dir_url( AWS_FILE ) );
@@ -104,6 +118,18 @@ final class AWS_Main {
         $this->define( 'AWS_INDEX_TABLE_NAME', 'aws_index' );
         $this->define( 'AWS_CACHE_TABLE_NAME', 'aws_cache' );
 
+    }
+
+    /**
+     * Set specific options variables
+     */
+    private function set_options_vars() {
+        if ( ! class_exists( 'AWS_Option_Vars', false ) ) {
+            include_once( 'includes/class-aws-option-vars.php' );
+        }
+        if ( ! $this->option_vars ) {
+            $this->option_vars = new AWS_Option_Vars();
+        }
     }
 
     /**
@@ -115,19 +141,26 @@ final class AWS_Main {
         include_once( 'includes/class-aws-versions.php' );
         include_once( 'includes/class-aws-cache.php' );
         include_once( 'includes/class-aws-plurals.php' );
+        include_once( 'includes/class-aws-similar-terms.php' );
         include_once( 'includes/class-aws-table.php' );
         include_once( 'includes/class-aws-table-data.php' );
+        include_once( 'includes/class-aws-table-updates.php' );
         include_once( 'includes/class-aws-markup.php' );
         include_once( 'includes/class-aws-search.php' );
         include_once( 'includes/class-aws-tax-search.php' );
         include_once( 'includes/class-aws-search-page.php' );
         include_once( 'includes/class-aws-order.php' );
         include_once( 'includes/class-aws-integrations.php' );
+        include_once( 'includes/class-aws-langs.php' );
+        include_once( 'includes/class-aws-hooks.php' );
+        include_once( 'includes/class-aws-shortcodes.php' );
+        include_once( 'includes/class-aws-nav-menu.php' );
         include_once( 'includes/widget.php' );
 
         // Admin
         include_once( 'includes/admin/class-aws-admin-notices.php' );
         include_once( 'includes/admin/class-aws-admin.php' );
+        include_once( 'includes/admin/class-aws-admin-helpers.php' );
         include_once( 'includes/admin/class-aws-admin-ajax.php' );
         include_once( 'includes/admin/class-aws-admin-fields.php' );
         include_once( 'includes/admin/class-aws-admin-options.php' );
@@ -183,8 +216,16 @@ final class AWS_Main {
      * Init plugin classes
      */
     public function init() {
+        if ( ! $this->option_vars ) {
+            $this->option_vars = new AWS_Option_Vars();
+        }
         $this->cache = AWS_Cache::factory();
+        $this->table_updates = new AWS_Table_Updates();
         AWS_Integrations::instance();
+        AWS_Hooks::instance();
+        AWS_Shortcodes::instance();
+        AWS_Nav_Menu::instance();
+        AWS_Langs::instance();
     }
 
 	/*
@@ -200,8 +241,8 @@ final class AWS_Main {
         wp_localize_script('aws-script', 'aws_vars', array(
             'sale'       => __('Sale!', 'advanced-woo-search'),
             'sku'        => __('SKU', 'advanced-woo-search') . ': ',
-            'showmore'   => $this->get_settings('show_more_text') ? AWS_Helpers::translate( 'show_more_text', stripslashes( $this->get_settings('show_more_text') ) ) : __('View all results', 'advanced-woo-search'),
-            'noresults'  => $this->get_settings('not_found_text') ? AWS_Helpers::translate( 'not_found_text', stripslashes( $this->get_settings('not_found_text') ) ) : __('Nothing found', 'advanced-woo-search'),
+            'showmore'   => $this->get_settings('show_more_text') ? AWS_Helpers::translate( 'show_more_text', stripslashes( strip_tags( html_entity_decode( $this->get_settings('show_more_text') ) ) ) ) : __('View all results', 'advanced-woo-search'),
+            'noresults'  => $this->get_settings('not_found_text') ? AWS_Helpers::translate( 'not_found_text', stripslashes( wp_kses( html_entity_decode( $this->get_settings('not_found_text') ), AWS_Helpers::get_kses( AWS_Helpers::kses_textarea_allowed_tags() ) ) ) ) : __('Nothing found', 'advanced-woo-search'),
         ));
 	}
 
@@ -246,6 +287,15 @@ final class AWS_Main {
     function add_wpml_ajax_actions( $actions ){
         $actions[] = 'aws_action';
         return $actions;
+    }
+
+    /*
+     * Declare support for WooCommerce features
+     */
+    public function declare_wc_features_support() {
+        if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+            \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+        }
     }
 
 }

@@ -3,15 +3,15 @@
 /*
 Plugin Name: Conditional Shipping for WooCommerce
 Description: Disable shipping methods based on shipping classes, weight, categories and much more.
-Version:     2.3.1
+Version:     3.7.0
 Author:      Lauri Karisola / WP Trio
 Author URI:  https://wptrio.com
-Text Domain: woo-conditional-shipping
+Text Domain: conditional-shipping-for-woocommerce
 Domain Path: /languages
 License:     GPL2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
-WC requires at least: 3.0.0
-WC tested up to: 6.0.0
+WC requires at least: 8.0.0
+WC tested up to: 10.0.0
 */
 
 /**
@@ -25,14 +25,14 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Plugin version
  */
 if ( ! defined( 'WOO_CONDITIONAL_SHIPPING_VERSION' ) ) {
-	define( 'WOO_CONDITIONAL_SHIPPING_VERSION', '2.3.1' );
+	define( 'WOO_CONDITIONAL_SHIPPING_VERSION', '3.7.0' );
 }
 
 /**
  * Assets version
  */
 if ( ! defined( 'WOO_CONDITIONAL_SHIPPING_ASSETS_VERSION' ) ) {
-	define( 'WOO_CONDITIONAL_SHIPPING_ASSETS_VERSION', '2.3.1.free' );
+	define( 'WOO_CONDITIONAL_SHIPPING_ASSETS_VERSION', '3.7.0.free' );
 }
 
 /**
@@ -42,10 +42,22 @@ if ( ! defined( 'WOO_CONDITIONAL_SHIPPING_ASSETS_VERSION' ) ) {
  */
 add_action( 'plugins_loaded', 'woo_conditional_shipping_load_textdomain' );
 function woo_conditional_shipping_load_textdomain() {
-  load_plugin_textdomain( 'woo-conditional-shipping', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
+  load_plugin_textdomain( 'conditional-shipping-for-woocommerce', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 }
 
+/**
+ * HPOS compatibility
+ */
+add_action( 'before_woocommerce_init', function() {
+	if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+	}
+} );
+
 class Woo_Conditional_Shipping {
+	public $frontend;
+	private static $instance = null;
+
 	/**
 	 * Constructor
 	 */
@@ -64,10 +76,29 @@ class Woo_Conditional_Shipping {
 			define( 'WOO_CONDITIONAL_SHIPPING_BASENAME', plugin_basename( __FILE__ ) );
 		}
 
+		if ( ! defined( 'WOO_CONDITIONAL_SHIPPING_URL' ) ) {
+			define( 'WOO_CONDITIONAL_SHIPPING_URL', plugin_dir_url( __FILE__ ) );
+		}
+
+		if ( ! defined( 'WOO_CONDITIONAL_SHIPPING_FILE' ) ) {
+			define( 'WOO_CONDITIONAL_SHIPPING_FILE', __FILE__ );
+		}
+
 		$this->includes();
 
 		// Go Pro settings link
 		add_filter( 'plugin_action_links_' . plugin_basename(__FILE__), array( $this, 'add_settings_link' ) );
+	}
+
+	/**
+	 * Get instance
+	 */
+	public static function instance() {
+		if ( self::$instance == null ) {
+			self::$instance = new Woo_Conditional_Shipping();
+		}
+	
+		return self::$instance;
 	}
 
 	/**
@@ -91,7 +122,7 @@ class Woo_Conditional_Shipping {
 			$this->admin_includes();
 		}
 
-		$this->load_class( plugin_dir_path( __FILE__ ) . 'includes/frontend/class-woo-conditional-shipping-frontend.php', 'Woo_Conditional_Shipping_Frontend' );
+		$this->frontend = $this->load_class( plugin_dir_path( __FILE__ ) . 'includes/frontend/class-woo-conditional-shipping-frontend.php', 'Woo_Conditional_Shipping_Frontend' );
 	}
 
 	/**
@@ -118,14 +149,14 @@ class Woo_Conditional_Shipping {
 	 * Add settings link to the plugins page.
 	 */
 	public function add_settings_link( $links ) {
-		$link = '<span style="font-weight:bold;"><a href="https://wptrio.com/products/conditional-shipping" style="color:#46b450;" target="_blank">' . __( 'Go Pro' ) . '</a></span>';
+		$link = '<span style="font-weight:bold;"><a href="https://wptrio.com/products/conditional-shipping/" style="color:#46b450;" target="_blank">' . __( 'Go Pro' ) . '</a></span>';
 
 		return array_merge( array( $link ), $links );
 	}
 }
 
 function init_woo_conditional_shipping() {
-	new Woo_Conditional_Shipping();
+	Woo_Conditional_Shipping::instance();
 }
 
-add_action( 'plugins_loaded', 'init_woo_conditional_shipping', 110 );
+add_action( 'plugins_loaded', 'init_woo_conditional_shipping', 10 );

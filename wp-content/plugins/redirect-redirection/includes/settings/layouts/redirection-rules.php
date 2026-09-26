@@ -20,12 +20,12 @@ $exportNonceUrl = wp_nonce_url($adminUrl, $action, "_irrp_nonce");
 <div class="ir-import-redirects-container">
     <?php $irImportLinkCls = $countRedirects ? "ir-hidden" : ""; ?>
     <span class="ir-import-redirects-container__bottom-note highlighted ir-import-redirects <?php echo $irImportLinkCls; ?>">
-        <?php _e("...or", "redirect-redirection"); ?>
-        <label for="irrp_import_redirects">
+        <label for="irrp_import_redirects" style="cursor: pointer;">
+            <?php _e("...or", "redirect-redirection"); ?>
             <?php _e("<strong>import</strong> ", "redirect-redirection"); ?>
             <input type="file" name="import" id="irrp_import_redirects" data-nonce="<?php echo wp_create_nonce(md5(ABSPATH . get_home_url())); ?>" />
+            <?php _e("a list of specific URL redirections", "redirect-redirection"); ?>
         </label>
-        <?php _e("a list of specific URL redirections", "redirect-redirection"); ?>
     </span>
 </div>
 <div class="custom-body <?php esc_attr_e($customBodyClass); ?>">

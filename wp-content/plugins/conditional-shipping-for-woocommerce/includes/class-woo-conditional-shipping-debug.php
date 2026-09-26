@@ -10,7 +10,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Woo_Conditional_Shipping_Debug {
   private static $instance = null;
 
-  private $blown_debug = false;
+  private $block_rendered = false;
+
+  private $data = [];
   private $product_attrs = [];
   private $customer_roles = [];
   private $states = [];
@@ -28,7 +30,19 @@ class Woo_Conditional_Shipping_Debug {
       return;
     }
 
-    // Output debug information
+    // Format data
+    add_action( 'woocommerce_init', [ $this, 'format' ], 10, 0 );
+
+    // Record shipping zone
+    add_action( 'woocommerce_load_shipping_methods', [ $this, 'record_zone' ], 100, 1 );
+
+    // Enqueue scripts
+    add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_scripts' ], 10, 0 );
+
+    // Render debug information (blocks-based checkout)
+    add_filter( 'render_block', [ $this, 'render_block' ], 10, 1 );
+
+    // Render debug information (classic checkout)
     add_action( 'woocommerce_before_checkout_form', [ $this, 'output_debug_checkout' ], 10, 0 );
 
     // Add debug info to fragments
@@ -36,14 +50,73 @@ class Woo_Conditional_Shipping_Debug {
 
     // Blow cache at every page load so we can get fresh shipping info
     WC_Cache_Helper::get_transient_version( 'shipping', true );
+  }
 
-    // Reset debug info when starting to calculate shipping
-    add_action( 'woocommerce_before_get_rates_for_package', function() {
-      if ( ! $this->blown_debug ) {
-        WC()->session->set( 'wcs_debug', [] );
-        $this->blown_debug = true;
+  /**
+   * Render debug information in the checkout (blocks-based checkout) 
+   */
+  public function render_block( $content ) {
+    if ( ! $this->block_rendered && $this->is_blocks_checkout() && function_exists( 'is_checkout' ) && is_checkout() ) {
+      $this->output_debug_checkout( true );
+    }
+
+    $this->block_rendered = true;
+
+    return $content;
+  }
+
+  /**
+   * Check if blocks-based checkout is used
+   */
+  public function is_blocks_checkout() {
+    if ( class_exists( 'Automattic\WooCommerce\Blocks\Utils\CartCheckoutUtils' ) && is_callable( [ 'Automattic\WooCommerce\Blocks\Utils\CartCheckoutUtils', 'is_checkout_block_default'] ) && \Automattic\WooCommerce\Blocks\Utils\CartCheckoutUtils::is_checkout_block_default() ) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Format debug data
+   */
+  public function format() {
+    // Do not run for admin
+    if ( is_admin() ) {
+      return;
+    }
+
+    // Do not run if all rulesets are disabled
+    if ( get_option( 'wcs_disable_all', false ) ) {
+      return;
+    }
+    
+    $this->data = [];
+
+    $this->data['shipping_methods'] = [
+      'before' => [],
+      'after' => [],
+    ];
+
+    $this->data['shipping_zone'] = false;
+
+    $this->data['rulesets'] = [];
+    foreach ( woo_conditional_shipping_get_rulesets( true ) as $ruleset ) {
+      $this->data['rulesets'][$ruleset->get_id()] = [
+        'conditions' => [],
+        'actions' => [],
+        'ruleset_id' => $ruleset->get_id(),
+        'ruleset_title' => $ruleset->get_title(),
+        'result' => false,
+      ];
+
+      foreach ( $ruleset->get_conditions() as $index => $condition ) {
+        $this->add_condition( $ruleset->get_id(), $index, $condition, false );
       }
-    }, 0, 0 );
+
+      foreach ( $ruleset->get_actions() as $index => $action ) {
+        $this->add_action( $ruleset->get_id(), false, $index, $action );
+      }
+    }
   }
 
   /**
@@ -61,7 +134,28 @@ class Woo_Conditional_Shipping_Debug {
    * Get debug mode status
    */
   public function is_enabled() {
-    return (bool) get_option( 'wcs_debug_mode', false );
+    $debug_mode = strval( get_option( 'wcs_debug_mode', '' ) );
+
+    switch ( $debug_mode ) {
+      case '1':
+        return true;
+      case 'admin':
+        return current_user_can( 'manage_woocommerce' );
+    }
+
+    return false;
+  }
+
+  /**
+   * Enqueue scripts and styles
+   */
+  public function enqueue_scripts() {
+    wp_enqueue_script(
+      'woo-conditional-shipping-debug-js',
+      WOO_CONDITIONAL_SHIPPING_URL . 'frontend/js/woo-conditional-shipping-debug.js',
+      [ 'jquery' ],
+      WOO_CONDITIONAL_SHIPPING_ASSETS_VERSION
+    );
   }
 
   /**
@@ -77,7 +171,12 @@ class Woo_Conditional_Shipping_Debug {
    * Output debug information
    */
   public function output_debug_checkout( $echo = true ) {
-    $debug = (array) WC()->session->get( 'wcs_debug', [] );
+    // Do not show in order received page
+    if ( function_exists( 'is_order_received_page' ) && is_order_received_page() ) {
+      return '';
+    }
+
+    $debug = $this->data;
 
     ob_start();
 
@@ -93,46 +192,6 @@ class Woo_Conditional_Shipping_Debug {
   }
 
   /**
-   * Get debug information for ruleset
-   */
-  public function get_debug_info( $ruleset_id = null ) {
-    $debug = (array) WC()->session->get( 'wcs_debug', [] );
-
-    if ( ! isset( $debug['rulesets'] ) ) {
-      $debug['rulesets'] = [];
-    }
-
-    if ( ! isset( $debug['shipping_methods'] ) ) {
-      $debug['shipping_methods'] = [
-        'before' => [],
-        'after' => [],
-      ];
-    }
-
-    if ( ! isset( $debug['shipping_zone'] ) ) {
-      $debug['shipping_zone'] = false;
-    }
-
-    if ( $ruleset_id && ! isset( $debug['rulesets'][$ruleset_id] ) ) {
-      $debug['rulesets'][$ruleset_id] = [
-        'conditions' => [],
-        'actions' => [],
-        'ruleset_id' => $ruleset_id,
-        'ruleset_title' => get_the_title( $ruleset_id ),
-      ];
-    }
-
-    return $debug;
-  }
-
-  /**
-   * Save debug information for ruleset
-   */
-  public function save_debug_info( $debug ) {
-    WC()->session->set( 'wcs_debug', $debug );
-  }
-
-  /**
    * Add condition result
    */
   public function add_condition( $ruleset_id, $condition_index, $condition, $result ) {
@@ -140,45 +199,48 @@ class Woo_Conditional_Shipping_Debug {
       return;
     }
 
+    // Skip empty condition
+    if ( ! isset( $condition['type'] ) || empty( $condition['type'] ) ) {
+      return;
+    }
+
     $desc = $this->translate_condition( $condition );
 
-    $debug = $this->get_debug_info( $ruleset_id );
-
-    $debug['rulesets'][$ruleset_id]['conditions'][$condition_index] = [
+    $this->data['rulesets'][$ruleset_id]['conditions'][$condition_index] = [
       'desc' => $desc,
       'result' => $result,
     ];
-
-    $this->save_debug_info( $debug );
   }
 
   /**
    * Record shipping zone
    */
   public function record_zone( $package ) {
-    if ( $this->is_enabled() && is_checkout() ) {
-      $debug = $this->get_debug_info();
-      
-      if ( ! $debug['shipping_zone'] && is_array( $package ) && isset( $package['destination'] ) ) {
-        $zone = WC_Shipping_Zones::get_zone_matching_package( $package );
+    if ( ! $this->is_enabled() ) {
+      return;
+    }
 
-        if ( $zone ) {
-          $zone_url = add_query_arg( [
-            'page' => 'wc-settings',
-            'tab' => 'shipping',
-            'zone_id' => $zone->get_id(),
-          ], admin_url( 'admin.php' ) );
-    
-          $debug['shipping_zone'] = [
-            'name' => $zone->get_zone_name(),
-            'id' => $zone->get_id(),
-            'url' => $zone_url,
-            'name_with_url' => sprintf( '<a href="%s" target="_blank">%s</a>', $zone_url, $zone->get_zone_name() ),
-          ];
-    
-          $this->save_debug_info( $debug );
-        }
-      }
+    // This function will also run in admin and possibly other places so
+    // we have to check if there is really a package to be calculated
+    if ( ! is_array( $package ) || ! isset( $package['destination'] ) || empty( $package['destination'] ) ) {
+      return;
+    }
+
+    $zone = WC_Shipping_Zones::get_zone_matching_package( $package );
+
+    if ( $zone ) {
+      $zone_url = add_query_arg( [
+        'page' => 'wc-settings',
+        'tab' => 'shipping',
+        'zone_id' => $zone->get_id(),
+      ], admin_url( 'admin.php' ) );
+
+      $this->data['shipping_zone'] = [
+        'name' => $zone->get_zone_name(),
+        'id' => $zone->get_id(),
+        'url' => $zone_url,
+        'name_with_url' => sprintf( '<a href="%s" target="_blank">%s</a>', $zone_url, $zone->get_zone_name() ),
+      ];
     }
   }
 
@@ -197,11 +259,7 @@ class Woo_Conditional_Shipping_Debug {
       }
     }
 
-    $debug = $this->get_debug_info();
-
-    $debug['shipping_methods'][$mode] = $simplified_rates;
-
-    $this->save_debug_info( $debug );
+    $this->data['shipping_methods'][$mode] = $simplified_rates;
   }
 
   /**
@@ -212,11 +270,12 @@ class Woo_Conditional_Shipping_Debug {
       return;
     }
 
-    $debug = $this->get_debug_info( $ruleset_id );
+    // Skip empty action
+    if ( ! isset( $action['type'] ) || empty( $action['type'] ) ) {
+      return;
+    }
 
-    $debug['rulesets'][$ruleset_id]['actions'][$action_index] = $this->translate_action( $action, $passes );
-
-    $this->save_debug_info( $debug );
+    $this->data['rulesets'][$ruleset_id]['actions'][$action_index] = $this->translate_action( $action, $passes );
   }
 
   /**
@@ -224,42 +283,62 @@ class Woo_Conditional_Shipping_Debug {
    */
   public function translate_action( $action, $passes ) {
     $actions = woo_conditional_shipping_actions();
+    $price_modes = wcs_get_price_modes();
+    $price_per_options = wcs_get_price_per_options();
 
     $cols = [
-      isset( $actions[$action['type']] ) ? $actions[$action['type']]['title'] : __( 'N/A', 'woo-conditional-shipping' ),
+      isset( $actions[$action['type']] ) ? $actions[$action['type']]['title'] : __( 'N/A', 'conditional-shipping-for-woocommerce' ),
     ];
 
-    $desc = false;
-    $status = 'pass';
+    $note = false;
+    $status = $passes ? 'pass' : 'skip';
+    $label = $passes ? __( 'Run', 'conditional-shipping-for-woocommerce' ) : __( 'Skip', 'conditional-shipping-for-woocommerce' );
 
     switch ( $action['type'] ) {
       case 'disable_shipping_methods':
       case 'enable_shipping_methods':
+      case 'enable_shipping_methods_new':
         $cols['methods'] = implode( ', ', $this->get_shipping_method_titles( $action ) );
         break;
       case 'set_price':
       case 'increase_price':
       case 'decrease_price':
         $cols['methods'] = implode( ', ', $this->get_shipping_method_titles( $action ) );
-        $cols['value'] = $action['price'];
+        $price_mode = isset( $action['price_mode'] ) ? $action['price_mode'] : 'fixed';
+        $price_mode_desc = isset( $price_modes[$price_mode] ) ? $price_modes[$price_mode] : '';
+
+        $price_per_desc = '';
+        if ( in_array( $price_mode, [ 'per_weight_unit', 'per_piece', 'per_volume' ], true ) ) {
+          $price_per = isset( $action['price_per'] ) ? $action['price_per'] : '';
+          $price_per_desc = isset( $price_per_options[$price_per] ) ? $price_per_options[$price_per] : '';
+        }
+
+        $cols['value'] = trim( sprintf( '%s %s %s', $action['price'], $price_mode_desc, $price_per_desc ) );
+        break;
+      case 'set_title':
+        $cols['methods'] = implode( ', ', $this->get_shipping_method_titles( $action ) );
+        $cols['value'] = isset( $action['title'] ) ? $action['title'] : '';
         break;
       case 'custom_error_msg':
         $cols['value'] = $action['error_msg'];
         break;
       case 'shipping_notice':
+        $cols['methods'] = implode( ', ', $this->get_shipping_method_titles( $action ) );
         $cols['value'] = $action['notice'];
         break;
     }
 
     if ( ! $passes && $action['type'] === 'enable_shipping_methods' ) {
-      $desc = __( 'Shipping methods were disabled by "Enable shipping methods" because conditions did not pass', 'woo-conditional-shipping' );
-      $status = 'notify';
+      $note = __( 'Shipping methods were disabled by this action because conditions did not pass', 'conditional-shipping-for-woocommerce' );
+      $status = 'pass';
+      $label = __( 'Run', 'conditional-shipping-for-woocommerce' );
     }
 
     return [
       'cols' => $cols,
-      'desc' => $desc,
-      'status' => $status
+      'label' => $label,
+      'status' => $status,
+      'note' => $note,
     ];
   }
 
@@ -267,6 +346,8 @@ class Woo_Conditional_Shipping_Debug {
    * Get shipping method titles
    */
   public function get_shipping_method_titles( $action ) {
+    $shipping_method_ids = isset( $action['shipping_method_ids'] ) ? (array) $action['shipping_method_ids'] : [];
+
     if ( ! $this->shipping_methods ) {
       $options = woo_conditional_shipping_get_shipping_method_options();
 
@@ -277,7 +358,13 @@ class Woo_Conditional_Shipping_Debug {
       }
     }
 
-    return $this->ids_to_list( $action['shipping_method_ids'], $this->shipping_methods );
+    // Special handling for "Match by name"
+    if ( in_array( '_name_match', $shipping_method_ids, true ) ) {
+      $name_match = isset( $action['shipping_method_name_match'] ) ? $action['shipping_method_name_match'] : '';
+      $this->shipping_methods['_name_match'] = sprintf( __( 'Match by name: %s', 'conditional-shipping-for-woocommerce' ), $name_match );
+    }
+
+    return $this->ids_to_list( $shipping_method_ids, $this->shipping_methods );
   }
 
   /**
@@ -288,11 +375,7 @@ class Woo_Conditional_Shipping_Debug {
       return;
     }
 
-    $debug = $this->get_debug_info( $ruleset_id );
-
-    $debug['rulesets'][$ruleset_id]['result'] = $result;
-
-    $this->save_debug_info( $debug );
+    $this->data['rulesets'][$ruleset_id]['result'] = $result;
   }
 
   /**
@@ -302,12 +385,40 @@ class Woo_Conditional_Shipping_Debug {
     $operators = woo_conditional_shipping_operators();
     $filters = woo_conditional_shipping_filters();
 
-    $filter = isset( $filters[$condition['type']] ) ? $filters[$condition['type']]['title'] : __( 'N/A', 'woo-conditional-shipping' );
-    $operator = isset( $operators[$condition['operator']] ) ? $operators[$condition['operator']] : __( 'N/A', 'woo-conditional-shipping' );
+    $filter = isset( $filters[$condition['type']] ) ? $filters[$condition['type']]['title'] : __( 'N/A', 'conditional-shipping-for-woocommerce' );
+    $operator = isset( $operators[$condition['operator']] ) ? $operators[$condition['operator']] : __( 'N/A', 'conditional-shipping-for-woocommerce' );
 
     $value = $this->translate_condition_value( $condition );
 
-    $cols = [ $filter, $operator ];
+    $cols = [ $filter ];
+
+    // Product meta
+    if ( $condition['type'] === 'product_meta' ) {
+      $meta_key = isset( $condition['meta_key'] ) ? $condition['meta_key'] : '';
+      $cols[0] = sprintf( '%s (%s)', $cols[0], $meta_key );
+
+      // Add highest / lowest for numerical product meta
+      if ( wcs_is_operator_numerical( $condition['operator'] ) ) {
+        $cols[] = $condition['product_measurement_mode'];
+      }
+    }
+
+    // highest / lowest for product measurements
+    if ( in_array( $condition['type'], [ 'product_height', 'product_width', 'product_length', 'product_weight', 'product_price' ], true ) && isset( $condition['product_measurement_mode'] ) ) {
+      $cols[] = $condition['product_measurement_mode'];
+    }
+
+    // Subset filter
+    if ( in_array( $condition['type'], [ 'subtotal', 'items', 'volume', 'weight' ], true ) && isset( $condition['subset_filter'] ) && ! empty( $condition['subset_filter'] ) ) {
+      $cols[] = $this->translate_subset_filter( $condition );
+    }
+
+    $cols[] = $operator;
+
+    // Do not show value if operator is "is empty" or "is not empty"
+    if ( in_array( $condition['operator'], [ 'exists', 'notexists' ], true ) ) {
+      $value = null;
+    }
 
     // Some conditions only has operator and not value (e.g. customer logged in condition)
     if ( $value !== null ) {
@@ -315,6 +426,41 @@ class Woo_Conditional_Shipping_Debug {
     }
 
     return implode( ' - ', $cols );
+  }
+
+  /**
+   * Translate subset filter
+   */
+  private function translate_subset_filter( $condition ) {
+    if ( strpos( $condition['subset_filter' ], 'shipping_class_' ) !== false ) {
+      if ( strpos( $condition['subset_filter'], 'shipping_class_not_' ) !== false ) {
+        $prefix = 'shipping_class_not_';
+        $title = __( 'of products NOT in a shipping class', 'conditional-shipping-for-woocommerce' );
+      } else if ( strpos( $condition['subset_filter'], 'shipping_class_' ) !== false ) {
+        $prefix = 'shipping_class_';
+        $title = __( 'of products in a shipping class', 'conditional-shipping-for-woocommerce' );
+      }
+
+      $shipping_class_id = str_replace( $prefix, '', $condition['subset_filter'] );
+
+      if ( strlen( $shipping_class_id ) > 0 ) {
+        if ( $shipping_class_id === '0' ) {
+          return sprintf( '%s - %s', $title, __( 'No shipping class', 'conditional-shipping-for-woocommerce' ) );
+        } else if ( $term = get_term_by( 'id', $shipping_class_id, 'product_shipping_class' ) ) {
+          return sprintf( '%s - %s', $title, $term->name );
+        }
+      }
+    }
+
+    if ( $condition['subset_filter'] === 'non_sale_products' ) {
+      return __( 'of non-sale products', 'conditional-shipping-for-woocommerce' );
+    }
+    
+    if ( $condition['subset_filter'] === 'sale_products' ) {
+      return __( 'of sale products', 'conditional-shipping-for-woocommerce' );
+    }
+
+    return null;
   }
 
   /**
@@ -333,34 +479,64 @@ class Woo_Conditional_Shipping_Debug {
       case 'product_height':
       case 'product_length':
       case 'product_width':
+      case 'product_price':
+      case 'orders':
+      case 'billing_company':
+      case 'shipping_company':
         return $condition['value'];
       case 'products':
         return implode( ', ', array_map( 'get_the_title', (array) $condition['product_ids'] ) );
       case 'shipping_class':
         return implode( ', ', $this->get_term_titles( (array) $condition['shipping_class_ids'], 'product_shipping_class' ) );
+      case 'product_meta':
+        if ( wcs_is_operator_numerical( $condition['operator'] ) ) {
+          return $condition['value'];
+        } else if ( wcs_is_operator_set( $condition['operator'] ) ) {
+          return $this->convert_list( $condition['textarea'] );
+        } else if ( wcs_is_operator_boolean( $condition['operator'] ) ) {
+          return '';
+        }
       case 'category':
         return implode( ', ', $this->get_term_titles( (array) $condition['category_ids'], 'product_cat' ) );
+      case 'product_tags':
+        return implode( ', ', $this->get_term_titles( (array) $condition['product_tags'], 'product_tag' ) );
       case 'product_attrs':
         return implode( ', ', $this->get_attr_titles( (array) $condition['product_attrs'] ) );
+      case 'stock_status':
+        return implode( ', ', $this->get_stock_status_titles( (array) $condition['stock_status'] ) );
       case 'coupon':
-        return implode( ', ', array_map( 'get_the_title', (array) $condition['coupon_ids'] ) );
+        $coupon_ids = isset( $condition['coupon_ids'] ) ? (array) $condition['coupon_ids'] : [];
+        return implode( ', ', array_map( 'wcs_get_coupon_title', $coupon_ids ) );
       case 'customer_authenticated':
         return null; // This condition doesn't has value, only operator
       case 'customer_role':
         return implode( ', ', $this->get_role_titles( $condition['user_roles'] ) );
+      case 'billing_phone':
+        return $this->convert_list( $condition['phones'] );
+      case 'billing_email':
+          return $this->convert_list( $condition['emails'] );
       case 'billing_postcode':
       case 'shipping_postcode':
         return $condition['postcodes'];
+      case 'billing_city':
+      case 'shipping_city':
+          return $condition['cities'];
       case 'billing_state':
       case 'shipping_state':
         return implode( ', ', $this->get_state_titles( $condition['states'] ) );
       case 'billing_country':
       case 'shipping_country':
         return implode( ', ', $this->get_country_titles( $condition['countries'] ) );
+      case 'currency':
+        return implode( ', ', (array) $condition['currencies'] );
       case 'weekdays':
         return implode( ', ', $this->get_weekday_titles( $condition['weekdays'] ) );
       case 'time':
         return $this->get_time_title( $condition );
+      case 'date':
+        return $condition['date'];
+      case 'user_pms_plans':
+        return implode( ', ', $this->get_user_pms_plan_titles( $condition ) );
       default:
         return 'N/A';
     }
@@ -374,7 +550,11 @@ class Woo_Conditional_Shipping_Debug {
     foreach ( $ids as $id ) {
       $term = get_term_by( 'id', $id, $taxonomy );
 
-      $titles[] = $term ? $term->name : __( 'N/A', 'woo-conditional-shipping' );
+      if ( $taxonomy === 'product_shipping_class' && $id == 0 ) {
+        $titles[] = __( 'No shipping class', 'conditional-shipping-for-woocommerce' );
+      } else {
+        $titles[] = $term ? $term->name : __( 'N/A', 'conditional-shipping-for-woocommerce' );
+      }
     }
 
     return $titles;
@@ -398,6 +578,17 @@ class Woo_Conditional_Shipping_Debug {
   }
 
   /**
+   * Get stock status titles
+   */
+  private function get_stock_status_titles( $types ) {
+    $titles = wcs_get_stock_status_options();
+
+    return array_map( function( $type ) use ( $titles ) {
+      return isset( $titles[$type] ) ? $titles[$type] : $type;
+    }, $types );
+  }
+
+  /**
    * Get role titles
    */
   private function get_role_titles( $role_ids ) {
@@ -406,6 +597,17 @@ class Woo_Conditional_Shipping_Debug {
     }
 
     return $this->ids_to_list( $role_ids, $this->customer_roles );
+  }
+
+  /**
+   * Get user subscription plan titles
+   */
+  private function get_user_pms_plan_titles( $condition ) {
+    $plan_ids = isset( $condition['user_pms_plans'] ) ? $condition['user_pms_plans'] : [];
+
+    $plans = wcs_pms_plan_options( $plan_ids );
+
+    return $this->ids_to_list( $plan_ids, $plans );
   }
 
   /**
@@ -472,9 +674,16 @@ class Woo_Conditional_Shipping_Debug {
     $titles = [];
 
     foreach ( $values as $value ) {
-      $titles[] = isset( $options[$value] ) ? $options[$value] : __( 'N/A', 'woo-conditional-shipping' );
+      $titles[] = isset( $options[$value] ) ? $options[$value] : __( 'N/A', 'conditional-shipping-for-woocommerce' );
     }
 
     return $titles;
+  }
+
+  /**
+   * Convert line separated list into a comma separated list
+   */
+  private function convert_list( $items ) {
+    return implode( ', ', array_map( 'trim', explode( "\n", $items ) ) );
   }
 }

@@ -12,7 +12,7 @@ function rsssl_admin_username_changed( $notices ) {
 		'score' => 5,
 		'output' => array(
 			'true' => array(
-				'msg' => sprintf(__("Username 'admin' has been changed to %s", "really-simple-ssl"), get_site_transient('rsssl_username_admin_changed') ),
+				'msg' => sprintf(__("Username 'admin' has been changed to %s", "really-simple-ssl"),esc_html(get_site_transient('rsssl_username_admin_changed')) ),
 				'icon' => 'open',
 				'dismissible' => true,
 			),
@@ -64,6 +64,9 @@ function rsssl_rename_admin_user() {
 			$host   = $parse['host'] ?? 'example.com';
 			$email  = "$new_user_login@$host";
 
+			// Do not send an e-mail with this temporary e-mail address
+			add_filter('send_email_change_email', '__return_false');
+
 			// update e-mail for existing user. Cannot have two accounts connected to the same e-mail address
 			$success = wp_update_user( array(
 				'ID'         => $admin_user_id,
@@ -76,7 +79,7 @@ function rsssl_rename_admin_user() {
 
 			// Populate the new user data. Use current 'admin' userdata wherever available
 			$new_userdata = array(
-				'user_pass'            => rsssl_generate_random_string( 12 ), //temp, overwrite with actual hash later.
+				'user_pass'            => wp_generate_password( 12 ), //temp, overwrite with actual hash later.
 				//(string) The plain-text user password.
 				'user_login'           => $new_user_login,
 				//(string) The user's login username.

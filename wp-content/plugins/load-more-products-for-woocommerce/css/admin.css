@@ -73,27 +73,25 @@
     position: absolute;
     left: 0;
     width: 100%;
-    top: 1em;
+    top: 1.5em;
 }
 .br_framework_settings .berocket-margin-paddings-block-parent .br_line_delimiter {
     width: 0.5em;
 }
-
-@media screen (min-width:800px) and (max-width:1280px){
-    .btn-preview-td,
-    .btn-prev-preview-td{
-    }
-    .btn-preview-td div.btn-preview-block,
-    .btn-prev-preview-td div.btn-preview-block{
-    }
+.br_framework_settings .lmp_input_numbers_over .br_field label {
+    align-items: flex-start;
 }
+.br_framework_settings .br_lmp_loading_image_tr .br_field .berocket_select_image {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.br_framework_settings .br_lmp_loading_image_tr .br_field .berocket_select_image .button {
+    margin: 0 !important;
+}
+
 @media screen and (max-width: 600px) {
-    .btn-preview-td div.btn-preview-block,
-    .btn-prev-preview-td div.btn-preview-block{
-    }
-    .btn-preview-td,
-    .btn-prev-preview-td{
-    }
     .btn-preview-block{
         height: 150px;  
         line-height: 150px; 

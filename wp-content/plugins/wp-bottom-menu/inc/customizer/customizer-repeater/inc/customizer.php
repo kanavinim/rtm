@@ -1,4 +1,7 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 function customizer_repeater_register( $wp_customize ) {
 
 	require_once( WP_BOTTOM_MENU_DIR_PATH . 'inc/customizer/customizer-repeater/class/customizer-repeater-control.php' );

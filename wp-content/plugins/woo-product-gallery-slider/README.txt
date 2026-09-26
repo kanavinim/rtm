@@ -1,24 +1,50 @@
-=== Product Gallery Slider for WooCommerce ===
-Contributors: codeixer,wpinteractive,im_niloy
-Tags: product gallery slider,woocommerce product gallery slider,woocommerce product image slider,woocommerce product gallery carousel
+=== Product Gallery Slider, Additional Variation Images for WooCommerce ===
+Contributors: im_niloy, codeixer
+Tags: additional variation image, product gallery slider,woocommerce product gallery slider,woocommerce product image slider,woocommerce product gallery carousel
 Requires at least: 5.0
-Tested up to:  6.1
-Stable tag: 2.2.6
+Requires PHP: 7.4
+Tested up to:  6.8
+Stable tag: 2.3.22
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Best product image gallery slider for WooCommerce. It shows your WooCommerce products with an image carousel slider. Beautiful style, increase sales and get customer attention.
+Enhance your customers' shopping experience and boost sales instantly with this WooCommerce Product Gallery Slider! 🚀
 
 == Description ==
-Too Many Product Images in your Product? Product gallery slider for WooCommerce allows you to add a carousel in WooCommerce default Gallery section. Beautiful style, increase sales and get more customer attention.  
+[Product gallery slider for WooCommerce](https://www.codeixer.com/product-gallery-slider-for-woocommerce?utm_source=wp-org&utm_medium=plugin-description&utm_campaign=upgrade_pro) adds a responsive and customizable image slider to your WooCommerce product gallery.
+Showcase multiple images, including variation images, in a beautiful carousel that enhances the shopping experience, keeps customers engaged, and increases conversions.
+Easy to use, mobile-friendly, and designed to boost your WooCommerce store’s visual appeal and sales.
 
-[__Live Demo__](https://pgs.codeixer.com/product/a-demo-product-with-twist/) | [__Support__](https://www.wpinteractive.com/contact-us/) | [__Upgrade To Pro »__](https://www.wpinteractive.com/-gallery-slider-for-woocommerce?utm_source=wp-org&utm_medium=plugin-description&utm_campaign=upgrade_pro)
+[__Live Demo__](https://pgs.betteropt.in/product/a-demo-product-with-twist/) | [__Support__](https://www.codeixer.com/contact-us/) | [__Upgrade To Pro »__](https://www.codeixer.com/product-gallery-slider-for-woocommerce?utm_source=wp-org&utm_medium=plugin-description&utm_campaign=upgrade_pro)
 
-### 🌟 Key Features
+Are you interested in enhancing your product page design to increase sales? Have you possibly overloaded your page with too many product images? 🤔
+
+If you're looking to enhance your WooCommerce store, the Product Gallery Slider plugin is an excellent solution. With this plugin, you can easily transform the default product gallery into an attractive slider on your product page. Displaying your product and additional variation images in a sleek slider style can help attract more customer attention and increase sales instantly. 💻📈
+
+This plugin is incredibly user-friendly and easy to install, offering a wide range of customization options to help you create the perfect product gallery slider that meets your specific needs. You can customize the slider speed, transition effects, and more to create a unique and engaging product gallery that stands out. 🎨
+
+Furthermore, the plugin is fully responsive, which means it works perfectly on any device, be it a desktop, tablet, or smartphone. This ensures that your customers can view your product gallery slider from anywhere, at any time. 📱🌍
+
+Overall, the Product Gallery Slider plugin is an excellent plugin for any WooCommerce store owner looking to enhance their product gallery and increase sales. 👍
+
+### 📌 Unlimited Additional Variation Images
+In WooCommerce, the default behavior allows for only one image to be inserted per product variation. Unfortunately, there is no built-in option to add multiple variation images. This limitation can be problematic when there is a need to display additional product images to enhance sales and provide a comprehensive visual representation.
+
+Introducing Product Gallery Slider, a powerful plugin that offers the ability to insert an unlimited number of [additional images for each product variation](https://www.codeixer.com/docs/additional-variation-images-in-woocommerce/). By utilizing this plugin, you can provide an enhanced browsing experience to potential customers. They will be able to view different sets of images when switching between product variations, such as color, style, and size, all at the same time. This feature-rich functionality empowers you to showcase your products more effectively, captivating customers and boosting sales. 🚀
+
+### 📱 Responsive ready
+These days more and more people are using mobile phones to scroll E-commerce sites to check and order their products. Thus, mobile-enabled and optimized E-commerce sites remain one step ahead of others.
+Luckily, the WooCommerce product gallery slider is also compatible with tablets and mobiles. So, customers get a flawless viewing experience that will surely boost your product sales.
+
+### ✅ Support Page Builders for Custom Single product page
+WooCommerce product gallery slider has a wide range of supportability for the most popular page builders. You can efficiently work with Divi, Beaver Builder, WP Bakery Builder, Elementor Pro & others.
+
+### 🔥 Key Features
 * Responsive Layout
 * Navigation support
 * Slider AutoPlay Options
 * Gallery Layout [Horizontal Slider]
+* **Unlimited Images can be added for each product variation**
 * Thumbnails item to Show
 * Infinite loop option
 * Slide Adaptive Height
@@ -27,7 +53,9 @@ Too Many Product Images in your Product? Product gallery slider for WooCommerce 
 * On/Off Setting for WooCommerce image zoom
 * On/Off Setting for Lightbox image caption
 * Custom Image Size option for gallery
-* Custom CSS option for override 
+* Custom CSS option for override
+* Shortcode ready [Easy to use with any custom product page builder]
+* Support Elementor, Divi and Visual Composer page builder
 * Working with Most Premium themes
 * RTL support
 
@@ -46,12 +74,13 @@ Too Many Product Images in your Product? Product gallery slider for WooCommerce 
 * Lightbox Open/Close Animation Effect
 * Lightbox image slide Animation Effect
 * Advanced Zoom Options
-* Shortcode ready [Easy to use with any custom product page builder]
-* Support Elementor, Divi and Visual Composer page builder
 
-[__Live Demo__](https://pgs.codeixer.com/product/a-demo-product-with-twist/) | [__Support__](https://www.wpinteractive.com/contact-us/) | [__Upgrade To Pro »__](https://www.wpinteractive.com/gallery-slider-for-woocommerce?utm_source=wp-org&utm_medium=plugin-description&utm_campaign=upgrade_pro)
 
-##See what a few WooCommerce store owners are saying about Product Gallery Slider for WooCommerce:##
+[__Live Demo__](https://pgs.betteropt.in/product/a-demo-product-with-twist/) | [__Support__](https://www.codeixer.com/contact-us/) | [__Upgrade To Pro »__](https://www.codeixer.com/product-gallery-slider-for-woocommerce?utm_source=wp-org&utm_medium=plugin-description&utm_campaign=upgrade_pro)
+
+[youtube https://www.youtube.com/watch?v=grdD8pCe5zw&t=7s]
+
+##🌟 See what a few WooCommerce store owners are saying about Product Gallery Slider for WooCommerce:##
 
 > “Great plugin and been using it for a long now. Still great!”.
 > - vlavur
@@ -73,9 +102,7 @@ If you like this product gallery plugin, then consider checking out our other fr
 
 [Deposits for WooCommerce](https://wordpress.org/plugins/deposits-for-woocommerce/) – Allowed customers to pay for products using a fixed or percentage amount of the product.
 
-[Show Stock for WooCommerce](https://wordpress.org/plugins/woo-show-stock/)
-
-[Order Status Control for WooCommerce](https://wordpress.org/plugins/order-status-control-for-woocommerce/)
+[WooCommerce Wishlist](https://wordpress.org/plugins/jvm-woocommerce-wishlist/) – Enhance your e-commerce store’s functionality with WooCommerce Wishlist – the ultimate tool that adds a powerful and lightweight wishlist feature.
 
 == Installation ==
 
@@ -87,113 +114,36 @@ If you like this product gallery plugin, then consider checking out our other fr
 == Frequently Asked Questions ==
 
 =How can I use the product gallery slider for WooCommerce with page builders?=
-the free version is not working with the custom page made by Elementor or other builders such as Divi ,Beaver Builder & wpbakery page builder. but the pro version works nicely with page builders. [Click Here to Get the Pro Version](https://www.wpinteractive.com/gallery-slider-for-woocommerce?utm_source=wp-org&utm_medium=plugin-description&utm_campaign=upgrade_pro)
+While using Product Template Builder (Divi,Elementor,Beaver Builder), a shortcode `[product_gallery_slider]` is available to enable the gallery slider.
+
+=How to solve duplicate gallery when divi page builder enable?=
+If you are experiencing duplicate galleries on single product pages while using the Divi Builder, a solution is available. You can find a new option in the "Advanced Settings" section that will fix this issue.
+
 =Is the product gallery slider for WooCommerce plugin compatible with my theme?=
 we're using this 'woocommerce_before_single_product_summary' this hook to override the gallery. if your theme is using the default WooCommerce hook for single-product.php page then this item will work perfectly.
 
 == Screenshots ==
 1. Product Gallery Slider 
-
+2. Additional Variation Images
+3. Gallery Settings Page
 
 
 == Changelog ==
 
-= 2.2.6 - 2-Nov-22 =
+= 2.3.23 - 29 May 2026 =
 
-* Fixed: thumbnail icon showing in lightbox
-* Fixed: hide dot if the gallery doesn't have images
-* Support for WordPress 6.1
-* Support for WooCommerce 7.0.1
-
-= 2.2.5 - 29-Jul-22 =
-
-* Fixed: Slider is not reset if variation product image change
-* Fixed: image zoom did not replace on variation product image change
-* Fixed: Slider animation (Slide) conflicts with lightbox
-* Update: Synchronize fancybox lightbox images and slider
-
-= 2.2.4 - 16-Jul-22 =
-
-* Added: add chat widget in the plugin settings page for plugin support
-* Added: plugin meta for plugins page
-* Fixed: fatal error for empty feature image 
-* Update: showing zoom icon only for small and medium devices
-
-= 2.2.3 3-Jul-22 =
-
-* Fixed: load assets fatal error
-
-= 2.2.2 28-Jun-22 =
-
-* Fixed: Image zoom icon for mobile devices
-* Update: add is_product() condition for css & js file
-* Update: text domain
-* Update: add "global assets" option under advanced settings for control assets load.
-* Fixed: Slide Adaptive Height broken if zoom enable
-* Update: Unlock slider animation option
-* Update: Image zoom jquery plugin
-* Support for WooCommerce 6.6.1
-
-= 2.2.1 11-Jun-22 =
-
-Fixed : image alt not showing
-Update : code refactor
-Added : Appsero for Survey
-Support for WordPress 6.x
-Support for WooCommerce 6.5.1
-
-= 2.2 5-Feb-22 =
-
-Support for WordPress 5.9
-Support for WooCommerce 6.1.1
-Fixed : Broken layout on slider load.
-Update : Setting Panel
-Added : New Slider Options
+* Fixed: Thumbnail gallery count issue when there are fewer gallery images [report](https://wordpress.org/support/topic/thumbnail-slider-display-issue-with-low-number-of-photos/)
+* Updated: Gallery settings are now visible to roles that can manage WooCommerce
+* Fixed: Minor bugs
+* Added support for WordPress 7.x
 
 
-= 2.1.3 25-Apr-21 =
+= 2.3.22 - 30 Oct 25 =
 
-Fixed : lightbox apply to all slick slider.
+* Fixed: fatal error `Trying to access array offset on false in product-image.php`[report](https://wordpress.org/support/topic/trying-to-access-array-offset-on-false-in-product-image-php/)
+* Update: New Option under `Advanced Options` for Choose when the gallery should load via AJAX.
+* Support for WooCommerce Version 10.3.x
 
-= 2.1.2 25-feb-21 =
+= 2.3.21 - 20 May 25 =
 
-Added : RTL mode
-Added : action hook wpgs_before_image_gallery
-Added : action hook wpgs_after_image_gallery
-Fixed : review notice not hide on click 'hide notification button'
-
-= 2.1.1 12-feb-21 =
-
-New: Support to WooCommerce 5.0
-Added: hide arrows based on images
-Fixed: jquery script 404 error on admin login
-Fixed: slider nav icon style conflict
-Fixed: thumbnails not showing first image sometimes after click the arrows.
-
-= 2.1 7-feb-21 =
-
-Added : Mosue Drag option
-Added : Image zoom option
-Added : AdaptiveHeight for slide
-Update : venobox to fancybox (jquery plugin)
-Code refactor
-
-= 2.0.4 =
-Fixed : lightbox arrow conflict with slider
-
-= 2.0.3 =
-Removed : Freemius sdk for Security issue
-= 1.1.8.3 =
-Fixed : Product variations images not working
-
-= 1.1.8.2 =
-Added : Infinite loop in slider Setting >[Feature Request](https://wordpress.org/support/topic/make-infinite-loop-in-slider/#post-8837626)
-= 1.1.8.1 =
-Fixed: Gallery Thumbnails of equal size  >[Topic](https://wordpress.org/support/topic/thumbnails-of-equal-size/#post-9060187) 
-= 1.1.8 =
-Fixed: add missing files
-Added: New gallery Setting option in WPGS setting for Woocommerce version 3.0 or later 
-= 1.1.7 =
-Fixed: woocommerce version 3.0 gallery conflict 
-= 1.0 =
-* Initial Release
+* Fixed: JavaScript error caused by missing gallery images, which previously led to "Add to Cart" failures on certain servers.

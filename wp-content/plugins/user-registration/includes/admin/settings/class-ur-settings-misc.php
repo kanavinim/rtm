@@ -49,6 +49,11 @@ if ( ! class_exists( 'UR_Settings_Misc' ) ) :
 				'' => __( 'Advanced', 'user-registration' ),
 			);
 
+			/**
+			 * Filter to add the sections.
+			 *
+			 * @param array $sections Sections to be added on Settings.
+			 */
 			return apply_filters( 'user_registration_get_sections_' . $this->id, $sections );
 		}
 
@@ -58,6 +63,11 @@ if ( ! class_exists( 'UR_Settings_Misc' ) ) :
 		 * @return array
 		 */
 		public function get_settings() {
+			/**
+			 * Filter to add the advanced settings.
+			 *
+			 * @param array $settings Settings to be added on advanced settings.
+			 */
 			$settings = apply_filters(
 				'user_registration_advanced_settings',
 				array(
@@ -69,29 +79,42 @@ if ( ! class_exists( 'UR_Settings_Misc' ) ) :
 							'desc'     => '',
 							'settings' => array(
 								array(
-									'title'    => __( 'Uninstall User Registration', 'user-registration' ),
-									'desc'     => __( '<strong>Heads Up!</strong> Check this if you would like to remove ALL User Registration data upon plugin deletion.', 'user-registration' ),
+									'title'    => __( 'Uninstall User Registration & Membership', 'user-registration' ),
+									'desc'     => __( '<strong>Heads Up!</strong> Check this if you would like to remove ALL User Registration & Membership data upon plugin deletion.', 'user-registration' ),
 									'id'       => 'user_registration_general_setting_uninstall_option',
 									'type'     => 'toggle',
-									'desc_tip' => 'All user registration forms, settings and users metadata will be deleted upon plugin uninstallation.',
-									'css'      => 'min-width: 350px;',
+									'desc_tip' => 'All user registration & membership forms, settings and users metadata will be deleted upon plugin uninstallation.',
+									'css'      => '',
 									'default'  => 'false',
 								),
 								array(
 									'title'   => __( 'Allow Usage Tracking', 'user-registration' ),
-									'desc'    => __( ' Help us improve the plugin\'s features and receive an instant discount coupon with occasional email updates by sharing <a href="https://docs.wpuserregistration.com/docs/miscellaneous-settings/#1-toc-title" target="_blank">non-sensitive plugin data</a> with us.', 'user-registration' ),
+									'desc'    => __( 'Help us improve the plugin\'s features by sharing <a href="https://docs.wpuserregistration.com/docs/miscellaneous-settings/#1-toc-title" rel="noreferrer noopener" target="_blank">non-sensitive plugin data</a> with us.', 'user-registration' ),
 									'id'      => 'user_registration_allow_usage_tracking',
 									'type'    => 'toggle',
-									'css'     => 'min-width: 350px;',
+									'css'     => '',
+									'default' => 'no',
+								),
+								array(
+									'title'   => __( 'Enable Log', 'user-registration' ),
+									'desc'    => __( 'Enable this to capture the user registration logs', 'user-registration' ),
+									'id'      => 'user_registration_enable_log',
+									'type'    => 'toggle',
+									'css'     => '',
 									'default' => 'no',
 								),
 							),
 						),
 					),
-				)
+				),
 			);
 
-			return apply_filters( 'user_registration_get_advanced_settings_' . $this->id, $settings );
+				/**
+				 * Filter to enlist the advanced settings option.
+				 *
+				 * @param array $settings Advanced Settings to be enlisted.
+				 */
+				return apply_filters( 'user_registration_get_advanced_settings_' . $this->id, $settings );
 		}
 
 		/**

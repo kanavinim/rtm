@@ -269,9 +269,9 @@ class IRRPHelper implements IRRPConstants {
 
             $log_landed = $log_response_url;
 
-            $response = $this->getRedirectData($log_request_url);
+            $response = $this->getRedirectData($log_request_url, $log_landed == "404");
 
-            $redirect_request_timestamp = empty($response["redirect"]["timestamp"]) ? 0 : (int) $response["redirect"]["timestamp"];
+            $redirect_request_timestamp = empty($response["redirect"]["timestamp"]) || $response['do_redirect'] === false ? 0 : (int) $response["redirect"]["timestamp"];
 
             $from = $response["current_url"];
             $to = $response["to"];
@@ -323,16 +323,20 @@ class IRRPHelper implements IRRPConstants {
         //todo
     }
 
-    public function getRedirectData($requestedUrl = "") {
+    public function getRedirectData($requestedUrl = "", $is_404 = false) {
         $response = [
             "do_redirect" => false,
             "to" => "",
-            "is_404" => is_404(),
             "current_url" => "",
             "redirect_code" => "",
             "redirect" => null,
             "redirect_metas" => null
         ];
+        if ($is_404) {
+            $response["is_404"] = true;
+        } else {
+            $response["is_404"] = is_404();
+        }
 
         $requestData = empty($requestedUrl) ? parse_url($_SERVER["REQUEST_URI"]) : parse_url($requestedUrl);
         $requestPath = empty($requestData["path"]) ? "" : trim($requestData["path"]);
@@ -350,67 +354,16 @@ class IRRPHelper implements IRRPConstants {
 
             // specific URL's
             if ($redirect) {
-
-                $continueCheck = true;
-                $response["redirect"] = $redirect;
-                $redirectId = (int) $redirect["id"];
-                $metas = $this->dbManager->getMeta($redirectId);
-                $response["redirect_metas"] = $metas;
-                $match = $redirect["match"];
-                $matchQuery = parse_url($redirect["from"], PHP_URL_QUERY);
-
-                if ($metas["ignore_case"]) {
-                    if (function_exists("mb_strtolower")) {
-                        $matchQuery = mb_strtolower($matchQuery);
-                        $requestQuery = mb_strtolower($requestQuery);
-                        $request = mb_strtolower($request);
-                        $match = mb_strtolower($match);
-                    } else {
-                        $matchQuery = strtolower($matchQuery);
-                        $requestQuery = strtolower($requestQuery);
-                        $request = strtolower($request);
-                        $match = strtolower($match);
-                    }
-                }
-
-                if (!$metas["ignore_parameters"] && ($requestQuery || $matchQuery)) {
-
-                    parse_str($matchQuery, $matchQueryArr);
-                    parse_str($requestQuery, $requestQueryArr);
-
-                    if ($matchQuery && $requestQuery) {
-                        if ($matchQueryArr != $requestQueryArr) {
-                            $continueCheck = false;
-                        }
-                    } else {
-                        $continueCheck = false;
-                    }
-                }
-
-
-
-                if ($continueCheck) {
-
-                    if ($metas["ignore_trailing_slashes"]) {
-                        $request = rtrim($request, "/");
-                        $match = rtrim($match, "/");
+                for ($i = 0; $i < count($redirect); $i++) {
+                    $redirectItem = $redirect[$i];
+                    if (empty($redirectItem)) {
+                        continue;
                     }
 
-                    $response["do_redirect"] = (untrailingslashit($request) === untrailingslashit($match));
-
-                    $response["to"] = $redirect["to"];
-                    $response["redirect_code"] = $redirectCode = empty($metas["redirect_code"]) ? 301 : (int) $metas["redirect_code"];
-                    if ($metas["pass_on_parameters"] && $requestQuery) {
-                        $toQuery = parse_url($response["to"], PHP_URL_QUERY);
-                        if ($toQuery) {
-                            $response["to"] .= ("&" === substr($response["to"], -1)) ? $requestQuery : ("&" . $requestQuery);
-                        } else {
-                            $response["to"] = rtrim($response["to"], "?") . "?" . $requestQuery;
-                        }
-                    }
-
-                    if ($response["do_redirect"]) {
-                        $response["do_redirect"] = $this->applyIncExcRules($metas, $response["do_redirect"]);
+                    $responseTemp = $this->processSpecificUrlRedirect($redirectItem, $request, $requestQuery, $response);
+                    if ($responseTemp["do_redirect"]) {
+                        $response = $responseTemp;
+                        break;
                     }
                 }
             }
@@ -428,14 +381,14 @@ class IRRPHelper implements IRRPConstants {
                         $response["redirect_metas"] = $metas;
                         $response["to"] = $redirect["to"];
 
-                        $matchQuery = parse_url($redirect["from"], PHP_URL_QUERY);
+                        $matchQuery = (string) parse_url($redirect["from"], PHP_URL_QUERY);
                         $criterias = $metas[self::META_KEY_CRITERIAS];
                         $action = $metas[self::META_KEY_ACTION];
 
                         foreach ($criterias as $k => $c) {
                             $criteria = $c["criteria"];
-                            $from = $c["value"];
-                            $match = $c["value"];
+                            $from = (string) $c["value"];
+                            $match = (string) $c["value"];
 
                             if (!$metas["ignore_parameters"] && $requestQuery) {
                                 break;
@@ -504,6 +457,11 @@ class IRRPHelper implements IRRPConstants {
                                 $from = $fromProtocol . $from;
                                 $response["do_redirect"] = preg_match("#^" . preg_quote(untrailingslashit($from)) . "#s", $request);
                                 //
+                                if ($action["name"] === "specific-url") {
+                                    $response["to"] = $action["value"];
+                                } else if ($action["name"] === "urls-with-new-string") {
+                                    $response["to"] = str_replace($from, $response["to"], $request);
+                                }
                             }
                             //
                             else if ($criteria === "end-with") {
@@ -745,6 +703,72 @@ class IRRPHelper implements IRRPConstants {
 
         }
 
+        return $response;
+    }
+
+    public function processSpecificUrlRedirect($redirect, $request, $requestQuery, $response) {
+        $continueCheck = true;
+        $response["redirect"] = $redirect;
+        $redirectId = (int) $redirect["id"];
+        $metas = $this->dbManager->getMeta($redirectId);
+        $response["redirect_metas"] = $metas;
+        $match = (string) $redirect["match"];
+        $matchQuery = (string) parse_url($redirect["from"], PHP_URL_QUERY);
+
+        if ($metas["ignore_case"]) {
+            if (function_exists("mb_strtolower")) {
+                $matchQuery = mb_strtolower($matchQuery);
+                $requestQuery = mb_strtolower($requestQuery);
+                $request = mb_strtolower($request);
+                $match = mb_strtolower($match);
+            } else {
+                $matchQuery = strtolower($matchQuery);
+                $requestQuery = strtolower($requestQuery);
+                $request = strtolower($request);
+                $match = strtolower($match);
+            }
+        }
+
+        if (!$metas["ignore_parameters"] && ($requestQuery || $matchQuery)) {
+
+            parse_str($matchQuery, $matchQueryArr);
+            parse_str($requestQuery, $requestQueryArr);
+
+            if ($matchQuery && $requestQuery) {
+                if ($matchQueryArr != $requestQueryArr) {
+                    $continueCheck = false;
+                }
+            } else {
+                $continueCheck = false;
+            }
+        }
+
+
+
+        if ($continueCheck) {
+
+            if ($metas["ignore_trailing_slashes"]) {
+                $request = rtrim($request, "/");
+                $match = rtrim($match, "/");
+            }
+
+            $response["do_redirect"] = (untrailingslashit($request) === untrailingslashit($match));
+
+            $response["to"] = $redirect["to"];
+            $response["redirect_code"] = $redirectCode = empty($metas["redirect_code"]) ? 301 : (int) $metas["redirect_code"];
+            if ($metas["pass_on_parameters"] && $requestQuery) {
+                $toQuery = parse_url($response["to"], PHP_URL_QUERY);
+                if ($toQuery) {
+                    $response["to"] .= ("&" === substr($response["to"], -1)) ? $requestQuery : ("&" . $requestQuery);
+                } else {
+                    $response["to"] = rtrim($response["to"], "?") . "?" . $requestQuery;
+                }
+            }
+
+            if ($response["do_redirect"]) {
+                $response["do_redirect"] = $this->applyIncExcRules($metas, $response["do_redirect"]);
+            }
+        }
         return $response;
     }
 
@@ -1355,11 +1379,12 @@ class IRRPHelper implements IRRPConstants {
     public function isExcludedUrl($url) {
         $wpAdminURL = untrailingslashit(admin_url());
         $wpLoginURL = untrailingslashit(wp_login_url());
+        $isPreviewLink = strpos($url, "preview=true") !== false;
 
         $url = strtolower($url);
         $url = str_replace("%2f", "/", $url);
         
-        return (strpos($url, $wpAdminURL) !== false) || (strpos($url, $wpLoginURL) !== false);
+        return (strpos($url, $wpAdminURL) !== false) || (strpos($url, $wpLoginURL) !== false) || $isPreviewLink;
     }
 
     public function manualRtrim($string, $charlist) {

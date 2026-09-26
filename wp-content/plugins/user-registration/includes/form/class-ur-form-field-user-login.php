@@ -68,33 +68,57 @@ class UR_Form_Field_User_Login extends UR_Form_Field {
 	 */
 	public function validation( $single_form_field, $form_data, $filter_hook, $form_id ) {
 		$username = isset( $form_data->value ) ? $form_data->value : '';
-
+		$label    = $single_form_field->general_setting->field_name;
 		if ( username_exists( $username ) ) {
+			$message = array(
+				/* translators: %s - validation message */
+				$label       => sprintf( __( 'Username already exists.', 'user-registration' ) ),
+				'individual' => true,
+			);
 			add_filter(
 				$filter_hook,
-				function ( $msg ) {
-					return __( 'Username already exists.', 'user-registration' );
+				function ( $msg ) use ( $message, $form_data ) {
+					$message = apply_filters( 'user_registration_modify_field_validation_response', $message, $form_data );
+					return $message;
 				}
 			);
 		}
 
+		$allow_special_character = $single_form_field->advance_setting->username_character;
+
 		if ( empty( $username ) ) {
 			$status = true;
-		} else {
+		} elseif ( ! $allow_special_character ) {
 			$status = validate_username( $username );
+
+			/**
+			 * Disallow certain special characters in the username.
+			 *
+			 * @since 4.0
+			 */
+			$username_disallow_character_patten = '/[@\.\-_]/';
+
+			if ( preg_match_all( $username_disallow_character_patten, $username ) ) {
+				$status = false;
+			}
+		} else {
+			$status = true;
 		}
 
 		if ( ! $status ) {
+			$invalid_msg = get_option( 'user_registration_form_submission_error_message_disallow_username_character', esc_html__( 'Please enter a valid username.', 'user-registration' ) );
+
+			$message = array(
+				/* translators: %s - validation message */
+				$label       => $invalid_msg,
+				'individual' => true,
+			);
+
 			add_filter(
 				$filter_hook,
-				function ( $msg ) {
-					$invalid_msg = get_option( 'user_registration_form_submission_error_message_disallow_username_character', esc_html__( 'Please enter a valid username.', 'user-registration' ) );
-
-					if ( empty( $invalid_msg ) ) {
-						$invalid_msg = esc_html__( 'Please enter a valid username.', 'user-registration' );
-					}
-
-					return $invalid_msg;
+				function ( $msg ) use ( $message, $form_data ) {
+					$message = apply_filters( 'user_registration_modify_field_validation_response', $message, $form_data );
+					return $message;
 				}
 			);
 		}

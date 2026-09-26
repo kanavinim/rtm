@@ -148,7 +148,7 @@
                         + '</a>';
                 }
                 if ( settings.print_button == true ) {
-                    text += '<a href="Print" class="print_button">Print</a>';
+                    text += '<a href="Print" class="print_button">'+settings.print_button_text+'</a>';
                 }
                 return text;
             }
@@ -215,11 +215,12 @@
                 $(this.data('br_popup_object')).on("click", settings.yes_no_buttons.no_button, function (event){
                     event.preventDefault();
                     var popup_data = $this.data('br_popup_data');
+                    if ( settings.close_with.includes('no_button') ) {
+                        $this.enable_close();
+                        $this.hide_popup();
+                    }
                     if( popup_data.can_close_popup == false ) {
                         return;
-                    }
-                    if ( settings.close_with.includes('no_button') ) {
-                        $this.hide_popup();
                     }
                     
                     jQuery($this).trigger('br_popup-no_button', $this);
@@ -385,6 +386,7 @@
                     align:      'right' 			// align text: 'right', 'left', 'center'
                 },
                 print_button: false,                // show print button for popup
+                print_button_text: 'Print',         // print button text
                 close_with:     [
                     'overlay',         				// popup will be closed if catch click on overlay
                     'x_button', 	   				// popup will be closed if catch click on x button

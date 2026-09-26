@@ -1,0 +1,788 @@
+# Translation of Plugins - Breadcrumb &#8211;  Breadcrumb for WooCommerce and Custom Post Types - Stable (latest release) in Russian
+# This file is distributed under the same license as the Plugins - Breadcrumb &#8211;  Breadcrumb for WooCommerce and Custom Post Types - Stable (latest release) package.
+msgid ""
+msgstr ""
+"PO-Revision-Date: 2026-07-28 07:47:18+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n % 10 == 1 && n % 100 != 11) ? 0 : ((n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14)) ? 1 : 2);\n"
+"X-Generator: GlotPress/4.0.3\n"
+"Language: ru\n"
+"Project-Id-Version: Plugins - Breadcrumb &#8211;  Breadcrumb for WooCommerce and Custom Post Types - Stable (latest release)\n"
+
+#: includes/functions-settings.php:650
+msgid "Display after action"
+msgstr "Отображение после выполнения действия"
+
+#: includes/functions-settings.php:662
+msgid "Display after action priority"
+msgstr "Отображение после приоритета действий"
+
+#: includes/functions-settings.php:642
+msgid "Display Dynamically"
+msgstr "Отображать динамически"
+
+#: includes/functions-settings.php:643
+msgid "Display dynamically by action hooks."
+msgstr "Отображается динамически с помощью хуков действий."
+
+#: includes/functions-settings.php:651
+msgid "Insert breadcrumb dyncamically after action hook"
+msgstr "Динамическая вставка навигационной цепочки после срабатывания хука действия"
+
+#: includes/functions-settings.php:663
+msgid "Insert breadcrumb dyncamically after action hook by priority"
+msgstr "Динамическая вставка навигационной цепочки после срабатывания хука действия в соответствии с приоритетом"
+
+#. Plugin URI of the plugin
+#: breadcrumb.php
+msgid "https://pickplugins.com/breadcrumb/"
+msgstr "https://pickplugins.com/breadcrumb/"
+
+#: includes/functions.php:800
+msgid "Home URL"
+msgstr "URL главной страницы"
+
+#: includes/functions.php:109
+msgid "Post Term"
+msgstr "Термин записи"
+
+#. translators: %s: Plugin Name
+#: includes/menu/data-update.php:24
+msgid "%s Data - Update"
+msgstr "Данные %s - обновление"
+
+#: includes/functions.php:801
+msgid "Custom URL for Home."
+msgstr "Пользовательский URL-адрес для главной страницы."
+
+#. translators: %s: URL to breadcrumb data update page
+#: includes/class-admin-notices.php:34
+msgid "Data update required for breadcrumb plugin <strong><a href=\"%s\">click here</a></strong> to update data"
+msgstr "Требуется обновление данных для плагина навигационной цепочки <strong><a href=\"%s\">. щёлкните здесь</a></strong>, чтобы обновить данные"
+
+#: includes/functions.php:785
+msgid "Home Custom Text"
+msgstr "Главная страница - Пользовательский текст"
+
+#: includes/functions.php:786
+msgid "Set custom text for Home."
+msgstr "Укажите собственный текст для страницы «Главная»."
+
+#. translators: %s: Icon HTML
+#: includes/menu/settings.php:62
+msgid "%s Buy Pro"
+msgstr "Купить Pro %s"
+
+#: includes/functions.php:51 includes/functions.php:2295
+msgid "404"
+msgstr "404"
+
+#: includes/functions.php:237 includes/functions.php:1387
+msgid "404 text"
+msgstr "Текст 404"
+
+#: includes/functions.php:355 includes/functions.php:400
+#: includes/functions.php:445 includes/functions.php:491
+#: includes/functions.php:535 includes/functions.php:580
+#: includes/functions.php:627 includes/functions.php:691
+#: includes/functions.php:772 includes/functions.php:849
+#: includes/functions.php:895 includes/functions.php:941
+#: includes/functions.php:992 includes/functions.php:1058
+#: includes/functions.php:1107 includes/functions.php:1168
+#: includes/functions.php:1216 includes/functions.php:1263
+#: includes/functions.php:1309 includes/functions.php:1354
+#: includes/functions.php:1401 includes/functions.php:1453
+#: includes/functions.php:1517 includes/functions.php:1582
+#: includes/functions.php:1644 includes/functions.php:1690
+msgid "Add prefix text."
+msgstr "Добавить текст префикса."
+
+#. translators: %s: Plugin Name
+#: includes/menu/settings.php:91
+msgid "%s Settings"
+msgstr "Настройки %s"
+
+#: includes/functions.php:1907
+msgid "Archives"
+msgstr "Архивы"
+
+#: includes/functions.php:41 includes/functions.php:2206
+msgid "Author"
+msgstr "Автор"
+
+#: includes/functions.php:210 includes/functions.php:1676
+msgid "Author name"
+msgstr "Имя автора"
+
+#: includes/functions.php:40 includes/functions.php:1758
+msgid "Blog"
+msgstr "Блог"
+
+#. Plugin Name of the plugin
+#: breadcrumb.php includes/class-settings.php:31
+msgid "Breadcrumb"
+msgstr "Breadcrumb"
+
+#: includes/functions-settings.php:775 includes/functions-settings.php:785
+msgid "Copied"
+msgstr "Скопировано"
+
+#: includes/functions-settings.php:730
+msgid "Custom JS"
+msgstr "Пользовательский JS"
+
+#: includes/functions.php:107 includes/functions.php:150
+#: includes/functions.php:186 includes/functions.php:196
+#: includes/functions.php:206 includes/functions.php:211
+#: includes/functions.php:216 includes/functions.php:222
+#: includes/functions.php:227 includes/functions.php:232
+#: includes/functions.php:238 includes/functions.php:249
+#: includes/functions.php:675
+msgid "Custom text"
+msgstr "Произвольный текст"
+
+#: includes/functions.php:45 includes/functions.php:231
+#: includes/functions.php:2278
+msgid "Date"
+msgstr "Дата"
+
+#: includes/functions.php:1464 includes/functions.php:1528
+#: includes/functions.php:1593
+msgid "Date format"
+msgstr "Формат даты"
+
+#: includes/functions-settings.php:811 includes/functions-settings.php:1147
+msgid "Documentation"
+msgstr "Документация"
+
+#: includes/functions-settings.php:918
+msgid "Get Premium"
+msgstr "Получить Премиум"
+
+#: includes/functions-hooks.php:545 includes/functions.php:39
+#: includes/functions.php:81 includes/functions.php:136
+#: includes/functions.php:179 includes/functions.php:189
+#: includes/functions.php:199 includes/functions.php:209
+#: includes/functions.php:214 includes/functions.php:220
+#: includes/functions.php:225 includes/functions.php:230
+#: includes/functions.php:236 includes/functions.php:242
+#: includes/functions.php:758 includes/functions.php:1713
+msgid "Home"
+msgstr "Главная"
+
+#. Author URI of the plugin
+#: breadcrumb.php
+msgid "http://pickplugins.com"
+msgstr "http://pickplugins.com"
+
+#: includes/functions.php:720
+msgid "Link"
+msgstr "Ссылка"
+
+#: includes/menu/settings.php:118
+msgid "Loading..."
+msgstr "Загрузка…"
+
+#: includes/functions.php:83 includes/functions.php:181
+#: includes/functions.php:191 includes/functions.php:201
+#: includes/functions.php:244 includes/functions.php:881
+msgid "Post author"
+msgstr "Автор записи"
+
+#: includes/functions-settings.php:97
+msgid "None"
+msgstr "Отсутствует"
+
+#: includes/functions-settings.php:76 includes/functions-settings.php:143
+#: includes/functions-settings.php:190
+msgid "No"
+msgstr "Нет"
+
+#. Author of the plugin
+#: breadcrumb.php
+msgid "PickPlugins"
+msgstr "PickPlugins"
+
+#: includes/functions.php:89 includes/functions.php:185
+#: includes/functions.php:195 includes/functions.php:205
+#: includes/functions.php:248 includes/functions.php:338
+msgid "Post ID"
+msgstr "ID записи"
+
+#: includes/functions-settings.php:937 includes/functions-settings.php:1044
+msgid "Premium"
+msgstr "Премиум"
+
+#: includes/functions.php:86 includes/functions.php:182
+#: includes/functions.php:192 includes/functions.php:202
+#: includes/functions.php:245 includes/functions.php:521
+msgid "Post date"
+msgstr "Дата записи"
+
+#: includes/functions.php:82 includes/functions.php:180
+#: includes/functions.php:190 includes/functions.php:200
+#: includes/functions.php:835
+msgid "Post title"
+msgstr "Заголовок записи"
+
+#: includes/functions.php:42 includes/functions.php:2226
+msgid "Search"
+msgstr "Поиск"
+
+#: includes/functions.php:48 includes/functions.php:102
+#: includes/functions.php:139 includes/functions.php:1202
+msgid "Shop"
+msgstr "Магазин"
+
+#: includes/functions-settings.php:717
+msgid "Custom CSS"
+msgstr "Пользовательский CSS"
+
+#: includes/functions-settings.php:864 includes/functions-settings.php:1166
+msgid "Submit reviews"
+msgstr "Отправить отзывы"
+
+#: includes/menu/settings.php:176
+msgid "Save Changes"
+msgstr "Сохранить изменения"
+
+#: includes/menu/settings.php:110
+msgid "Changes Saved."
+msgstr "Изменения сохранены."
+
+#: includes/functions-settings.php:709
+msgid "Custom scripts"
+msgstr "Пользовательские скрипты"
+
+#: includes/functions-settings.php:77 includes/functions-settings.php:144
+#: includes/functions-settings.php:191
+msgid "Yes"
+msgstr "Да"
+
+#: includes/functions.php:639 includes/functions.php:707
+msgid "Text"
+msgstr "Текстовое поле"
+
+#. translators: %s: Icon HTML
+#: includes/menu/settings.php:15
+msgid "%s Options"
+msgstr "Параметры %s"
+
+#: includes/functions-settings.php:364
+msgid "%s Click to add tags."
+msgstr "%s нажмите, чтобы добавить теги."
+
+#: includes/functions.php:640 includes/functions.php:708
+msgid "Write custom text."
+msgstr "Напишите свой текст."
+
+#: includes/functions.php:98 includes/functions.php:566
+msgid "Post tag"
+msgstr "Метка записи"
+
+#: includes/functions-settings.php:765
+msgid "Get support"
+msgstr "Получить поддержку"
+
+#: includes/functions-settings.php:766
+msgid "Use following to get help and support from our expert team."
+msgstr "Используйте следующее, чтобы получить помощь и поддержку от нашей команды экспертов."
+
+#: includes/functions-settings.php:807 includes/functions-settings.php:1143
+msgid "Ask question for free on our forum and get quick reply from our expert team members."
+msgstr "Задайте вопрос бесплатно на нашем форуме и получите быстрый ответ от наших экспертов."
+
+#: includes/functions-settings.php:808 includes/functions-settings.php:1144
+msgid "Create support ticket"
+msgstr "Создать тикет в службу поддержки"
+
+#: includes/functions-settings.php:810 includes/functions-settings.php:1146
+msgid "Read our documentation before asking your question."
+msgstr "Прочтите нашу документацию, прежде чем задать свой вопрос."
+
+#: includes/functions-settings.php:813 includes/functions-settings.php:1149
+msgid "Watch video tutorials."
+msgstr "Смотрите видеоуроки."
+
+#: includes/functions-settings.php:814 includes/functions-settings.php:1150
+msgid "All tutorials"
+msgstr "Все учебные пособия"
+
+#: includes/functions-settings.php:839
+msgid "Ask question"
+msgstr "Задать вопрос"
+
+#: includes/functions-settings.php:936 includes/functions-settings.php:1043
+msgid "Free"
+msgstr "Бесплатные"
+
+#. translators: %s: Icon HTML
+#: includes/menu/settings.php:44
+msgid "%s Custom Scripts"
+msgstr "Пользовательские скрипты %s"
+
+#: includes/functions.php:43 includes/functions.php:221
+#: includes/functions.php:2244
+msgid "Year"
+msgstr "Год"
+
+#: includes/functions.php:44 includes/functions.php:226
+#: includes/functions.php:2260
+msgid "Month"
+msgstr "Месяц"
+
+#: includes/functions-settings.php:928 includes/functions-settings.php:1049
+msgid "Buy premium"
+msgstr "Купить премиум"
+
+#: includes/functions-settings.php:1142
+msgid "Help & Support"
+msgstr "Помощь и поддержка"
+
+#: includes/functions.php:38
+msgid "Front page"
+msgstr "Главная страница"
+
+#: includes/functions.php:1005 includes/functions.php:1121
+msgid "Taxonomy"
+msgstr "Таксономия"
+
+#: includes/functions.php:2187
+msgid "Tag"
+msgstr "Метка"
+
+#: includes/functions-settings.php:919
+msgid "Thanks for using our plugin, if you looking for some advance feature please buy premium version."
+msgstr "Спасибо за использование нашего плагина, если вам нужна дополнительная функция, пожалуйста, купите премиум-версию."
+
+#: includes/functions-settings.php:817 includes/functions-settings.php:1153
+msgid "Install & setup"
+msgstr "Установка и настройка"
+
+#: includes/functions-settings.php:776
+msgid "You can use this shortcode under post content"
+msgstr "Вы можете использовать этот шорткод под содержимым записи"
+
+#: includes/functions-settings.php:786
+msgid "PHP Code, you can use under theme .php files."
+msgstr "PHP код, который вы можете использовать в файлах .PHP темы."
+
+#: includes/functions-settings.php:562
+msgid "Breadcrumb font size"
+msgstr "Размер шрифта навигационной цепочки"
+
+#: includes/functions.php:354 includes/functions.php:399
+#: includes/functions.php:444 includes/functions.php:490
+#: includes/functions.php:534 includes/functions.php:579
+#: includes/functions.php:626 includes/functions.php:690
+#: includes/functions.php:771 includes/functions.php:848
+#: includes/functions.php:894 includes/functions.php:940
+#: includes/functions.php:991 includes/functions.php:1057
+#: includes/functions.php:1106 includes/functions.php:1167
+#: includes/functions.php:1215 includes/functions.php:1262
+#: includes/functions.php:1308 includes/functions.php:1353
+#: includes/functions.php:1400 includes/functions.php:1452
+#: includes/functions.php:1516 includes/functions.php:1581
+#: includes/functions.php:1643 includes/functions.php:1689
+msgid "Prefix text"
+msgstr "Текст префикса"
+
+#: includes/functions.php:142 includes/functions.php:1249
+msgid "Term title"
+msgstr "Название термина"
+
+#: includes/functions-settings.php:927
+msgid "If you love our plugin and want more feature please consider to buy pro version."
+msgstr "Если вам нравиться наш плагин и хотите получить больше возможностей, пожалуйста, подумайте о покупке Pro версии."
+
+#: includes/functions-settings.php:930
+msgid "See the differences"
+msgstr "Просмотр различий"
+
+#: includes/functions-settings.php:935 includes/functions-settings.php:1042
+msgid "Features"
+msgstr "Функции"
+
+#: includes/functions-settings.php:1063
+msgid "Get pro version"
+msgstr "Получить про версию"
+
+#: includes/functions.php:50
+msgid "Privacy policy"
+msgstr "Политика конфиденциальности"
+
+#: includes/functions.php:87 includes/functions.php:183
+#: includes/functions.php:193 includes/functions.php:203
+#: includes/functions.php:246 includes/functions.php:477
+msgid "Post month"
+msgstr "Месяц публикации записи"
+
+#: includes/functions.php:88 includes/functions.php:184
+#: includes/functions.php:194 includes/functions.php:204
+#: includes/functions.php:247 includes/functions.php:431
+msgid "Post year"
+msgstr "Год публикации записи"
+
+#: includes/functions.php:97 includes/functions.php:927
+msgid "Post category"
+msgstr "Рубрика записи"
+
+#: includes/functions.php:103 includes/functions.php:1044
+msgid "Product category"
+msgstr "Категория товара"
+
+#: includes/functions.php:104 includes/functions.php:1154
+msgid "Product tag"
+msgstr "Тег товара"
+
+#: includes/functions.php:215 includes/functions.php:1630
+msgid "Search word"
+msgstr "Поисковое слово"
+
+#: includes/functions.php:243
+msgid "Shop title"
+msgstr "Название магазина"
+
+#: includes/functions.php:1437
+msgid "Archive date"
+msgstr "Дата архива"
+
+#. translators: %s: Icon HTML
+#: includes/menu/settings.php:36
+msgid "%s Style"
+msgstr "%s Стиль"
+
+#. translators: %s: Icon HTML
+#: includes/menu/settings.php:52
+msgid "%s Help & Support"
+msgstr "%s помощь и поддержка"
+
+#: includes/functions-hooks.php:508 includes/functions.php:1714
+msgid "You are here"
+msgstr "Вы здесь"
+
+#: includes/functions-settings.php:98
+msgid "Word"
+msgstr "Словам"
+
+#: includes/functions-settings.php:99
+msgid "Character"
+msgstr "Символ"
+
+#: includes/functions-settings.php:795
+msgid "Get shortcode"
+msgstr "Получить шорткод"
+
+#: includes/functions-settings.php:824 includes/functions-settings.php:1160
+msgid "Change style"
+msgstr "Изменить стиль"
+
+#: includes/functions-settings.php:854
+msgid "Write a review"
+msgstr "Написать отзыв"
+
+#: includes/functions-settings.php:1047
+msgid "Buy now"
+msgstr "Купить"
+
+#. translators: %s: Icon HTML
+#: includes/menu/settings.php:24
+msgid "%s Builder"
+msgstr "%s Конструктор"
+
+#: includes/functions-settings.php:718
+msgid "Add your own CSS, do not use &lt;style>&lt;/style> tag. its recommend to use <code>!important</code> to override."
+msgstr "Добавьте свой собственный CSS, не используйте метку &lt;style&gt;&lt;/style&gt;. Для переопределения рекомендуется использовать <code>!important</code>."
+
+#: includes/functions-settings.php:731
+msgid "Add your own JS, do not use &lt;script>&lt;/script> tag."
+msgstr "Добавьте свой собственный JS-код, не используйте метку &lt;script&gt;&lt;/script&gt;."
+
+#: includes/functions-settings.php:710
+msgid "Add your own scripts and style css."
+msgstr "Добавьте свои собственные скрипты и стилевой файл CSS."
+
+#: includes/functions.php:1501
+msgid "Archive month"
+msgstr "Месяц архива"
+
+#: includes/functions.php:1566
+msgid "Archive year"
+msgstr "Год архива"
+
+#. Description of the plugin
+#: breadcrumb.php
+msgid "Awesome Breadcrumb for wordpress."
+msgstr "Отличная навигационная цепочка для WordPress."
+
+#: includes/functions-settings.php:289
+msgid "Breadcrumb builder"
+msgstr "Конструктор навигационных цепочек"
+
+#: includes/functions-settings.php:964
+msgid "Breadcrumb builder for archives"
+msgstr "Конструктор навигационных цепочек для архивов"
+
+#: includes/functions-settings.php:970
+msgid "Breadcrumb builder for posttypes"
+msgstr "Конструктор навигационных цепочек для типов записей"
+
+#: includes/functions-settings.php:589
+msgid "Breadcrumb container margin"
+msgstr "Поле контейнера навигационной цепочки с внешним отступом"
+
+#: includes/functions-settings.php:574
+msgid "Breadcrumb container padding"
+msgstr "Отступы в контейнере навигационной цепочки"
+
+#: includes/functions-settings.php:41 includes/functions-settings.php:976
+msgid "Breadcrumb front text"
+msgstr "Текст для навигационной цепочки"
+
+#: includes/functions-settings.php:602 includes/functions-settings.php:1025
+msgid "Breadcrumb link background color"
+msgstr "Цвет фона ссылок в навигационной цепочке"
+
+#: includes/functions-settings.php:614 includes/functions-settings.php:1031
+msgid "Breadcrumb link color"
+msgstr "Цвет ссылок в навигационной цепочке"
+
+#: includes/functions-settings.php:994
+msgid "Breadcrumb link text limit"
+msgstr "Ограничение по длине текста навигационной цепочки"
+
+#: includes/functions-settings.php:91
+msgid "Breadcrumb link text limit by?"
+msgstr "Каково ограничение на длину текста ссылок в навигационной цепочке?"
+
+#: includes/functions-settings.php:627 includes/functions-settings.php:1036
+msgid "Breadcrumb separator color"
+msgstr "Цвет разделителя навигационной цепочки"
+
+#: includes/functions-settings.php:54 includes/functions-settings.php:982
+msgid "Breadcrumb separator text"
+msgstr "Текст-разделитель в навигационной цепочке"
+
+#: includes/functions-settings.php:1020
+msgid "Breadcrumb text font size"
+msgstr "Размер шрифта текста навигационной цепочки"
+
+#: includes/functions-settings.php:524
+msgid "Breadcrumb Themes"
+msgstr "Навигационная цепочка «Темы»"
+
+#: includes/functions-settings.php:825 includes/functions-settings.php:1161
+msgid "Build your own breadcrumb"
+msgstr "Создайте собственную навигационную цепочку"
+
+#: includes/functions-settings.php:290
+msgid "Build your own breadcrumb."
+msgstr "Создайте собственную навигационную цепочку."
+
+#: includes/functions-settings.php:525
+msgid "Choose breadcrumb theme"
+msgstr "Выберите тему навигационной цепочки"
+
+#: includes/functions-settings.php:603
+msgid "Choose custom background color for links"
+msgstr "Выберите индивидуальный цвет фона для ссылок"
+
+#: includes/functions-settings.php:615
+msgid "Choose custom link color"
+msgstr "Выберите цвет ссылки по своему усмотрению"
+
+#: includes/functions-settings.php:628
+msgid "Choose custom separator color"
+msgstr "Выберите цвет разделителя"
+
+#: includes/functions-settings.php:514
+msgid "Choose style"
+msgstr "Выберите стиль"
+
+#: includes/functions-settings.php:171
+msgid "Current URL hash"
+msgstr "Хэш текущего URL-адреса"
+
+#: includes/functions-settings.php:158 includes/functions-settings.php:1012
+msgid "Custom home text"
+msgstr "Пользовательский текст"
+
+#: includes/functions-settings.php:826 includes/functions-settings.php:1162
+msgid "Customize breadcrumb items"
+msgstr "Настройка элементов навигационной цепочки"
+
+#: includes/functions-settings.php:819 includes/functions-settings.php:1155
+msgid "Customize home text"
+msgstr "Настроить текст на главной странице"
+
+#: includes/functions-settings.php:515
+msgid "Customize the breadcrumb."
+msgstr "Настройте навигационную цепочку."
+
+#: includes/functions-settings.php:1006
+msgid "Display \"Home\" on breadcrumb"
+msgstr "Отобразить «Главная» в навигационной цепочке"
+
+#: includes/functions-settings.php:137
+msgid "Display \"Home\" on breadcrumb?"
+msgstr "Отображать ли «Главная» в навигационной цепочке?"
+
+#: includes/functions-settings.php:42
+msgid "Display custom text before breadcrumb."
+msgstr "Отобразить пользовательский текст перед навигационной цепочкой."
+
+#: includes/functions-settings.php:70
+msgid "Display last separator"
+msgstr "Отобразить последний разделитель"
+
+#: includes/functions-settings.php:988
+msgid "Display or hide last separator"
+msgstr "Показать или скрыть последний разделитель"
+
+#: includes/functions-settings.php:71
+msgid "Display or hide last separator."
+msgstr "Показать или скрыть последний разделитель."
+
+#: includes/functions-settings.php:185
+msgid "Display or hide WooCommerce default breadcrumb"
+msgstr "Отобразить или скрыть навигационную цепочку по умолчанию для WooCommerce"
+
+#: includes/functions-settings.php:124 includes/functions-settings.php:1000
+msgid "Ending character"
+msgstr "Заключительный символ"
+
+#: includes/functions-settings.php:959
+msgid "Extra ready 10 themes"
+msgstr "Дополнительно подготовлено 10 тем"
+
+#: includes/functions.php:80 includes/functions.php:135
+#: includes/functions.php:178 includes/functions.php:188
+#: includes/functions.php:198 includes/functions.php:208
+#: includes/functions.php:213 includes/functions.php:219
+#: includes/functions.php:224 includes/functions.php:229
+#: includes/functions.php:235 includes/functions.php:241
+#: includes/functions.php:615
+msgid "Front text"
+msgstr "Текст на лицевой стороне"
+
+#: includes/functions-settings.php:33
+msgid "General option"
+msgstr "Общие параметры"
+
+#: includes/functions-settings.php:823 includes/functions-settings.php:953
+#: includes/functions-settings.php:1159
+msgid "Hide by post ids"
+msgstr "Скрыть по ID записей"
+
+#: includes/functions-settings.php:822 includes/functions-settings.php:946
+#: includes/functions-settings.php:1158
+msgid "Hide by post types"
+msgstr "Скрыть по типам записей"
+
+#: includes/functions-settings.php:821 includes/functions-settings.php:941
+#: includes/functions-settings.php:1157
+msgid "Hide on archives"
+msgstr "Скрыть в архивах"
+
+#: includes/functions-settings.php:184
+msgid "Hide WooCommerce breadcrumb"
+msgstr "Скрыть навигационную цепочку WooCommerce"
+
+#: includes/functions-settings.php:172
+msgid "If you want to keep # on current url, otherwise keep empty"
+msgstr "Если вы хотите сохранить адрес # в текущем URL-адресе, в противном случае оставьте поле пустым"
+
+#: includes/functions-settings.php:820 includes/functions-settings.php:1156
+msgid "Install pro and setup"
+msgstr "Установите версию Pro и выполните настройку"
+
+#: includes/functions-settings.php:112
+msgid "Limit count"
+msgstr "Ограничение подсчёта символов"
+
+#: includes/functions-settings.php:818 includes/functions-settings.php:1154
+msgid "Limit link text"
+msgstr "Ограничить текст ссылки"
+
+#: includes/functions-settings.php:390
+msgid "Page objects"
+msgstr "Объекты страницы"
+
+#: includes/functions.php:1825
+msgid "Post preview"
+msgstr "Предпросмотр записи"
+
+#: includes/functions.php:976
+msgid "Post term(Category/Tag)"
+msgstr "Теги (Рубрика/Метки)"
+
+#: includes/functions-settings.php:590
+msgid "Put custom margin size for breadcrumb container."
+msgstr "Укажите индивидуальный размер внешнего отступа для контейнера навигационной цепочки."
+
+#: includes/functions-settings.php:575
+msgid "Put custom padding size for breadcrumb container."
+msgstr "Укажите индивидуальный размер внутренего отступа для контейнера навигационной цепочки."
+
+#: includes/functions-settings.php:125
+msgid "Set custom Ending character, ex: ..."
+msgstr "Укажите собственный символ окончания, напр.: ..."
+
+#: includes/functions-settings.php:563
+msgid "Set custom font size"
+msgstr "Установить индивидуальный размер шрифта"
+
+#: includes/functions-settings.php:113
+msgid "Set custom limit value, number only."
+msgstr "Укажите собственное значение лимита, только цифры."
+
+#: includes/functions-settings.php:34
+msgid "Set some basic option to get start."
+msgstr "Укажите некоторые базовые настройки, чтобы начать работу."
+
+#: includes/functions.php:145 includes/functions.php:1295
+msgid "Term parent"
+msgstr "Термин «родитель»"
+
+#: includes/functions-settings.php:1168
+msgid "We wish your 2 minutes to write your feedback about plugin. give us"
+msgstr "Мы просим вас уделить 2 минуты, чтобы оставить обратную связь о плагине. Поделитесь с нами"
+
+#: includes/functions-settings.php:852
+msgid "We wish your 2 minutes to write your feedback about plugin. give us 5 star."
+msgstr "Мы просим вас уделить 2 минуты, чтобы оставить обратную связь о плагине. Поставьте нам 5 звёзд."
+
+#: includes/functions.php:1465 includes/functions.php:1529
+#: includes/functions.php:1594
+msgid "Write date format."
+msgstr "Укажите формат даты."
+
+#: includes/functions.php:721
+msgid "Write link."
+msgstr "Введите ссылку."
+
+#: includes/functions.php:1006
+msgid "Write post taxonomy. ex: <code>category, post_tag</code>"
+msgstr "Укажите таксономию записи. Напр.: <code>category, post_tag</code>"
+
+#: includes/functions.php:1122
+msgid "Write Taxonomy."
+msgstr "Создать таксономию."
+
+#: includes/functions-settings.php:55
+msgid "You can display custom separator. ex: <code>&raquo;</code>"
+msgstr "Вы можете отобразить пользовательский разделитель. Напр.: <code>&raquo;</code>"
+
+#: includes/functions-settings.php:138
+msgid "You can hide or display Home on breadcrumb."
+msgstr "Вы можете скрыть или отобразить ссылку «Главная» в навигационной цепочке."
+
+#: includes/functions-settings.php:92
+msgid "You can limit link text by word or character"
+msgstr "Вы можете ограничить длину текста ссылки по количеству слов или символов"
+
+#: includes/functions-settings.php:159
+msgid "You can set custom text for \"Home\""
+msgstr "Вы можете задать собственный текст для страницы «Главная»"

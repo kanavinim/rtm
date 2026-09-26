@@ -53,9 +53,9 @@ class THWVSF_Admin_Swatch_Import_Export {
 				$i = 1;
 
 				foreach ( $attributes as $attribute_name => $attribute ) {
-					
+					// Translators: %d is the attribute number.
 					$column_names[ 'attributes:type' . $i ] = sprintf( __( 'Attribute %d type', 'product-variation-swatches-for-woocommerce' ), $i );
-				
+					// Translators: %d is the attribute number.
 					$column_names[ 'attributes:value_swatch' . $i ] = sprintf( __( 'Attribute %d swatch(s)', 'product-variation-swatches-for-woocommerce'  ), $i );
 					$i++;
 				}
@@ -236,8 +236,10 @@ class THWVSF_Admin_Swatch_Import_Export {
 
 		$ad_columns = array(
 							
+			// phpcs:ignore WordPress.WP.I18n.MissingTranslatorsComment
 			__( 'Attribute %d type', 'product-variation-swatches-for-woocommerce' ) => 'attributes:type',
 				
+			// phpcs:ignore WordPress.WP.I18n.MissingTranslatorsComment
 			__( 'Attribute %d swatch(s)', 'product-variation-swatches-for-woocommerce' ) => 'attributes:swatch',
 							
 		);
@@ -577,14 +579,15 @@ class THWVSF_Admin_Swatch_Import_Export {
 			$upload = wc_rest_upload_image_from_url( $url );
 
 			if ( is_wp_error( $upload ) ) {
+				// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
 				throw new Exception( $upload->get_error_message(), 400 );
 			}
 
 			$id = wc_rest_set_uploaded_image_as_attachment( $upload, $product_id );
 
 			if ( ! wp_attachment_is_image( $id ) ) {
-				/* translators: %s: image URL */
-				throw new Exception( sprintf( __( 'Not able to attach "%s".', 'woocommerce-product-variation-swatches' ), $url ), 400 );
+				// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped,WordPress.WP.I18n.MissingTranslatorsComment
+				throw new Exception( sprintf( esc_html__( 'Not able to attach "%s".', 'product-variation-swatches-for-woocommerce' ), $url ), 400 );
 			}
 
 			// Save attachment source for future reference.
@@ -592,8 +595,8 @@ class THWVSF_Admin_Swatch_Import_Export {
 		}
 
 		if ( ! $id ) {
-			/* translators: %s: image URL */
-			throw new Exception( sprintf( __( 'Unable to use image "%s".', 'woocommerce-product-variation-swatches' ), $url ), 400 );
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped,WordPress.WP.I18n.MissingTranslatorsComment
+			throw new Exception( sprintf( esc_html__( 'Unable to use image "%s".', 'product-variation-swatches-for-woocommerce' ), $url ), 400 );
 		}
 
 		return $id;

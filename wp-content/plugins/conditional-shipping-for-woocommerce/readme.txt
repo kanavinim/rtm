@@ -1,10 +1,10 @@
 === Conditional Shipping for WooCommerce ===
 Contributors: wooelements
 Tags: woocommerce shipping, conditional shipping
-Requires at least: 4.5
-Tested up to: 5.9
-Requires PHP: 5.4
-Stable tag: 2.3.1
+Requires at least: 4.6
+Tested up to: 7.0
+Requires PHP: 7.0
+Stable tag: 3.7.0
 License: GPLv2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -25,8 +25,8 @@ With Conditional Shipping you can set maximum weight (30 kg) for Economy and min
 
 * Restrict WooCommerce shipping methods based on conditions
 * Works with existing shipping methods
-* [Support for dynamic shipping rates](https://wptrio.com/guide/conditional-shipping-pro-guide/#elementor-toc__heading-anchor-5) such as USPS and DHL
-* [Debug mode](https://wptrio.com/guide/conditional-shipping-pro-guide/#elementor-toc__heading-anchor-4) for easy troubleshooting
+* [Support for dynamic shipping rates](https://wptrio.com/guide/control-live-shipping-rates-e-g-usps-or-fedex/) such as USPS and DHL
+* [Debug mode](https://wptrio.com/guide/troubleshoot-with-debug-mode/) for easy troubleshooting
 
 = Available Conditions =
 
@@ -41,7 +41,10 @@ With Conditional Shipping you can set maximum weight (30 kg) for Economy and min
 = Pro Features =
 
 * All free features
-* Set shipping costs conditionally. For example, free Economy shipping only for certain product or customer role.
+* Set shipping costs conditionally. For example, increase shipping cost 20 % for large items.
+* Override shipping method titles conditionally
+* Display shipping notices based on conditions
+* Set custom "no shipping methods available" message based on conditions
 * More conditions
     * Product measurement conditions (for example highest allowed height for a product in the cart is 10 cm)
     * Shipping class conditions
@@ -51,7 +54,7 @@ With Conditional Shipping you can set maximum weight (30 kg) for Economy and min
     * Customer logged in / out condition
     * Customer user role condition
 
-[Upgrade to Pro](https://wptrio.com/products/conditional-shipping)
+[Upgrade to Pro](https://wptrio.com/products/conditional-shipping/)
 
 = Support Policy =
 
@@ -63,6 +66,7 @@ Make sure to check out other useful plugins from the author.
 
 * [Conditional Payments for WooCommerce](https://wordpress.org/plugins/conditional-payments-for-woocommerce)
 * [Stock Sync for WooCommerce](https://wordpress.org/plugins/stock-sync-for-woocommerce/)
+* [WooCommerce Product Sync Pro](https://wptrio.com/products/woocommerce-product-sync-pro/)
 
 == Installation ==
 Conditional Shipping is installed just like any other WordPress plugin.
@@ -73,15 +77,92 @@ Conditional Shipping is installed just like any other WordPress plugin.
 4. Choose the downloaded zip file and upload it
 5. Activate the plugin
 
-Once the plugin is activated, you can create rulesets at *WooCommerce > Settings > Shipping > Conditions*. Each ruleset comprises of conditions and actions which are run if conditions pass.
+Once the plugin is activated, you can create rulesets at **WooCommerce > Settings > Shipping > Conditions**. Each ruleset comprises of conditions and actions which are run if conditions pass.
 
-There is a debug mode which is really helpful to see how rulesets are working. You can activate it at *WooCommerce > Settings > Shipping > Conditions > Debug mode*. Once the mode is activated, you should be able to see *Conditional Shipping Debug* in the checkout which shows which conditions passed and actions were taken.
+There is a debug mode which is really helpful to see how rulesets are working. You can activate it at **WooCommerce > Settings > Shipping > Conditions > Debug mode**. Once the mode is activated, you should be able to see **Conditional Shipping Debug** in the checkout which shows which conditions passed and actions were taken.
 
-If you have dynamic / live shipping rates such as USPS, you will need to enable simple helper plugin which registers these rates for you. Please see [here](https://wptrio.com/guide/conditional-shipping-pro-guide/#elementor-toc__heading-anchor-5) for usage instructions.
+If you have dynamic / live shipping rates such as USPS, you will need to use **Match by name** option for selecting dynamic shipping methods. Please see [here](https://wptrio.com/guide/control-live-shipping-rates-e-g-usps-or-fedex/) for more information.
 
 That should be all. Any questions / issues / bug reports feel free to create a post on [WordPress.org support forum](https://wordpress.org/support/plugin/conditional-shipping-for-woocommerce/).
 
 == Changelog ==
+
+= 3.7.0 =
+
+* NEW: Renamed **Enable shipping methods** to **Allow shipping methods** and added new **Enable shipping methods**. **Allow shipping methods** will disable shipping methods if conditions do not pass. New **Enable shipping methods** will enable shipping methods which have been disabled by previous rulesets.
+
+= 3.6.1 =
+
+* FIX: Fixed PHP warning for empty conditions in the debug mode
+* FIX: Added better input validation for the rulesets
+
+= 3.6.0 =
+
+* Added **Admin only** mode for the debug mode to make it visible only for administrators (previously visible to all users)
+* Improved compatibility with the blocks checkout
+
+= 3.5.0 =
+
+* Minor UI improvements
+
+= 3.4.1 =
+
+* Improved plugin security related to CSRF
+
+= 3.4.0 =
+
+* The volume unit is now fixed to cubic meters (m³) when using metric measurements (mm, cm or m)
+* Improved compatibility of the **Match by name** option with dynamic shipping rates (e.g., live rates by USPS)
+* Added filters (**wcs_item_weight**, **wcs_item_height**, **wcs_item_width**, and **wcs_item_length**) to allow developers to modify item dimensions programmatically
+
+= 3.3.0 =
+
+* Added **Duplicate ruleset** feature
+* Added **equals** operator for numerical conditions
+* Improved user interface performance
+
+= 3.2.0 =
+
+* Support for WooCommerce block-based checkout
+
+= 3.1.3 =
+
+* Declared compatibility with WordPress 6.4.x
+
+= 3.1.2 =
+
+* Added multicurrency support for *_Price Based on Country for WooCommerce_*
+
+= 3.1.1 =
+
+* Changed plugin text domain to **conditional-shipping-for-woocommerce** to allow WordPress.org translations
+* Declared WooCommerce 8.x and WordPress 6.3 compatibilities 
+
+= 3.1.0 =
+
+* Added **Match by name** option for selecting shipping methods based on their name
+* Declared compatibility with High-Performance Order Storage (HPOS)
+* Added option for hiding Pro features
+
+= 3.0.0 =
+
+* Rulesets can now be ordered by drag-and-drop. Rulesets are evaluated from top to bottom
+* Improved user interface
+
+= 2.4.1 =
+
+* Fixed bug which crashed the checkout if WooCommerce Multilingual & Multicurrency by WPML was activated but multicurrency functionality was not enabled
+
+= 2.4.0 =
+
+* Improved support for WPML
+* Added *_All shipping methods_* selector for controlling all shipping methods without selecting them individually
+* Added support for the following multi-currency plugins: *_Aelia Currency Switcher for WooCommerce_*, *_FOX - Currency Switcher Professional for WooCommerce_* and *_WooCommerce Multilingual & Multicurrency (by WPML)_*
+* Minor bug fixes
+
+= 2.3.2 =
+
+* Minor security fix
 
 = 2.3.1 =
 

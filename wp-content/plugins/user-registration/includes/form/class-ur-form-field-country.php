@@ -37,7 +37,12 @@ class UR_Form_Field_Country extends UR_Form_Field {
 	 * Get Country List.
 	 */
 	public function get_country() {
-
+		/**
+		 * Filter to modify countries list.
+		 *
+		 * @param array Country Names.
+		 * @return array Country Names.
+		 */
 		return apply_filters(
 			'user_registration_countries_list',
 			array(
@@ -112,6 +117,7 @@ class UR_Form_Field_Country extends UR_Form_Field {
 				'GQ' => __( 'Equatorial Guinea', 'user-registration' ),
 				'ER' => __( 'Eritrea', 'user-registration' ),
 				'EE' => __( 'Estonia', 'user-registration' ),
+				'SZ' => __( 'Eswatini', 'user-registration' ),
 				'ET' => __( 'Ethiopia', 'user-registration' ),
 				'FK' => __( 'Falkland Islands', 'user-registration' ),
 				'FO' => __( 'Faroe Islands', 'user-registration' ),
@@ -253,7 +259,6 @@ class UR_Form_Field_Country extends UR_Form_Field {
 				'SD' => __( 'Sudan', 'user-registration' ),
 				'SR' => __( 'Suriname', 'user-registration' ),
 				'SJ' => __( 'Svalbard and Jan Mayen', 'user-registration' ),
-				'SZ' => __( 'Swaziland', 'user-registration' ),
 				'SE' => __( 'Sweden', 'user-registration' ),
 				'CH' => __( 'Switzerland', 'user-registration' ),
 				'SY' => __( 'Syria', 'user-registration' ),
@@ -301,16 +306,16 @@ class UR_Form_Field_Country extends UR_Form_Field {
 	 * @param [string] $field_name Field Name.
 	 */
 	public function get_selected_countries( $form_id, $field_name ) {
-		$countries = $this->get_country();
+		$countries          = $this->get_country();
 		$filtered_countries = array();
 		$selected_countries = array();
 
 		$form_data = UR()->form->get_form( $form_id, array( 'content_only' => true ) );
-		$fields = self::get_form_field_data( $form_data );
+		$fields    = self::get_form_field_data( $form_data );
 
 		// Get selected_countries data of the field.
 		foreach ( $fields as $field ) {
-			if ( 'country' === $field->field_key && $field_name === $field->general_setting->field_name ) {
+			if ( isset( $field->field_key ) && 'country' === $field->field_key && $field_name === $field->general_setting->field_name ) {
 				$advance_setting = $field->advance_setting;
 				if ( isset( $advance_setting->selected_countries ) ) {
 					$selected_countries = $advance_setting->selected_countries;
@@ -364,8 +369,9 @@ class UR_Form_Field_Country extends UR_Form_Field {
 		);
 
 		$this->field_defaults = array(
-			'default_label'      => __( 'Country', 'user-registration' ),
-			'default_field_name' => 'country_' . ur_get_random_number(),
+			'default_label'       => __( 'Country', 'user-registration' ),
+			'default_field_name'  => 'country_' . ur_get_random_number(),
+			'default_placeholder' => __( 'Select a country', 'user-registration' ),
 		);
 	}
 
@@ -387,20 +393,32 @@ class UR_Form_Field_Country extends UR_Form_Field {
 	 */
 	public function validation( $single_form_field, $form_data, $filter_hook, $form_id ) {
 		// Perform custom validation for the field here ...
-
-		$field_label     = $single_form_field->general_setting->label;
+		$field_label     = $single_form_field->general_setting->field_name;
 		$value           = isset( $form_data->value ) ? $form_data->value : '';
 		$valid_countries = $single_form_field->advance_setting->selected_countries;
+		$required        = $single_form_field->general_setting->required;
+		if ( ! ur_string_to_bool( $required ) ) {
+			return;
+		}
 
-		if ( ! in_array( $value, $valid_countries, true ) ) {
+		$isJson = preg_match( '/^\{.*\}$/s', $value ) ? true : false;
+		if ( $isJson ) {
+			$country_data = json_decode( $value, true );
+			$value = ! empty( $value['country'] ) ? $value['country'] : '';
+		}
+		
+		if ( ! empty( $value ) && ! in_array( $value, $valid_countries, true ) ) {
+			$message = array(
+				/* translators: %s - validation message */
+				$field_label => sprintf( __( 'Please choose a different country.', 'user-registration' ) ),
+				'individual' => true,
+			);
+
 			add_filter(
 				$filter_hook,
-				function ( $msg ) use ( $field_label ) {
-					return sprintf(
-						/* translators: %1$s - Field Label */
-						__( 'Please choose a different country for %1$s.', 'user-registration' ),
-						"<strong>$field_label</strong>"
-					);
+				function ( $msg ) use ( $message, $form_data ) {
+					$message = apply_filters( 'user_registration_modify_field_validation_response', $message, $form_data );
+					return $message;
 				}
 			);
 		}

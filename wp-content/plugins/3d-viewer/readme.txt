@@ -1,119 +1,483 @@
-=== 3D viewer - Embed 3D Models ===
-Contributors: abuhayat, btechnologies, freemius
-Tags: 3d, 3D model viewer, threejs, widget, display
-Requires at least: 5.7
-Tested up to: 6.1.1
-Stable tag: 1.3.3
-Requires PHP: 7.1
-Donate link: https://gum.co/wpdonate
+=== 3D Viewer – Turn Product Pages into Interactive 3D Experiences ===
+Contributors: bplugins, abuhayat, shehabulislam, freemius, farazi1
+Tags: 3d model viewer, 360 product view, augmented reality, woocommerce, glb
+Tested up to: 7.1
+Stable tag: 1.9.3
+Requires PHP: 7.4
+Requires at least: 6.5
+Donate link: https://www.buymeacoffee.com/abuhayat
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-
-Easily display 3D models on the web. visualize your .glb, .gltf files.
+Embed interactive 3D models, 360° product views, and AR experiences in WordPress. Supports GLB, GLTF, OBJ, STL, FBX – WooCommerce ready.
 
 == Description ==
 
-3D Viewer is a 3D model embedder plugin that lets you display your 3D models beautifully on your website. This plugin supports a variety of 3D model files such as .glb, .gltf,  and so on. The plugin is very easy to use and anyone can use the plugin easily without any technical knowledge.
-Embed any 3D files in Posts, Page and Widget areas and WooCommerce product page. It comes with everything you need to make the most of your 3D models. 
+**Turn flat product photos into interactive 3D experiences your visitors can rotate, zoom, and even place in their own room with Augmented Reality – no code required.**
 
+[**3D Viewer**](https://bplugins.com/products/3d-viewer/) | [**Documentation**](https://bplugins.com/docs/3d-viewer/) | [**Pricing**](https://bplugins.com/products/3d-viewer/pricing) | [**Support**](https://bplugins.com/support/) | [**Live Demo**](https://bplugins.com/products/3d-viewer/#demos)
 
-**[See Live Demo](https://bplugins.com/products/3d-viewer/#demos "Demo")** 
-**[Buy The Pro](https://bplugins.com/products/3d-viewer/#pricing "Buy Pro version")** 
+https://youtube.com/watch?v=_9vKv5pEClM
 
-### Features 
+### Why 3D Viewer?
 
-=== 3D Viewer Plugin for WordPress offer you a complete solutions for displaying any 3D objects that will amaze your visitors.=== 
+Static images make visitors guess. **3D Viewer** lets them explore. Embed interactive 3D models in posts, pages, widgets, and WooCommerce product pages – visitors can rotate, zoom, pan, and inspect every angle with a mouse or touchscreen, exactly like holding the product in their hands.
 
-* WooCommerce : 3D Viewer plugin extends the WooCommerce functionality. It enable you to Embed 3D models of your products in the product page.  
-* 3D Gallery: Do you have varients of a products and have separate 3D models of each varient? No worries, you can add multiple 3D models and embed them as a gallery in the product page to attract the customers.  
-* Lightweight: A single JavaScript library is used that makes the embedder very Lightweight.
-* Multiple Source: It supports external links of the 3d files, also you can store the 3d model file in the WordPress media library.  
-* Preset: Preset settings saves you a lot of time, you can save your preference of the viewer options that helps you embed more in less time. 
-* Elementor: Its works great with elementor page builder (Elementor 3D viewer)
-* User friendly interface: This plugin come up with a clean and easy to use interface which gives you an excellent experience.
-* ShortCode: The ShortCode API  enabled you to embed the model anywhere in the site. 
-* Auto Rotation: Auto Rotation option gives you the 360 degree viewing experience without interaction.  
-* Touch : Interact with the models with touch screen enabled devices. 
-* Zoom: Zoom in, zoom out with mouse scroll or touch. 
-* Lazy Loading: Improve User Experience, reduce loading time, and get ranked with Search Engine. 
-  
-  
-= How to use ? =
-Here is a quick Video tutorial.
+Built on the proven Three.js engine, 3D Viewer supports all major 3D formats (GLB, GLTF, OBJ, STL, FBX, DAE, PLY, 3DS) and renders them responsively on every device. Lazy loading keeps your pages fast, and native Gutenberg and Elementor integration means you place a model the same way you place an image.
 
-https://www.youtube.com/watch?v=PSXtvy1rF88
+Selling online? Show your WooCommerce products in 3D and let customers interact before they buy – interactive product views build the confidence that turns browsers into buyers.
 
+**Augmented Reality is free.** AR is part of the free plugin – no upgrade, no add-on. Switch it on for any model and visitors on supported phones can place it in their own room, while desktop visitors scan a QR code to open the same model in AR on their phone.
 
-### Usage 
+### Free Features – Everything You Need to Get Started
 
-=== To embed 3D Models in Post, Page or Widget area you have to generate a ShortCode first. To generate a ShortCode follow the steps below. ===
-1. Go to -> 3D Viewer from Dashboard menu -> Add New.
-2. Configure the viewer according to your preferences.
-3. Click the Save button
-3. Copy the Generated ShortCode form that screen and Paste it in a ShortCode block within any post, page, or widgets. 
+- **Embed Anywhere:** Place 3D models in posts, pages, and widgets with a shortcode or Gutenberg block.
+- **Augmented Reality (AR) – now free:** Let mobile visitors view models in their real environment via WebXR, Scene Viewer, and Quick Look – including QR code access from desktop. Set the AR placement (floor or wall) and add an optional iOS `.usdz` source.
+- **All Popular 3D Formats:** Upload and display .GLB, .GLTF, .OBJ, .STL, and more.
+- **WooCommerce Integration:** Show interactive 3D product views right on your product pages.
+- **Touch, Pan, Zoom & Rotate:** Full mouse and touchscreen gesture support out of the box.
+- **Environment & Skybox Images – now free:** Add an environment image for realistic lighting and reflections, or set an HDR skybox as the model's background.
+- **Elementor Compatible:** Drop 3D models into Elementor layouts with ease.
+- **Lazy Loading for Performance:** Models load only when visible, keeping pages fast and SEO-friendly.
+- **Live Editor Preview:** See your 3D model directly in the editor while you configure it.
+- **Optional Download Button:** Let visitors download the 3D file straight from the viewer – off by default, one toggle to enable.
+- **Guided Setup:** A short walkthrough on first activation that gets your first 3D model on the page.
 
-=== How to embed 3D Model in WooCommerce product page? ===
-====If you have a 3D models of your products and you want to embed the model in WooCommerce product page you can do that using this plugin. You can embed the 3D model of the product by following the steps below. ====
-* Install 3D Viewer Plugin
-* Install WooCommerce Plugin 
-* Go to Products from WordPress dashboard (WooCommerce Products)
-* Add New products or edit any existing Product. 
-* Scroll down to get the Metabox titled "3D Viewer Settings" 
-* Add the 3D model or paste the model url. 
-* Publish the product. 
-* Now visit the product page to see the embeded model. 
+### Pro Version – Unlock More Control & Customization
 
+Want even more flexibility? [**3D Viewer Pro**](https://bplugins.com/products/3d-viewer/pricing) adds powerful features that let you fine-tune the viewer, improve performance, and streamline your workflow.
 
+**Pro features include:**
 
-= ⭐ Checkout our other WordPress Plugins- = 
+- Drag-and-drop **Elementor widget** with full viewer settings.
+- **External model URLs** (Amazon S3, Google Drive, CDNs, and more).
+- Fine-grained **lighting, shadow intensity, and exposure** controls.
+- **Poster image** shown while the model loads, plus a loading **progress bar**.
+- **Auto-rotate, fullscreen, and autoplay** toggles.
+- **Custom camera angle** for the perfect first impression.
+- **WooCommerce 3D gallery** with multiple models per product.
+- **Hotspots and annotations** to highlight product details.
 
-🔥 **[Html5 Audio Player](https://audioplayerwp.com/)** – Best audio player plugin for WordPress.
+### How to Use 3D Viewer – Quick Start
 
-🔥 **[Html5 Video Player](https://wpvideoplayer.com/)** – Best video player plugin for WordPress.
+https://youtube.com/watch?v=ofC8XbdAuVE
 
-🔥 **[PDF Poster](http://pdfposter.com/)** – A fully-featured PDF Viewer Plugin for WordPresss.
+**Add your first model in under a minute:**
 
-🔥 **[StreamCast](https://wordpress.org/plugins/streamcast)** – A fully-featured Radio Player Plugin for WordPresss.
+1. Go to **3D Viewer → Add New** in your WordPress dashboard.
+2. Upload your 3D model or paste a URL.
+3. Customize the viewer (lighting, rotation, background, and more).
+4. Click **Save** to generate a shortcode.
+5. Paste the shortcode into any post, page, or widget.
 
-🔥 **[3D Viewer](https://3d-viewer.bplugins.com/)** – Display interactive 3D models on the webs.
+**Embed in a WooCommerce product:**
+
+1. Edit or create a WooCommerce product.
+2. Scroll to the **3D Viewer Settings** metabox.
+3. Upload the model file or paste an external link.
+4. Publish – the 3D model appears on the product page.
+
+**Prefer the block editor?** Add the **3D Viewer** block to any post or page, choose your model, and hit Publish. That's it – your 3D model is live!
+
+[**Live Demo**](https://bplugins.com/products/3d-viewer/#demos) | [**Try The Pro**](https://bplugins.com/products/3d-viewer/pricing)
+
+### Use Cases
+
+- **WooCommerce Stores:** Let customers rotate and inspect products in 3D before buying.
+- **Education & Training:** Embed anatomical models, mechanical parts, or scientific visuals.
+- **Architecture & Engineering:** Present 3D building plans and prototypes to clients.
+- **Gaming & Digital Assets:** Showcase characters, assets, and environments interactively.
+- **Art & Design Portfolios:** Highlight sculpture, product design, and creative work.
+- **Research & Prototyping:** Share experimental models for collaborative feedback.
+- **Packaging & Mockups:** Let stakeholders explore packaging in real time before production.
+
+### Supported 3D File Formats
+
+.GLB, .GLTF, .OBJ, .STL, .FBX, .DAE, .PLY, .3DS
+
+### Optimized for All Devices
+
+- Fully responsive and mobile-friendly
+- Touch gesture support (rotate, zoom, pan)
+- Retina-ready rendering
+- Compatible with popular WordPress themes
+
+### What Users Say
+
+❛❛**_It's the most valid plugin I have found for viewing 3D models. The support is also very good and an issue I reported was immediately corrected._**❜❜
+**_– diegoparoni_**
+
+❛❛**_Fantastic plugin. The main feature that I like is the 3D model is perfectly loaded and you can adjust the light. I am using the PRO version._**❜❜
+**_– blunoa_**
+
+Like the plugin? Missing a feature? **[Send your feedback](https://bplugins.com/support)** – we ship improvements every month.
+
+### Check Out Our Other WordPress Plugins
+
+[**Html5 Video Player**](https://bplugins.com/products/html5-video-player/) – Display videos as single and playlist in multiple skins.
+[**Html5 Audio Player**](https://bplugins.com/products/html5-audio-player/) – Listen to audio with awesome visuals.
+[**PDF Poster**](https://bplugins.com/products/pdf-poster/) – Display and embed PDF files with different styles.
+[**StreamCast**](https://bplugins.com/products/streamcast-radio-player/) – Customizable radio player with different skins.
+[**Advanced Post Block**](https://bplugins.com/products/advanced-post-block/) – Show posts and custom posts in different layouts.
 
 == Installation ==
 
-This section describes how to install the plugin and get it working.
+**From your WordPress dashboard (recommended):**
 
-e.g.
+1. Go to **Plugins → Add New**.
+2. Search for **"3D Viewer"**.
+3. Click **Install Now**, then **Activate**.
+4. Go to **3D Viewer → Add New** to upload your first model.
 
-1. Upload `plugin-directory` to the `/wp-content/plugins/` directory
-2. Activate the plugin through the 'Plugins' menu in WordPress
-3. Use shortcode in page, post or in widgets.
-4. If you want player in your theme php, Place `<?php echo do_shortcode('YOUR_SHORTCODE'); ?>` in your templates
+**Manual installation:**
 
+1. Upload the plugin folder to the `/wp-content/plugins/` directory.
+2. Activate the plugin through the **Plugins** menu in WordPress.
+3. Use the shortcode in any page, post, or widget.
+4. To embed in theme PHP, place `<?php echo do_shortcode('YOUR_SHORTCODE'); ?>` in your template.
 
 == Frequently Asked Questions ==
-= Which 3D files currently this plugin support?  
-Currently this plugin support .glb, .gltf files. 
 
-= Can I use this plugin with Elementor page builder ?  
-Yes, you can paste the shortCode of 3D Viewer and paste it inside Elementor's Shortcode elements. 
+= Which 3D file formats does this plugin support? =
+3D Viewer supports .GLB, .GLTF, .OBJ, .STL, .FBX, .DAE, .PLY, and .3DS files.
 
-= I have a .fbx file, can I embed that file using the 3D Viewer Plugin?
-No, This plugin only support .glb and .glTF files. Please convert your file to any supported file types and upload it to your site.
+= Does 3D Viewer work with WooCommerce? =
+Yes. You can attach a 3D model to any product and it will display on the product page. The Pro version adds a 3D gallery with multiple models per product and per-variation models.
 
-= How can I reach you, if I need any modification, customization or helps?
-[Please follow this link to reach us directly ](https://bplugins.com/support)
+= Does it support Augmented Reality (AR)? =
+Yes, and it is free – AR is included in the free version, no upgrade required. Models can be viewed in AR on supported mobile devices via WebXR, Scene Viewer (Android), and Quick Look (iOS). Desktop visitors can scan a QR code to open the model in AR on their phone. Turn it on with the **Enable AR** toggle in the Gutenberg block, the Elementor widget, or the shortcode generator, then pick the AR placement and mode.
+
+= Can I use this plugin with Elementor? =
+Yes, both an Elementor widget and shortcode support are built in.
+
+= Can visitors download my 3D model file? =
+Only if you let them. The download button is off by default – enable it per model from the Gutenberg block, the Elementor widget, or the shortcode settings.
+
+= Will 3D models slow down my website? =
+No. Models are lazy-loaded – they only load when visible on screen – and rendering is optimized for mobile and desktop.
+
+= Can I load models from external URLs like Amazon S3 or Google Drive? =
+Yes, loading models from external URLs (S3, Google Drive, CDNs, and more) is available in the Pro version.
+
+= How can I reach you for modifications, customization, or help? =
+[Please follow this link to reach us directly](https://bplugins.com/support).
 
 == Screenshots ==
 
-1. Sidebar menu
-2. UI
-3. configuration & Shortcode Generator
-4. Demo
-5. Woocommerce Support
-6. Preset & Woocommerce Settings
+1. Add New 3D
+2. 3D Configuration
+3. Single and Multiple Preview
+4. 3D Product at top of the image
+5. 3D Product at bottom of the image
+6. Product image replaced with 3D Pro
+7. Show 3D based on product variable
+8. Settings
+9. Gutenberg Block
+10. Gutenberg Block Settings
 
+== Source Code ==
+
+You can find the source code, report bugs, and contribute to the development of this plugin on our GitHub repository:
+[**3D Viewer on GitHub**](https://github.com/bPlugins/3d-viewer-wp)
+
+== External Services ==
+
+This plugin connects to the following external services. Connections are made only from the plugin's admin dashboard pages and are not triggered for your site's visitors on the front end.
+
+= bPlugins API =
+
+* **Service:** bPlugins product API – `https://api.bplugins.com`
+* **What it does:** When you open the plugin's dashboard, the plugin requests product information (such as the plugin's own details and other plugins by bPlugins) so it can display product cards, version information, and upgrade options.
+* **What data is sent:** A request is made to the bPlugins API endpoint with the product identifier (e.g. `https://api.bplugins.com/wp-json/bpl/v1/products/{id}`). No personal data or site content is sent as part of this request.
+* **When:** Only while an administrator is viewing the plugin's dashboard in wp-admin.
+* **Terms of Service:** [https://bplugins.com/terms-of-service/](https://bplugins.com/terms-of-service/)
+* **Privacy Policy:** [https://bplugins.com/privacy-policy/](https://bplugins.com/privacy-policy/)
+
+= WordPress.org Plugins API =
+
+* **Service:** WordPress.org Plugins Info API – `https://api.wordpress.org`
+* **What it does:** The dashboard queries the public WordPress.org Plugins API to list other plugins published by the author (titles, icons, ratings, active installs, etc.).
+* **What data is sent:** A public, read-only query request (e.g. `https://api.wordpress.org/plugins/info/1.2/?action=query_plugins&request[author]=bplugins`). No personal data is sent.
+* **When:** Only while an administrator is viewing the plugin's dashboard in wp-admin.
+* **Terms of Service:** [https://wordpress.org/about/privacy/](https://wordpress.org/about/privacy/)
+* **Privacy Policy:** [https://wordpress.org/about/privacy/](https://wordpress.org/about/privacy/)
+
+== Third-Party Libraries ==
+
+This plugin bundles the following third-party JavaScript/PHP libraries.
+
+= Codestar Framework =
+
+* **Source:** [http://codestarframework.com/](http://codestarframework.com/)
+* **GitHub:** [https://github.com/Codestar/codestar-framework](https://github.com/Codestar/codestar-framework)
+* **License:** GPLv2 or later – [https://github.com/Codestar/codestar-framework/blob/master/LICENSE.md](https://github.com/Codestar/codestar-framework/blob/master/LICENSE.md)
+* **Purpose:** Provides the options framework for the plugin's settings and shortcode generator.
+
+= Freemius SDK =
+
+* **Source:** [https://freemius.com/](https://freemius.com/)
+* **GitHub:** [https://github.com/Freemius/wordpress-sdk](https://github.com/Freemius/wordpress-sdk)
+* **License:** GPLv3 – [https://github.com/Freemius/wordpress-sdk/blob/master/LICENSE.txt](https://github.com/Freemius/wordpress-sdk/blob/master/LICENSE.txt)
+* **Purpose:** Provides opt-in usage tracking and analytics to help improve the plugin.
+
+= Online 3D Viewer (o3dv) =
+
+* **File:** `public/js/o3dv.min.js`
+* **Source:** [https://github.com/kovacsv/Online3DViewer](https://github.com/kovacsv/Online3DViewer)
+* **License:** MIT – [https://github.com/kovacsv/Online3DViewer/blob/master/LICENSE.md](https://github.com/kovacsv/Online3DViewer/blob/master/LICENSE.md)
+* **Purpose:** Provides the "Advanced" 3D viewer engine, supporting GLB, GLTF, OBJ, STL, and other 3D file formats.
+
+The bundle also includes the following sub-dependencies:
+
+* Three.js r163 – MIT – [https://github.com/mrdoob/three.js](https://github.com/mrdoob/three.js)
+* fflate 0.8.2 – MIT – [https://github.com/101arrowz/fflate](https://github.com/101arrowz/fflate)
+* Chevrotain 9.0.1 – Apache-2.0 – [https://github.com/Chevrotain/chevrotain](https://github.com/Chevrotain/chevrotain)
+
+= Google Model Viewer =
+
+* **File:** `public/js/model-viewer.latest.min.js`
+* **Source:** [https://github.com/google/model-viewer](https://github.com/google/model-viewer)
+* **npm:** `@google/model-viewer`
+* **License:** Apache-2.0 (code) / BSD-3-Clause (some components) – [https://github.com/google/model-viewer/blob/master/LICENSE](https://github.com/google/model-viewer/blob/master/LICENSE)
+* **Purpose:** Provides the `<model-viewer>` web component used for the "Lite" viewer and WooCommerce product display.
+
+The bundle also includes the following sub-dependencies:
+
+* Three.js r174 – MIT – [https://github.com/mrdoob/three.js](https://github.com/mrdoob/three.js)
+* Lit 3.2.1 / LitElement 4.1.1 – BSD-3-Clause – [https://github.com/lit/lit](https://github.com/lit/lit)
+
+
+= bpl-tools =
+* Source / GitHub: https://github.com/bPlugins/bpl-tools
+* License: GPL-2.0-or-later – https://www.gnu.org/licenses/gpl-2.0.html
+* Purpose: Shared utility library providing admin dashboard components and common Gutenberg editor controls.
+* External Services: The library may connect to bPlugins, WordPress.org, and Freemius services for product data and checkout functionality. See full details: https://github.com/bPlugins/bpl-tools#external-requests--why-they-are-made
+
+= bp-extension-manager =
+* Source / GitHub: https://github.com/bPlugins/bp-extension-manager
+* License: GPL-2.0-or-later – https://www.gnu.org/licenses/gpl-2.0.html
+* Purpose: Shared library that discovers, gates, licenses, and administers the plugin's add-on extensions from the "Extensions" admin page.
+* External Services: The library may connect to bPlugins, WordPress.org, and Freemius services to list available add-ons, resolve download URLs, and manage licenses. Connections are made only from the plugin's admin dashboard.
 
 == Changelog ==
+
+= 1.9.3 - 9 September, 2026  =
+New: Environment Image and HDR Skybox Image are now available in the free version, in the Gutenberg block, the Elementor widget, and the shortcode generator.
+Fixed: The viewer no longer spins forever when the 3D model file is missing (404) or fails to load; it now shows a short message instead.
+Update: All supported 3D formats, including .hdr for skybox images, are now enabled for upload by default; any of them can still be turned off in Settings → Allowed Mime Types.
+Fixed: The double-extension upload guard (e.g. model.php.glb) passed such files through instead of blocking them; they are now refused.
+Fixed: Guided Setup kept its full-screen layout only if no other plugin appended its admin body class without a space (e.g. Tutor LMS); it now stays full-screen regardless.
+
+= 1.9.2 - 12 August, 2026  =
+New: Added a 3D file download button that lets visitors download the model file from the viewer. Off by default, and available in the Gutenberg block, the Elementor widget, and the shortcode generator.
+New: Added a guided setup walkthrough for new installs, covering the ways to add a model and ending on your first 3D model. Existing sites can start it from Help & Demos → Guided Setup.
+Fixed: Uninstalling the free plugin no longer removes 3D Viewer data while 3D Viewer Pro is active.
+Fixed: The Elementor widget no longer stays blank on sites that reorder, defer, or delay scripts, and the editor preview now always loads the viewer libraries.
+Update: The Elementor widget keeps its configured height while no model is selected, instead of collapsing to the widget icon.
+Update: Rebuilt the Elementor file picker with a file preview, a Replace button and a Remove button. Selected files are unchanged.
+Fixed: The Elementor file picker no longer clashes with other bPlugins plugins (Panorama Lite, HTML5 Video Player) that shipped a control of the same name, which could leave one plugin's picker unresponsive.
+Update: Augmented Reality (AR) is now available in the free version, including WebXR, Scene Viewer, Quick Look, QR code access, AR placement, and the iOS .usdz source.
+
+= 1.9.1 - 19 July, 2026  =
+New: Enabled GLB and GLTF uploads by default; other formats can be enabled from Settings → Allowed Mime Types.
+New: Added reminder notices in the shortcode generator, Gutenberg block, and Elementor widget prompting to enable other 3D formats from settings.
+
+
+= 1.9.0 - 18 July, 2026  =
+New: Added Augmented Reality (AR) support with WebXR, Scene Viewer, and Quick Look modes, including QR code access to view models in AR from mobile devices.
+New: Added an iOS-specific (.usdz) model source for AR Quick Look on Apple devices.
+New: Added Exposure and Shadow Intensity controls for the Model Viewer.
+New: Added a live 3D model preview panel to the editor metabox.
+New: Added an Extensions catalog and manager to the admin dashboard.
+Update: Refactored the admin dashboard with section icons and an improved layout.
+
+= 1.8.13 - 01 June, 2026  =
+Update: Tested with WordPress 7.0 and Updated Product Meta Field.
+Update: Prefixed isGutenberg meta key and configuration options for standards compliance.
+Fixed: Hardened file extension exception checks against double-extension script uploads.
+New: Added Allowed Mime Types settings checklist to enable/disable 3D file formats on upload.
+New: Integrated dynamic and minimal warning notices in Metaboxes and Gutenberg sidebar.
+
+= 1.8.12 - 16 May, 2026  =
+Update: Overall code quality and strengthened security protocols.
+Update: Required WordPress version updated.
+
+= 1.8.11 - 13 May, 2026  =
+Update: Removed Custom CSS Field from Settings
+
+
+= 1.8.10 - 09 May, 2026  =
+Improved: Overall code quality and strengthened security protocols.
+
+= 1.8.9 - 05 May, 2026  =
+Update: Updated Codestar Framework for better stability.
+Update: Removed restricted "Locked Fields" to improve user flexibility
+New: Added Zoom In/Out controls to the Classic Shortcode Generator.
+New: Added Camera controls to the Classic Shortcode Generator.
+Improved: Overall code quality and strengthened security protocols.
+
+
+= 1.8.8 - 02 April, 2026  =
+Fixed: Woocommerce order issue
+
+= 1.8.7 - 28 Mar, 2026  =
+Fixed: Move elements fields to 'Elements' tab in classic editor
+Fixed: Zoom not working in 'Advanced' Viewer
+Update: Freemius SDK
+
+= 1.8.6 - 15 Mar, 2026  =
+Fixed: Remove unknown anchor link
+
+= 1.8.5 - 10 Mar, 2026  =
+Fixed: STL File does not work
+Fixed: Does not work on Elementor Page Builder
+
+= 1.8.4 - 28 Feb, 2026  =
+New: 4-step Setup Wizard after installation.
+Fixed: WooCommerce variation not working.
+Fixed: Shadow not working.
+Fixed: Rotation Delay not working.
+Update: Added Info text with all the controls.
+Update: Remove affiliate and contact Submenu.
+Update: Minimize Shortcode area (Classic Shortcode Generator).
+
+= 1.8.3 - 17 Dec, 2025  =
+Fixed: new shortcodes were not working properly.
+
+= 1.8.2 - 4 Dec, 2025  =
+* Feature: Option to add Link on hotspot (Premium)
+* Improved: Some JS and CSS coding
+* Feature: AR mode on Classic Shortcode Generator
+
+= 1.8.1 - 5 Nov, 2025  =
+* Update: Library update
+* Fixed: Flatsome theme conflict
+* Removed: Hand tool on the model
+* Featature: Fullscreen Button on iPhone
+
+
+= 1.8.0 - 15 Sep, 2025  =
+* New Page: Dashboard
+* Added: Visual Editor
+* Feature: Show 3D on First Image of Woocommerce Gallery
+* Fixed: Broken Product Page Layout
+* Fixed: public.css not found
+* Improved: Code
+* Feature: Set Initial View (Premium)
+* Feature: Argument Reality (AR) (Premium)
+* Feature: Option to add Hotspot/Annotation (Premium)
+* Feature: Lock X/Y Axis Rotation (Premium)
+* Feature: Capture Button (Premium)
+* Feature: Zoom In/Out Button (Premium)
+* Feature: AR view using QR code (Premium)
+* Added: Presets (Premium)
+* Improved: Display 3D models in shop pages and product listings (Premium)
+
+
+= 1.7.0 - 9 Jul, 2025  =
+* Fixed: AR Icon on iPhone
+* Fixed: Fatal/Critical error on product page
+* Fixed: Showing Different 3D Models for Product Variations in WooCommerce when single attribute
+* Fixed: Fullscreen does not work on iPhone
+* Fixed: 3d_viewer_product shortcode does not work properly
+* Feature: Field to add Skybox Height
+* Feature: Show model based on multiple product variable
+* Feature: Added Loader
+
+= 1.6.3 - 7 May, 2025  =
+* Fixed: _load_textdomain_just_in_time was called incorrectly
+
+= 1.6.2 - 12 Feb, 2025 (Pro) =
+* Feature: Option to Show Edge and Customize the color (Advanced Viewer, Premium)
+* Option: Enable/Disable Zoom (Advanced Viewer)
+* Option: Enable/Disable Zoom (Woocommerce)
+
+= 1.6.1 - 12 Feb, 2025 (Pro) =
+* Fixed: can't read properties of undefined percentageWrapper
+
+= 1.6.0 - 5 Feb, 2025 (Pro) =
+* Option: Add HDR skybox image (Premium)
+* Option: Tone Mapping (only available on Gutenberg) (Premium)
+* Feature: Apply Factor and Texture to a model (only available on Gutenberg) (Premium)
+* Feature: Modify Material using Texture option (only available on Gutenberg) (Premium)
+
+
+= 1.5.1 - 1 Feb, 2025 =
+* Update: WordPress SDK
+
+= 1.5.0 - 03 Sep, 2024 =
+* Feature: Set Skybox Image to the model
+* Feature: AR Feature 
+* Fixed: Rotation delay
+
+
+= 1.5.0 - 03 Sep, 2024 =
+* Improved: code
+* Feature: Option to display a poster/image until the model loads.
+* Feature: Compatible with most themes
+* Fixed: Does not work fullscreen on product shortcode
+
+= 1.4.2 - 27 June, 2024 =
+* Fixed: create dynamic property
+
+= 1.4.0 - 24 March, 2024 =
+* Feature: Set Zoom Level
+* Feature: Set Environment Image
+
+= 1.3.28 - 3 Mars, 2024 =
+* Fixed: WoodMart Single product image CSS
+
+= 1.3.27 - 12 Feb, 2024 =
+* Fixed: Custom Angle
+
+= 1.3.26 - 7 Feb, 2024 =
+* Fixed: Modal width issue
+
+= 1.3.25 - 28 Jan, 2024 =
+* Feature: Lite/Advanced viewer added on WooCommerce product
+
+= 1.3.24 - 17 Jan, 2024 =
+* Improved: Custom Selector
+
+= 1.3.23 - 7 Dec, 2023 =
+* Improved: Pricing page
+
+= 1.3.20 - 23 Nov, 2023 =
+* Fixed: $product is not defined
+
+= 1.3.19 - 11 Nov, 2023 =
+* SDK Updated
+
+= 1.3.17 - 12 Oct, 2023 =
+* Fixed Single product view on Divi theme
+
+= 1.3.16 - 5 Oct, 2023 =
+* model/popup on product page for 3D
+* Fix Poster issue
+
+= 1.3.15 - 24/08/2023 =
+* Fix OV is not defined
+
+= 1.3.14 - 17/08/2023 =
+* Fix Elementor Issue
+* Viewer 2 in classic shortCode Generator
+
+= 1.3.11 - 29/07/2023 =
+* Fix Percentage issue
+
+= 1.3.11 - 19/07/2023 =
+* Fix Percentage issue
+
+= 1.3.10 - 17/07/2023 =
+* Fix Settings page issue
+
+= 1.3.9 - 11/07/2023 =
+* Gutenberg Shortcode Generator
+* Woocommerce  Custom Selector
+
+= 1.3.8 - 30/03/2023 =
+* Fixed: Full Screen button issue
+* Fixed: SSL issue on woocommerce
 
 = 1.3.3 - 04/09/2022 =
 * added apply_filters hook to add attribute on model
@@ -197,7 +561,7 @@ No, This plugin only support .glb and .glTF files. Please convert your file to a
 * Fix mirror issues. 
 * Updated script
 
-= 1.0.4 =
+= 1.0.4 =  
 * New Feature Include.
 * Fix mirror issue. 
 * Updated script
@@ -211,10 +575,3 @@ No, This plugin only support .glb and .glTF files. Please convert your file to a
 
 = 1.0.0 =
 * Initial Release
-
-
-
-
-
-
-

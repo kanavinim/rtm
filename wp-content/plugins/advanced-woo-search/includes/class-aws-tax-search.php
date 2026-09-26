@@ -12,6 +12,11 @@ if ( ! class_exists( 'AWS_Tax_Search' ) ) :
     class AWS_Tax_Search {
 
         /**
+         * @var array AWS_Tax_Search Data
+         */
+        private $data = array();
+
+        /**
          * @var array AWS_Tax_Search Taxonomy name
          */
         private $taxonomy;
@@ -32,9 +37,39 @@ if ( ! class_exists( 'AWS_Tax_Search' ) ) :
         private $search_terms;
 
         /**
+         * @var array AWS_Tax_Search Normalized search terms array
+         */
+        private $search_terms_normalized;
+
+        /**
          * @var AWS_Tax_Search Number of search results $results_num
          */
         private $results_num = 10;
+
+        /**
+         * @var AWS_Tax_Search Show or not taxonomy name for archive results
+         */
+        private $search_archives_heading;
+
+        /**
+         * @var AWS_Tax_Search Show or not taxonomy term hierarchy
+         */
+        private $search_archives_hierarchy;
+
+        /**
+         * @var AWS_Tax_Search Show or not the number of products for archive results
+         */
+        private $search_archives_count;
+
+        /**
+         * @var AWS_Tax_Search Show or not results with 0 products inside
+         */
+        private $search_archives_empty;
+
+        /**
+         * @var string AWS_Users_Search Search rule ( %s%, s% )
+         */
+        private $search_rule;
 
         /*
          * Constructor
@@ -49,11 +84,19 @@ if ( ! class_exists( 'AWS_Tax_Search' ) ) :
              */
             $data = apply_filters( 'aws_tax_search_data', $data, $taxonomy );
 
+            $this->data = $data;
+
             $this->taxonomy = $taxonomy;
             $this->search_string = isset( $data['s'] ) ? $data['s'] : '';
             $this->search_string_unfiltered = isset( $data['s_nonormalize'] ) ? $data['s_nonormalize'] : $this->search_string ;
             $this->search_terms = isset( $data['search_terms'] ) ? $data['search_terms'] : array();
+            $this->search_terms_normalized = array();
             $this->results_num = isset( $data['pages_results_num'] ) ? $data['pages_results_num'] : 10;
+            $this->search_archives_heading = isset( $data['search_archives_heading'] ) ? $data['search_archives_heading'] : 'false';
+            $this->search_archives_hierarchy = isset( $data['search_archives_hierarchy'] ) ? $data['search_archives_hierarchy'] : 'false';
+            $this->search_archives_count = isset( $data['search_archives_count'] ) ? $data['search_archives_count'] : 'true';
+            $this->search_archives_empty = isset( $data['search_archives_empty'] ) ? $data['search_archives_empty'] : 'false';
+            $this->search_rule = isset( $data['search_rule'] ) ? $data['search_rule'] : 'contains';
 
         }
 
@@ -72,10 +115,17 @@ if ( ! class_exists( 'AWS_Tax_Search' ) ) :
             $search_query = '';
             $search_string_unfiltered = '';
 
-            $filtered_terms_full = $wpdb->prepare( '( name LIKE %s )',  '%' . $wpdb->esc_like( $this->search_string_unfiltered ) . '%' );
+            $like = '%' . $wpdb->esc_like( $this->search_string_unfiltered ) . '%';
+
+            if ( $this->search_rule === 'begins' ) {
+                $filtered_terms_full = $wpdb->prepare( '( name LIKE %s OR name LIKE %s )', $wpdb->esc_like( $this->search_string_unfiltered ) . '%', '% ' . $wpdb->esc_like( $this->search_string_unfiltered ) . '%' );
+            } else {
+                $filtered_terms_full = $wpdb->prepare( '( name LIKE %s )', $like );
+            }
 
             $search_array = array_map( array( 'AWS_Helpers', 'singularize' ), $this->search_terms  );
             $search_array = $this->synonyms( $search_array );
+            $this->search_terms_normalized = $search_array;
             $search_array = $this->get_search_array( $search_array );
 
             $search_array_chars = $this->get_unfiltered_search_array();
@@ -112,6 +162,9 @@ if ( ! class_exists( 'AWS_Tax_Search' ) ) :
              * @param int
              */
             $terms_number = apply_filters( 'aws_search_terms_number', $this->results_num );
+            if ( ! $terms_number ) {
+                return array();
+            }
 
             $excludes_array = $this->get_excluded_terms();
             if ( $excludes_array && ! empty( $excludes_array ) ) {
@@ -126,20 +179,13 @@ if ( ! class_exists( 'AWS_Tax_Search' ) ) :
                 $relevance_query = '0';
             }
 
-            $lang = isset( $_REQUEST['lang'] ) ? sanitize_text_field( $_REQUEST['lang'] ) : '';
-            if ( $lang ) {
-                $terms = get_terms( array(
-                    'taxonomy'   => $this->taxonomy,
-                    'hide_empty' => false,
-                    'fields'     => 'ids',
-                    'lang'       => $lang
-                ) );
-                if ( $terms ) {
-                    $search_query .= sprintf( " AND ( " . $wpdb->terms . ".term_id IN ( %s ) )", implode( ',', $terms ) );
-                } else {
-                    $search_query .= " AND 1=2";
-                }
+            $count_query = '';
+            if ( $this->search_archives_empty === 'false' ) {
+                $count_query = " AND count > 0 ";
             }
+
+            // For multilingual shops
+            $search_query .= $this->get_lang_query();
 
             $sql = "
 			SELECT
@@ -155,7 +201,7 @@ if ( ! class_exists( 'AWS_Tax_Search' ) ) :
 				{$search_query}
 				AND $wpdb->term_taxonomy.taxonomy IN ( {$taxonomies_names} )
 				AND $wpdb->term_taxonomy.term_id = $wpdb->terms.term_id
-				AND count > 0
+				{$count_query}
 			    {$excludes}
 			    GROUP BY term_id
 			    ORDER BY relevance DESC, term_id DESC
@@ -163,7 +209,6 @@ if ( ! class_exists( 'AWS_Tax_Search' ) ) :
 
 
             $sql = trim( preg_replace( '/\s+/', ' ', $sql ) );
-
 
             /**
              * Filter terms search query
@@ -195,6 +240,13 @@ if ( ! class_exists( 'AWS_Tax_Search' ) ) :
 
                     $parent = '';
                     $slug = '';
+                    $count = '';
+                    $heading = '';
+                    $hierarchy_path = '';
+
+                    if ( $result->count > 0 && $this->search_archives_count === 'true' ) {
+                        $count = $result->count;
+                    }
 
                     $term = get_term( $result->term_id, $result->taxonomy );
 
@@ -206,15 +258,34 @@ if ( ! class_exists( 'AWS_Tax_Search' ) ) :
                         continue;
                     }
 
+                    if ( $this->search_archives_heading === 'true' ) {
+                        $heading = $this->get_taxonomy_name_label( $result->taxonomy );
+                    }
+
+                    if ( $this->search_archives_hierarchy === 'true' && $parent ) {
+                        $hierarchy_path = $this->get_term_hierarchy_path( $term, $result->taxonomy );
+                    }
+
                     $new_result = array(
                         'name'     => $result->name,
                         'id'       => $result->term_id,
                         'slug'     => $slug,
-                        'count'    => ( $result->count > 0 ) ? $result->count : '',
+                        'count'    => $count,
                         'link'     => $term_link,
                         'excerpt'  => '',
-                        'parent'   => $parent
+                        'parent'   => $parent,
+                        'heading'  => $heading,
+                        'hierarchy' => $hierarchy_path,
                     );
+
+                    /**
+                     * Filters taxonomy term result
+                     * @since 2.87
+                     * @param array $new_result Taxonomy term result
+                     * @param object $term Term object
+                     * @param string $taxonomy Name of taxonomy
+                     */
+                    $new_result = apply_filters( 'aws_search_tax_result_item', $new_result, $term, $result->taxonomy );
 
                     $result_array[$result->taxonomy][] = $new_result;
 
@@ -251,6 +322,63 @@ if ( ! class_exists( 'AWS_Tax_Search' ) ) :
         }
 
         /**
+         * Get formatted hierarchy path for taxonomy term.
+         * @param WP_Term $term Term object.
+         * @param string  $taxonomy Taxonomy name.
+         * @return string
+         */
+        private function get_term_hierarchy_path( $term, $taxonomy ) {
+
+            $ancestors = get_ancestors( $term->term_id, $taxonomy, 'taxonomy' );
+
+            if ( empty( $ancestors ) ) {
+                return '';
+            }
+
+            $ancestors = array_reverse( $ancestors );
+            $ancestors = array_slice( $ancestors, 0, 3 );
+            $names = array();
+
+            foreach ( $ancestors as $ancestor_id ) {
+                $ancestor = get_term( $ancestor_id, $taxonomy );
+
+                if ( ! $ancestor || is_wp_error( $ancestor ) ) {
+                    continue;
+                }
+
+                $names[] = esc_html( $ancestor->name );
+            }
+
+            return $names ? implode( ' &gt; ', $names ) : '';
+
+        }
+
+        /**
+         * Get taxonomy name label.
+         * @param string $taxonomy_name Taxonomy name.
+         * @return string
+         */
+        private function get_taxonomy_name_label( $taxonomy_name ) {
+
+            $taxonomy = get_taxonomy( $taxonomy_name );
+
+            if ( ! $taxonomy || is_wp_error( $taxonomy ) ) {
+                return $taxonomy_name;
+            }
+
+            if ( isset( $taxonomy->labels->singular_name ) && $taxonomy->labels->singular_name ) {
+                return $taxonomy->labels->singular_name;
+            }
+
+            if ( isset( $taxonomy->label ) && $taxonomy->label ) {
+                return $taxonomy->label;
+            }
+
+            return $taxonomy_name;
+
+        }
+
+        /**
          * Get taxonomies relevance array
          *
          * @return array Relevance array
@@ -261,31 +389,115 @@ if ( ! class_exists( 'AWS_Tax_Search' ) ) :
 
             $relevance_array = array();
 
+            $relevance_scores = AWS_Helpers::get_relevance_scores( $this->data );
+
+            $relevance_full = $relevance_scores['tax_name'] * 2;
+            $relevance_array[] = $wpdb->prepare( "( case when ( name = '%s' ) then {$relevance_full} else 0 end )", $this->search_string_unfiltered );
+
             foreach ( $this->search_terms as $search_term ) {
 
                 $search_term_len = strlen( $search_term );
 
-                $relevance = 40 + 2 * $search_term_len;
+                $relevance_equal = $relevance_scores['tax_name'] + 20 * $search_term_len;
+                $relevance_like = $relevance_scores['tax_name'] / 2 + 2 * $search_term_len;
 
-                $search_term_norm = AWS_Plurals::singularize( $search_term );
+                $like = '%' . $wpdb->esc_like( $search_term ) . '%';
+                $like_unfiltered = '%' . $wpdb->esc_like( $this->search_string_unfiltered ) . '%';
+                $match_full_words = '\\b' . $wpdb->esc_like( $search_term ) . '\\b';
 
-                if ( $search_term_norm && $search_term_len > 3 && strlen( $search_term_norm ) > 2 ) {
-                    $search_term = $search_term_norm;
+                // match full words inside taxonomy name
+                $relevance_array[] = $wpdb->prepare( "( case when ( name REGEXP '%s' ) then {$relevance_equal} else 0 end )", $match_full_words);
+
+                if ( $this->search_rule === 'begins' ) {
+                    $relevance_array[] = $wpdb->prepare( "( case when ( name LIKE %s OR name LIKE %s ) then {$relevance_like} else 0 end )", $wpdb->esc_like( $search_term ) . '%', '% ' . $wpdb->esc_like( $search_term ) . '%' );
+                } else {
+                    $relevance_array[] = $wpdb->prepare( "( case when ( name LIKE %s ) then {$relevance_like} else 0 end )", $like );
                 }
 
-                $like = '%' . $wpdb->esc_like($search_term) . '%';
-
-                $relevance_array[] = $wpdb->prepare( "( case when ( name LIKE %s ) then {$relevance} else 0 end )", $like );
-
                 if ( $terms_desc_search = apply_filters( 'aws_search_terms_description', false ) ) {
-                    $relevance_desc = 10 + 2 * $search_term_len;
-                    $relevance_array[] = $wpdb->prepare( "( case when ( description LIKE %s ) then {$relevance_desc} else 0 end )", $like );
-                    $relevance_array[] = $wpdb->prepare( "( case when ( description LIKE %s ) then {$relevance_desc} else 0 end )", '%' . $wpdb->esc_like( $this->search_string_unfiltered ) . '%' );
+
+                    $relevance_desc = $relevance_scores['tax_desc'] / 2 + 2 * $search_term_len;
+                    $relevance_desc_equal = $relevance_scores['tax_desc'] + 20 * $search_term_len;
+
+                    $relevance_array[] = $wpdb->prepare( "( case when ( description REGEXP '%s' ) then {$relevance_desc_equal} else 0 end )", $match_full_words);
+
+                    if ( $this->search_rule === 'begins' ) {
+                        $relevance_array[] = $wpdb->prepare( "( case when ( description LIKE %s OR description LIKE %s ) then {$relevance_desc} else 0 end )", $wpdb->esc_like( $search_term ) . '%', '% ' . $wpdb->esc_like( $search_term ) . '%' );
+                        $relevance_array[] = $wpdb->prepare( "( case when ( description LIKE %s OR description LIKE %s ) then {$relevance_desc} else 0 end )", $wpdb->esc_like( $this->search_string_unfiltered ) . '%', '% ' . $wpdb->esc_like( $this->search_string_unfiltered ) . '%' );
+                    } else {
+                        $relevance_array[] = $wpdb->prepare( "( case when ( description LIKE %s ) then {$relevance_desc} else 0 end )", $like );
+                        $relevance_array[] = $wpdb->prepare( "( case when ( description LIKE %s ) then {$relevance_desc} else 0 end )", $like_unfiltered );
+                    }
+
                 }
 
             }
 
+            /**
+             * Filter array of relevance sql queries
+             * @param array $relevance_array Array with relevance sql queries
+             * @param array $taxonomy Taxonomy names array
+             * @param array $this->search_terms Search terms array
+             * @param array $this->data Search data
+             * @since 3.31
+             */
+            $relevance_array = apply_filters( 'aws_tax_search_relevance_array', $relevance_array, $this->taxonomy, $this->search_terms, $this->data );
+
             return $relevance_array;
+
+        }
+
+        /**
+         * Get sql query for multilingual results
+         *
+         * @return string SQL query
+         */
+        private function get_lang_query() {
+
+            global $wpdb;
+
+            $search_query = '';
+
+            $lang = isset( $_REQUEST['lang'] ) ? sanitize_text_field( $_REQUEST['lang'] ) : '';
+
+            if ( $lang ) {
+
+                if ( defined( 'ICL_SITEPRESS_VERSION' ) ) {
+
+                    $tax_names_arr = array();
+                    foreach ( $this->taxonomy as $key => $tax_name ) {
+                        $tax_names_arr[] = 'tax_' . $tax_name;
+                    }
+
+                    $tax_names_arr = array_map( array( $this, 'prepare_tax_names' ), $tax_names_arr );
+                    $tax_names = implode( ',', $tax_names_arr );
+
+                    $search_query = " AND $wpdb->terms.term_id IN (
+                        SELECT element_id
+                        FROM {$wpdb->prefix}icl_translations
+                        WHERE language_code = '{$lang}'
+                        AND element_type IN ( {$tax_names} )
+                    )";
+
+                } else {
+
+                    $terms = get_terms( array(
+                        'taxonomy'   => $this->taxonomy,
+                        'hide_empty' => false,
+                        'fields'     => 'ids',
+                        'lang'       => $lang
+                    ) );
+                    if ( $terms ) {
+                        $search_query = sprintf( " AND ( " . $wpdb->terms . ".term_id IN ( %s ) )", implode( ',', $terms ) );
+                    } else {
+                        $search_query = " AND 1=2";
+                    }
+
+                }
+
+            }
+
+            return $search_query;
 
         }
 
@@ -302,16 +514,36 @@ if ( ! class_exists( 'AWS_Tax_Search' ) ) :
 
             foreach ( $search_terms as $search_term ) {
 
-                $like = '%' . $wpdb->esc_like($search_term) . '%';
+                $like = '%' . $wpdb->esc_like( $search_term ) . '%';
+                $like_unfiltered = '%' . $wpdb->esc_like( $this->search_string_unfiltered ) . '%';
 
-                $search_array[] = $wpdb->prepare('( name LIKE %s )', $like);
+                if ( $this->search_rule === 'begins' ) {
+                    $search_array[] = $wpdb->prepare('( name LIKE %s OR name LIKE %s )', $wpdb->esc_like( $search_term ) . '%', '% ' . $wpdb->esc_like( $search_term ) . '%' );
+                } else {
+                    $search_array[] = $wpdb->prepare('( name LIKE %s )', $like );
+                }
 
                 if ( $terms_desc_search = apply_filters( 'aws_search_terms_description', false ) ) {
-                    $search_array[] = $wpdb->prepare('( description LIKE %s )', $like);
-                    $search_array[] = $wpdb->prepare('( description LIKE %s )', '%' . $wpdb->esc_like( $this->search_string_unfiltered ) . '%' );
+                    if ( $this->search_rule === 'begins' ) {
+                        $search_array[] = $wpdb->prepare('( description LIKE %s OR description LIKE %s )', $wpdb->esc_like( $search_term ) . '%', '% ' . $wpdb->esc_like( $search_term ) . '%');
+                        $search_array[] = $wpdb->prepare('( description LIKE %s OR description LIKE %s )', $wpdb->esc_like( $this->search_string_unfiltered ) . '%', '% ' . $wpdb->esc_like( $this->search_string_unfiltered ) . '%' );
+                    } else {
+                        $search_array[] = $wpdb->prepare('( description LIKE %s )', $like);
+                        $search_array[] = $wpdb->prepare('( description LIKE %s )', $like_unfiltered );
+                    }
                 }
 
             }
+
+            /**
+             * Filter array of search sql queries
+             * @param array $search_array Array with search sql queries
+             * @param array $taxonomy Taxonomy names array
+             * @param array $search_terms Search terms
+             * @param array $this->data Search data
+             * @since 3.31
+             */
+            $search_array = apply_filters( 'aws_tax_search_array', $search_array, $this->taxonomy, $search_terms, $this->data );
 
             return $search_array;
 
@@ -329,24 +561,24 @@ if ( ! class_exists( 'AWS_Tax_Search' ) ) :
             $no_normalized_str = AWS_Helpers::html2txt( $no_normalized_str );
             $no_normalized_str = trim( $no_normalized_str );
 
-            $no_normalized_str = strtr( $no_normalized_str, AWS_Helpers::get_diacritic_chars() );
-
             if ( function_exists( 'mb_strtolower' ) ) {
                 $no_normalized_str = mb_strtolower( $no_normalized_str );
             }
+
+            $no_normalized_str = strtr( $no_normalized_str, AWS_Helpers::get_diacritic_chars() );
 
             $search_array_chars = array_unique( explode( ' ', $no_normalized_str ) );
             $search_array_chars = AWS_Helpers::filter_stopwords( $search_array_chars );
 
             if ( $search_array_chars ) {
                 foreach ( $search_array_chars as $search_array_chars_index => $search_array_chars_term ) {
-                    if ( array_search( $search_array_chars_term, $this->search_terms ) ) {
+                    if ( array_search( $search_array_chars_term, $this->search_terms_normalized ) !== false ) {
                         unset( $search_array_chars[$search_array_chars_index] );
                     }
                 }
             }
 
-            if ( count( $search_array_chars ) === 1 && $search_array_chars[0] === $this->search_string_unfiltered ) {
+            if ( count( $search_array_chars ) === 1 && array_values($search_array_chars)[0] === $this->search_string_unfiltered ) {
                 $search_array_chars = array();
             }
 

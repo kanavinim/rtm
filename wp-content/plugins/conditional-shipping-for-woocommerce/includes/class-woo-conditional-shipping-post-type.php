@@ -23,8 +23,8 @@ class Woo_Conditional_Shipping_Post_Type {
     register_post_type( 'wcs_ruleset',
       array(
         'labels' => array(
-          'name' => __( 'Conditional Shipping Rulesets', 'woo-conditional-shipping' ),
-          'singular_name' => __( 'Conditional Shipping Ruleset', 'woo-conditional-shipping' )
+          'name' => __( 'Conditional Shipping Rulesets', 'conditional-shipping-for-woocommerce' ),
+          'singular_name' => __( 'Conditional Shipping Ruleset', 'conditional-shipping-for-woocommerce' )
         ),
         'public' => false,
         'publicly_queryable' => false,

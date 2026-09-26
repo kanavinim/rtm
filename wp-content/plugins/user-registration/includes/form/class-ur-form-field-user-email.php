@@ -69,12 +69,19 @@ class UR_Form_Field_User_Email extends UR_Form_Field {
 	public function validation( $single_form_field, $form_data, $filter_hook, $form_id ) {
 
 		$email = isset( $form_data->value ) ? $form_data->value : '';
+		$label = $single_form_field->general_setting->field_name;
 
 		if ( email_exists( $email ) ) {
+			$message = array(
+				/* translators: %s - validation message */
+				$label       => sprintf( __( 'Email already exists.', 'user-registration' ) ),
+				'individual' => true,
+			);
 			add_filter(
 				$filter_hook,
-				function ( $msg ) {
-					return __( 'Email already exists.', 'user-registration' );
+				function ( $msg ) use ( $message, $form_data ) {
+					$message = apply_filters( 'user_registration_modify_field_validation_response', $message, $form_data );
+					return $message;
 				}
 			);
 		}

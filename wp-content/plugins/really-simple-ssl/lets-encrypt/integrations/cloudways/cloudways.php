@@ -22,7 +22,11 @@
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
+
+require_once rsssl_path . 'lib/admin/class-encryption.php';
+use RSSSL\lib\admin\Encryption;
 class rsssl_Cloudways {
+	use Encryption;
 	private $email;
 	private $api_key;
 	public $ssl_installation_url;
@@ -36,7 +40,7 @@ class rsssl_Cloudways {
 
 	public function __construct( ) {
 		$this->email             = rsssl_get_option('cloudways_user_email');
-		$this->api_key = RSSSL_LE()->letsencrypt_handler->decode( rsssl_get_option('cloudways_api_key') );
+		$this->api_key = $this->decrypt_if_prefixed( rsssl_get_option('cloudways_api_key') );
 		$this->ssl_installation_url = "";
 	}
 
@@ -80,16 +84,21 @@ class rsssl_Cloudways {
 			$output = curl_exec( $ch );
 
 			$httpcode = curl_getinfo( $ch, CURLINFO_HTTP_CODE );
-			if ($output && isset($output->error_description)) {
-				return new RSSSL_RESPONSE( 'error', 'stop', $output->error_description, false );
-			} else if ($httpcode != '200' && $output && isset($output->message) ){
-				return new RSSSL_RESPONSE( 'error', 'stop', $output->message );
+			$decoded = json_decode( $output );
+			if ( is_object( $decoded ) && isset( $decoded->error_description ) ) {
+				return new RSSSL_RESPONSE( 'error', 'stop', $decoded->error_description, false );
+			} else if ( $httpcode != '200' && is_object( $decoded ) && isset( $decoded->message ) ) {
+				return new RSSSL_RESPONSE( 'error', 'stop', $decoded->message );
 			} else if ( $httpcode != '200' ) {
 				$message = $httpcode . ' output: ' . substr( $output, 0, 10000 );
 				return new RSSSL_RESPONSE( 'error', 'stop', $message );
 			}
-			curl_close( $ch );
-			return new RSSSL_RESPONSE( 'success', 'continue', '', json_decode( $output ) );
+			if ( PHP_VERSION_ID >= 80000 ) {
+				unset( $ch );
+			} else {
+				curl_close( $ch );
+			}
+			return new RSSSL_RESPONSE( 'success', 'continue', '', $decoded );
 		} catch(Exception $e) {
 			return new RSSSL_RESPONSE( 'error', 'stop', $e->getMessage() );
 		}

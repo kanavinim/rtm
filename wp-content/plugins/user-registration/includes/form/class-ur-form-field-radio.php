@@ -46,12 +46,26 @@ class UR_Form_Field_Radio extends UR_Form_Field {
 		);
 
 		$this->field_defaults = array(
-			'default_label'      => __( 'Radio', 'user-registration' ),
-			'default_field_name' => 'radio_' . ur_get_random_number(),
-			'default_options'    => array(
+			'default_label'         => __( 'Radio', 'user-registration' ),
+			'default_field_name'    => 'radio_' . ur_get_random_number(),
+			'default_options'       => array(
 				__( 'First Choice', 'user-registration' ),
 				__( 'Second Choice', 'user-registration' ),
 				__( 'Third Choice', 'user-registration' ),
+			),
+			'default_image_options' => array(
+				array(
+					'label' => __( 'First Choice', 'user-registration' ),
+					'image' => '',
+				),
+				array(
+					'label' => __( 'Second Choice', 'user-registration' ),
+					'image' => '',
+				),
+				array(
+					'label' => __( 'Third Choice', 'user-registration' ),
+					'image' => '',
+				),
 			),
 		);
 	}
@@ -75,17 +89,20 @@ class UR_Form_Field_Radio extends UR_Form_Field {
 	public function validation( $single_form_field, $form_data, $filter_hook, $form_id ) {
 
 		$value   = isset( $form_data->value ) ? $form_data->value : '';
-		$label   = $single_form_field->general_setting->label;
+		$label   = $single_form_field->general_setting->field_name;
 		$options = $single_form_field->general_setting->options;
 
 		if ( ! empty( $value ) && ! in_array( $value, $options, true ) ) {
+			$message = array(
+				/* translators: %s - validation message */
+				$label       => sprintf( __( 'Please choose a valid option', 'user-registration' ) ),
+				'individual' => true,
+			);
 			add_filter(
 				$filter_hook,
-				function ( $msg ) use ( $label ) {
-					return sprintf(
-						'Please choose a valid option for %s',
-						"<strong>$label</strong>."
-					);
+				function ( $msg ) use ( $message, $form_data ) {
+					$message = apply_filters( 'user_registration_modify_field_validation_response', $message, $form_data );
+					return $message;
 				}
 			);
 		}

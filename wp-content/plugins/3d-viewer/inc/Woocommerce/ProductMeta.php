@@ -1,89 +1,172 @@
 <?php
+
+
+
 namespace BP3D\Woocommerce;
 
-class ProductMeta{
+use BP3D\Helper\Utils;
 
-    public function register(){
-        $settings = get_option( '_bp3d_settings_', ['3d_woo_switcher' => ''] );
-        if($settings['3d_woo_switcher'] == '0'){
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+/**
+ * WooCommerce product meta box.
+ *
+ * Registers the 3D product settings metabox on WooCommerce product
+ * edit screens using the CSF framework. Defines model source, poster,
+ * AR, hotspot, and positioning options.
+ */
+class ProductMeta
+{
+    protected string $prefix = '_bp3d_product_';
+
+    /**
+     * Register the metabox.
+     */
+    public function register(): void
+    {
+        $settings = get_option('_bp3d_settings_', ['3d_woo_switcher' => '']);
+
+        if (($settings['3d_woo_switcher'] ?? '') === '0') {
             return;
         }
 
-        $prefix = '_bp3d_product_';
-        
-        \CSF::createMetabox( $prefix, array(
-            'title'        => esc_html__('3D Viewer Settings', 'model-viewer'),
-            'post_type'    =>  'product',
+        \CSF::createMetabox($this->prefix, [
+            'title' => esc_html__('3D Product Settings', '3d-viewer'),
+            'post_type' => 'product',
             'show_restore' => true,
-        ));
+        ]);
 
-        \CSF::createSection( $prefix, array(
-            'fields' => array(
-              array(
-                'id'     => 'bp3d_models',
-                //'type'   => 'group',
-                'type'   => 'repeater',
-                'title'  => esc_html__('Product 3D Models', 'model-viewer'),
-                'desc'  => 'Click on + icon to add 3d files, if you add multiple 3d files, we will show them as a slider <cite Style="color:#2271b1; font-weight: bold ">Multiple Files Support Only For Pro Version</cite>',
-                //'button_title' => __('Add New Model', 'model-viewer'),
-                'max'   => 1,
-                'fields' => array(
-                  array(
-                    'id'           => 'model_src',
-                    'type'         => 'upload',
-                    'title'        => esc_html__('3D Source', 'model-viewer'),
-                    'subtitle'     => esc_html__('Upload Model Or Input Valid Model url', 'model-viewer'),
-                    'desc'         => esc_html__('Upload / Paste Model url. Supported file type: glb, glTF', 'model-viewer'),
-                    'placeholder'  => esc_html__('You Can Paste here Model url', 'model-viewer'),
-                  ),
+        \CSF::createSection($this->prefix, [
+            'fields' => $this->getFields(),
+        ]);
+    }
+
+    /**
+     * Build and return the metabox field definitions.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function getFields(): array
+    {
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Reading post ID to render the metabox, no form data is processed.
+        $post_id = isset($_GET['post']) ? absint(wp_unslash($_GET['post'])) : get_the_ID();
+        $meta = Utils::getPostMeta($post_id, '_bp3d_product_');
+        $models = $meta('bp3d_models', [], false);
+
+        $model_src = '';
+        if (isset($models[0]['model_src'])) {
+            $model_src = $models[0]['model_src'];
+        } else {
+            $meta_raw = get_post_meta($post_id, '_bp3d_product_', true);
+            $model_src = isset($meta_raw['bp3d_model_src']) ? (is_array($meta_raw['bp3d_model_src']) ? ($meta_raw['bp3d_model_src']['url'] ?? '') : $meta_raw['bp3d_model_src']) : '';
+        }
+
+        $allowed_mimes = Utils::getAllowedMimeTypes();
+
+        $fields = [];
+
+        $show_notice = false;
+        $notice_content = '';
+
+        if (empty($allowed_mimes)) {
+            $show_notice = true;
+            $notice_content = sprintf(
+                /* translators: %s: URL to the settings page. */
+                __('<strong>Notice:</strong> All 3D file formats are currently disabled for upload. Please enable the formats you need in the <a href="%s" target="_blank">3D Viewer Settings</a>.', '3d-viewer'),
+                admin_url('edit.php?post_type=bp3d-model-viewer&page=3dviewer-settings')
+            );
+        } elseif (!empty($model_src)) {
+            $ext = strtolower(pathinfo($model_src, PATHINFO_EXTENSION));
+            $supported = Utils::getSupportedMimeTypes();
+            if (in_array($ext, $supported, true) && !in_array($ext, $allowed_mimes, true)) {
+                $show_notice = true;
+                $notice_content = sprintf(
+                    /* translators: 1: 3D file extension, 2: URL to the settings page. */
+                    __('<strong>Warning:</strong> The uploaded 3D model format (.%1$s) is currently disabled. Please enable it in the <a href="%2$s" target="_blank">3D Viewer Settings</a> to ensure it loads properly.', '3d-viewer'),
+                    strtoupper($ext),
+                    admin_url('edit.php?post_type=bp3d-model-viewer&page=3dviewer-settings')
+                );
+            }
+        }
+
+        if ($show_notice) {
+            $fields[] = [
+                'type'    => 'notice',
+                'style'   => 'danger',
+                'content' => $notice_content,
+            ];
+        } else {
+            $fields[] = [
+                'type'    => 'notice',
+                'style'   => 'info',
+                'content' => sprintf(
+                    /* translators: %s: URL to the settings page. */
+                    __('All supported 3D formats (GLB, GLTF, OBJ, STL, FBX, HDR, etc.) are enabled for upload by default. You can turn any of them off in the <a href="%s" target="_blank">3D Viewer Settings</a>.', '3d-viewer'),
+                    admin_url('edit.php?post_type=bp3d-model-viewer&page=3dviewer-settings')
                 ),
-              ),
-          
-              // Model Positioning Option
-              array(
-                'id'         => 'viewer_position',
-                'type'       => 'radio',
-                'title'      => esc_html__('3D Viewer Position', 'model-viewer'),
-                'options'    => array(
-                  'top' => esc_html__('Top of the product image', 'model-viewer'),
-                  'bottom' => esc_html__('Bottom of the product image','model-viewer'),
-                  'replace' => esc_html__('Replace Product Image with 3D', 'model-viewer')
-                ),
-                'default'    => 'top'
-              ),
-          
-              array(
-                'id'        => 'bp_model_angle',
-                'type'      => 'switcher',
-                'title'     => 'Custom Angle',
-                'subtitle'  => esc_html__('Specified Custom Angle of Model in Initial Load.', 'model-viewer'),
-                'desc'      => esc_html__('Enable or Disable Custom Angle Option.', 'model-viewer'),
-                'text_on'   => esc_html__('Yes', 'model-viewer'),
-                'text_off'  => esc_html__('NO', 'model-viewer'),
-                'text_width'  => 60,
-                'default'   => false,
-                'class'    => 'bp3d-readonly'
-              ),
-              array(
-                'id'    => 'angle_property',
-                'type'  => 'spacing',
-                'title' => esc_html__('Custom Angle Values', 'model-viewer'),
-                'subtitle'=> esc_html__('Set The Custom values for Model. Default Values are ("X=0deg Y=75deg Z=105%")', 'model-viewer'),
-                'desc'    => esc_html__('Set Your Desire Values. (X= Horizontal Position, Y= Vertical Position, Z= Zoom Level/Position) ', 'model-viewer'),
-                'default'  => array(
-                  'top'    => '0',
-                  'right'  => '75',
-                  'bottom' => '105',
-                ),
-                'left'   => false,
-                'show_units' => false,
-                'top_icon'    => 'Deg',
-                'right_icon'  => 'Deg',
-                'bottom_icon' => '%',
-                'dependency' => array( 'bp_model_angle', '==', '1' ),
-              ),
-          
-            ) // End fields
-        ) );
+            ];
+        }
+
+        $fields = array_merge($fields, [
+            // Support link header
+            [
+                'id' => 'meta_heading',
+                'type' => 'content',
+                'title' => 'Support',
+                'content' => 'Please leave a message if you encounter any issues on the product page. '
+                    . '<a href="https://bplugins.com/support" target="_blank"><b>Support Center</b></a><br />'
+                    . '<cite style="color:#2271b1; font-weight: bold">The premium version also supports the following formats: obj, stl, 3dm, 3ds, 3mf, amf, bim, brep, dae, fbx, fcstd, gltf, ifc, iges, step, off, ply, and wrl.</cite>',
+            ],
+
+            [
+                'id' => 'bp3d_model_src',
+                'type' => 'upload',
+                'title' => esc_html__('3D Source', '3d-viewer'),
+                'subtitle' => esc_html__('Upload Model Or Input Valid Model url', '3d-viewer'),
+                'desc' => esc_html__('Upload / Paste Model url. Supported file types: glb, gltf, obj, stl, fbx, dae, 3ds, 3mf, step, wrl, usdz.', '3d-viewer'),
+                'placeholder' => esc_html__('You Can Paste here Model url', '3d-viewer'),
+                'default' => $models[0]['model_src'] ?? '',
+            ],
+            [
+                'id' => 'bp3d_poster_src',
+                'type' => 'upload',
+                'title' => __('3D Poster', '3d-viewer'),
+                'subtitle' => __('Upload Poster Or Input Valid poster/image url', '3d-viewer'),
+                'placeholder' => 'You Can Paste here Poster/image url',
+                'desc' => __('This image will display until the model is either loaded or fails to load.', '3d-viewer'),
+                'default' => $models[0]['poster_src'] ?? '',
+            ],
+
+            // Viewer position
+            [
+                'id' => 'viewer_position',
+                'type' => 'radio',
+                'title' => esc_html__('3D Viewer Position', '3d-viewer'),
+                'desc' => __('Select the position of the viewer', '3d-viewer'),
+                'options' => [
+                    'none' => esc_html__('None', '3d-viewer'),
+                    'top' => esc_html__('Top of the product image', '3d-viewer'),
+                    'bottom' => esc_html__('Bottom of the product image', '3d-viewer'),
+                    'replace' => esc_html__('Replace Product Image with 3D', '3d-viewer'),
+                    'merge_with_first_image' => 'Show 3D on First Image of Woocommerce Gallery',
+                ],
+                'default' => 'none',
+            ],
+
+
+            // Background color
+            [
+                'id' => 'bp_model_bg',
+                'type' => 'color',
+                'title' => __('Background', '3d-viewer'),
+                'desc' => __('Set Background color', '3d-viewer'),
+                'default' => 'transparent',
+            ],
+
+        ]);
+
+        return $fields;
     }
 }

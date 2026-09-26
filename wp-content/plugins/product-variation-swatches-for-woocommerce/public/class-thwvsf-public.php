@@ -27,7 +27,7 @@ class THWVSF_Public {
 		global $wp_scripts;
 		
 		$is_quick_view = THWVSF_Utils::is_quick_view_plugin_active();
-		if(is_product() ||( $is_quick_view && (is_shop() || is_archive())) || apply_filters('thwvsf_enqueue_public_scripts', false)){
+		if(is_product() || is_shop() || is_archive()||( $is_quick_view && (is_shop() || is_archive())) || apply_filters('thwvsf_enqueue_public_scripts', false)){
 			//$debug_mode = apply_filters('thwvsf_debug_mode', false);
 			$suffix = '';
 			$jquery_version = isset($wp_scripts->registered['jquery-ui-core']->ver) ? $wp_scripts->registered['jquery-ui-core']->ver : '1.12.1';
@@ -283,6 +283,7 @@ class THWVSF_Public {
 		}else{
 			$deps[] = 'selectWoo';
 		}
+		$deps = apply_filters('thwvsf_public_script_deps', $deps);
 		wp_register_script('thwvsf-public-script', THWVSF_ASSETS_URL_PUBLIC . 'js/thwvsf-public.min.js', $deps, $this->version, true );					
 		wp_enqueue_script('thwvsf-public-script');
 
@@ -306,6 +307,7 @@ class THWVSF_Public {
 			'clear_on_reselect'  => apply_filters('thwvsf_clear_on_reselect', $clear_on_reselect),
 			'out_of_stock'       => apply_filters('thwvsf_out_of_stock', $behavior_of_out_of_stock),
 			'show_selected_variation_name' => $show_selected_variation_name,
+			// phpcs:ignore WordPress.WP.I18n.TextDomainMismatch
 			'choose_option_text' => apply_filters('thwvsf_choose_your_option_text', __('Choose an option','woocommerce')),
 			'lazy_load'          => $lazy_load, 
 			'change_separator'   => apply_filters('thwvsf_variation_separator', ': '),
@@ -328,6 +330,7 @@ class THWVSF_Public {
 
 		$custom_reset = apply_filters('thwvsf_reset_variations_link',false);
 		if($custom_reset){
+			// phpcs:ignore WordPress.WP.I18n.TextDomainMismatch
 			$link = '<a class="reset_variations thwvsf-variation-link" href="#">' . esc_html__( 'Clear', 'woocommerce' ) . '</a>';
 		}
 		return $link;
@@ -403,13 +406,14 @@ class THWVSF_Public {
 
 	public function add_class_for_attribute_type($args){
 		global $product;
+		$current_product = isset($args['product']) ? $args['product'] : $product;
 		$bundle_class = '';
-
-		if($product->get_type() === 'bundle' ){
+		if(is_object($current_product) && is_callable(array($current_product, 'get_type')) && $current_product->get_type() === 'bundle' ){
 			$attribute = $args['attribute'];
-			$bundle_class = 'wc-bundle cls_attribute_'.$attribute.' ' ;
+			$attribute = sanitize_title($attribute);
+			$bundle_class = 'wc-bundle cls_attribute_'.(preg_replace('/[^A-Za-z0-9\-\_]/', '', $attribute)).' ' ;
 		}
-		
+		 ;
 		$args['class'] = 'thwvs-select ' .$bundle_class;
 		return $args;
 	}
@@ -525,7 +529,7 @@ class THWVSF_Public {
 					
 				}else{
 
-					$html .= '<ul class="thwvsf-wrapper-ul">';
+					$html .= '<ul class="thwvsf-wrapper-ul" role="listbox" aria-label="Swatches options">';
 
 					foreach ( $terms as $term ) {
 
@@ -608,10 +612,26 @@ class THWVSF_Public {
 			$term_settings = isset($local_settings[$name]) ? $local_settings[$name] : '' ;
 			$color         = !empty($term_settings) &&  isset($term_settings['term_value']) ? $term_settings['term_value'] : '';
 		}
+
+		// Determine if this is the first item (for initial tabindex)
+		static $first_item = true;
+		$tabindex = $first_item ? '0' : '-1';
+		$first_item = false;
+		
+		// Set aria-selected based on selection status
+		$aria_selected = $selected ? 'true' : 'false';
        		
 		$html = '
-			<li class="thwvsf-wrapper-item-li thwvsf-color-li thwvsf-div thwvsf-checkbox attribute_'.esc_attr($id).' '. esc_attr($attr_class).' '.esc_attr($selected).' '.esc_attr($design_class).' thwvsf-tooltip" data-attribute_name="attribute_'.esc_attr($id).'" data-value="'.esc_attr($data_val).'" title="'.esc_attr($name).'">'.$tt_html.
+			<li class="thwvsf-wrapper-item-li thwvsf-color-li thwvsf-div thwvsf-checkbox attribute_'.esc_attr(preg_replace('/[^A-Za-z0-9\-\_]/', '', $id)).' '. esc_attr($attr_class).' '.esc_attr($selected).' '.esc_attr($design_class).' thwvsf-tooltip" 
+				data-attribute_name="attribute_'.esc_attr($id).'" 
+				data-value="'.esc_attr($data_val).'" 
+				title="'.esc_attr($name).'"
+				role="option"
+				tabindex="'.esc_attr($tabindex).'"
+				aria-selected="'.esc_attr($aria_selected).'"
+				aria-label="'.esc_attr($name).' color option">'.$tt_html.
 				'<span class="thwvsf-item-span thwvsf-item-span-color" style="background-color:'.esc_attr( $color).';"> </span>
+				<span class="th-sr-only">'.esc_html($name).'</span>
 			</li>';
 
 		return $html;
@@ -637,10 +657,28 @@ class THWVSF_Public {
 	        $image = $image ? $image[0] : THWVSF_URL . 'admin/assets/images/placeholder.png';
 	    }
 
+		// Determine if this is the first item (for initial tabindex), modyfy for accessibility
+		// and to ensure the first item is focusable for keyboard navigation.
+		static $first_image_item = true;
+		$tabindex = $first_image_item ? '0' : '-1';
+		$first_image_item = false;
+		
+		// Set aria-selected based on selection status
+		$aria_selected = $selected ? 'true' : 'false';
+
 	    $img_html = $lazy_load === 'yes' ? '<img class="swatch-preview swatch-image lazy"  data-src="'.esc_url($image).' " width="44px" height="44px" alt="'.esc_attr($name).'">' : '<img class="swatch-preview swatch-image "  src="'.esc_url($image).' " width="44px" height="44px" alt="'.esc_attr($name).'">';
 
-	    $html = '<li class="thwvsf-wrapper-item-li thwvsf-image-li thwvsf-div thwvsf-checkbox attribute_'.esc_attr( $id ).' '. esc_attr( $attr_class ).' '. esc_attr( $design_class ).' '.esc_attr( $selected).' thwvsf-tooltip" data-attribute_name="attribute_'.esc_attr( $id).'" data-value="'.esc_attr( $data_val).'" title="'.esc_attr( $name).'" >
+	    $html = '<li class="thwvsf-wrapper-item-li thwvsf-image-li thwvsf-div thwvsf-checkbox attribute_'.esc_attr( preg_replace('/[^A-Za-z0-9\-\_]/', '', $id)).' '. esc_attr( $attr_class ).' '. esc_attr( $design_class ).' '.esc_attr( $selected).' thwvsf-tooltip" 
+				data-attribute_name="attribute_'.esc_attr( $id).'" 
+				data-value="'.esc_attr( $data_val).'" 
+				title="'.esc_attr( $name).'"
+				role="option"
+				tabindex="'.esc_attr($tabindex).'"
+				aria-selected="'.esc_attr($aria_selected).'"
+				aria-label="'.esc_attr($name).' image option"> 
+					
 	    	'.$tt_html.' '.$img_html.'
+			<span class="th-sr-only">'.esc_html($name).'</span>
 	    </li>';	
 
 		return $html;
@@ -672,9 +710,25 @@ class THWVSF_Public {
 			}
 		}
 
-		$html = '<li class="thwvsf-wrapper-item-li thwvsf-label-li thwvsf-div thwvsf-checkbox attribute_'.esc_attr($id).' '. esc_attr($attr_class).' '.esc_attr($design_class).' '.esc_attr($selected).' thwvsf-tooltip" data-attribute_name="attribute_'.esc_attr($id).'" data-value="'.esc_attr($data_val).'" title="'.esc_attr($name).'">
+		// Determine if this is the first item (for initial tabindex)
+		static $first_label_item = true;
+		$tabindex = $first_label_item ? '0' : '-1';
+		$first_label_item = false;
+		
+		// Set aria-selected based on selection status
+		$aria_selected = $selected ? 'true' : 'false';
+
+		$html = '<li class="thwvsf-wrapper-item-li thwvsf-label-li thwvsf-div thwvsf-checkbox attribute_'.esc_attr(preg_replace('/[^A-Za-z0-9\-\_]/', '', $id)).' '. esc_attr($attr_class).' '.esc_attr($design_class).' '.esc_attr($selected).' thwvsf-tooltip" 
+					data-attribute_name="attribute_'.esc_attr($id).'" 
+					data-value="'.esc_attr($data_val).'" 
+					title="'.esc_attr($name).'"
+					role="option"
+					tabindex="'.esc_attr($tabindex).'"
+					aria-selected="'.esc_attr($aria_selected).'"
+					aria-label="'.esc_attr($name).' option">
 				'.$tt_html.'
 			<span class=" thwvsf-item-span item-span-text ">'.esc_html($value).'</span>	
+			<span class="th-sr-only">'.esc_html($name).'</span>
 			</li>';
 
 		return $html; 
@@ -684,11 +738,15 @@ class THWVSF_Public {
 
 		//$attr_method = taxonomy_exists( $attribute ) ? 'global'  : 'local';
 		$html  = '';
-		$html .= '<div class="thwvsf-rad-li attribute_'. $id .' '.$design_class.' ">';
+		// Add role="radiogroup" and aria-labelledby for screen readers
+    	$group_label_id = 'thwvsf-group-label-' . esc_attr($id);
+    	$html .= '<div class="thwvsf-rad-li attribute_'. $id .' '.$design_class.' " role="radiogroup" aria-labelledby="'.$group_label_id.'">';
+		$html .= '<span id="'.$group_label_id.'" class="th-sr-only">Select ' . esc_html($attribute) . '</span>';
 
 		if($terms){
 
 			foreach ( $terms as $term ) {
+				$term_count = 0;
 				$name = '';
 				$slug = '';
 				$label = '';
@@ -716,15 +774,32 @@ class THWVSF_Public {
 				$attr_class   = preg_replace('/[^A-Za-z0-9\-\_]/', '', $slug);
 
 				$checked = $selected == 'thwvs-selected' ? 'checked="checked"' : '';
+				// Generate unique IDs for proper label association
+            	$input_id = 'thwvsf-radio-' . esc_attr($id) . '-' . esc_attr($attr_class) . '-' . $term_count;
+            
+            	// Determine if this should be the default focused item (first item or selected item)
+            	$tabindex = ($term_count === 0 || $selected == 'thwvs-selected') ? '0' : '-1';
+
 				$html  .='
-					<label class="th-label-radio th-container attribute_'.esc_attr($id).' '. esc_attr($attr_class) .' '. esc_attr($selected) .' '.esc_attr($design_class).'">
+					<label for="'.$input_id.'" class="th-label-radio th-container attribute_'.esc_attr(preg_replace('/[^A-Za-z0-9\-\_]/', '', $id)).' '. esc_attr($attr_class) .' '. esc_attr($selected) .' '.esc_attr($design_class).'">
 						<span class="th-radio-name">
 							<span class="variation-name">'.esc_html($name).'</span>
 						</span>
-						<input type="radio" class="thwvsf-rad"   name="attribute_'.esc_attr($id).'"  value="'.esc_attr($slug).'"  data-attribute_name="attribute_'.esc_attr($id).'" data-value="'.esc_attr($slug).'" '.$checked.'> 
+						<input type="radio" 
+							id="'.$input_id.'"
+							class="thwvsf-rad"   
+							name="attribute_'.esc_attr($id).'" 
+							value="'.esc_attr($slug).'"  
+							data-attribute_name="attribute_'.esc_attr($id).'" 
+							data-value="'.esc_attr($slug).'" 
+							tabindex="'.$tabindex.'"
+							aria-describedby="'.$input_id.'-desc"
+							'.$checked.'> 
 						<span class="checkmark"></span>
+						<span id="'.$input_id.'-desc" class="th-sr-only">'.esc_html($name).' option for '.esc_html($attribute).'</span>
 					</label>'
 				;
+				$term_count++;
 			}
 
 			$html  .= '</div>';
@@ -742,6 +817,7 @@ class THWVSF_Public {
 			'name'             => '',
 			'id'               => '',
 			'class'            => '',
+			// phpcs:ignore WordPress.WP.I18n.TextDomainMismatch
 			'show_option_none' => __( 'Choose an option', 'woocommerce' ),
 		) );
 
@@ -757,6 +833,7 @@ class THWVSF_Public {
 		$id                    = $args['id'] ? $args['id'] : sanitize_title( $attribute );
 		$class                 = $args['class'];
 		$show_option_none      = (bool) $args['show_option_none'];
+		// phpcs:ignore WordPress.WP.I18n.TextDomainMismatch
 		$show_option_none_text = $args['show_option_none'] ? $args['show_option_none'] : __( 'Choose an option', 'woocommerce' ); // We'll do our best to hide the placeholder, but we'll need to show something when resetting options.
 
 		if ( empty( $options ) && ! empty( $product ) && ! empty( $attribute ) ) {
@@ -816,6 +893,7 @@ class THWVSF_Public {
 			'name'             => '',
 			'id'               => '',
 			'class'            => '',
+			// phpcs:ignore WordPress.WP.I18n.TextDomainMismatch
 			'show_option_none' => __( 'Choose an option', 'woocommerce' ),
 		) );
 
@@ -832,6 +910,7 @@ class THWVSF_Public {
 		$id                    = $args['id'] ? $args['id'] : sanitize_title( $attribute );
 		$class                 = $args['class'];
 		$show_option_none      = (bool) $args['show_option_none'];
+		// phpcs:ignore WordPress.WP.I18n.TextDomainMismatch
 		$show_option_none_text = $args['show_option_none'] ? $args['show_option_none'] : __( 'Choose an option', 'woocommerce' ); // We'll do our best to hide the placeholder, but we'll need to show something when resetting options.
 
 		if ( empty( $options ) && ! empty( $product ) && ! empty( $attribute ) ) {
@@ -1006,4 +1085,3 @@ class THWVSF_Public {
 }
 
 endif;
-

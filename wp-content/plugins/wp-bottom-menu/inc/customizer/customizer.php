@@ -53,9 +53,9 @@ class WPBottomMenu_Customizer{
                     'label' => __( 'Select Icon Type', 'wp-bottom-menu' ),
                     'description' => __( '<u>Custom SVG:</u> Paste SVG Icon code.<br><u>FontAwesome:</u> Enable FontAwesome Library.', 'wp-bottom-menu' ),
                     'choices' => array(
-                        'svg' => __( 'Custom SVG' ),
-                        'fontawesome' => __( 'FontAwesome (v4.7)' ),
-                        'fontawesome2' => __( 'FontAwesome (v6.1.1)' ), 
+                        'svg' => __( 'Custom SVG', 'wp-bottom-menu' ),
+                        'fontawesome' => __( 'FontAwesome (v4.7)', 'wp-bottom-menu' ),
+                        'fontawesome2' => __( 'FontAwesome (v6.1.1)', 'wp-bottom-menu' ),
                     ),
                 ) );
 
@@ -156,12 +156,12 @@ class WPBottomMenu_Customizer{
                 'type' => 'select',
                 'section' => 'wpbottommenu_section_conditions',
                 'label' => __( 'Select the Archive', 'wp-bottom-menu' ),
-                'description' => __( 'Select a condition' ),
+                'description' => __( 'Select a condition', 'wp-bottom-menu' ),
                 'choices' => array(
-                    'entire' => __( 'Entire Site' ),
-                    'archives' => __( 'Archives' ),
-                    'singular' => __( 'Singular' ),
-                    'woocommerce' => __( 'Woocommerce' ),
+                    'entire' => __( 'Entire Site', 'wp-bottom-menu' ),
+                    'archives' => __( 'Archives', 'wp-bottom-menu' ),
+                    'singular' => __( 'Singular', 'wp-bottom-menu' ),
+                    'woocommerce' => __( 'Woocommerce', 'wp-bottom-menu' ),
                 ),
             ) );
 
@@ -174,12 +174,12 @@ class WPBottomMenu_Customizer{
                 'type' => 'select',
                 'section' => 'wpbottommenu_section_conditions',
                 'label' => __( 'Archive Elements', 'wp-bottom-menu' ),
-                'description' => __( 'Select a condition' ),
+                'description' => __( 'Select a condition', 'wp-bottom-menu' ),
                 'choices' => array(
-                    'all' => __( 'All' ),
-                    'author' => __( 'Author' ),
-                    'cats' => __( 'Category' ),
-                    'tags' => __( 'Tags' ),
+                    'all' => __( 'All', 'wp-bottom-menu' ),
+                    'author' => __( 'Author', 'wp-bottom-menu' ),
+                    'cats' => __( 'Category', 'wp-bottom-menu' ),
+                    'tags' => __( 'Tags', 'wp-bottom-menu' ),
                 ),
             ) );
 
@@ -192,15 +192,15 @@ class WPBottomMenu_Customizer{
                 'type' => 'select',
                 'section' => 'wpbottommenu_section_conditions',
                 'label' => __( 'WooCommerce Elements', 'wp-bottom-menu' ),
-                'description' => __( 'Select a condition' ),
+                'description' => __( 'Select a condition', 'wp-bottom-menu' ),
                 'choices' => array(
-                    'all' => __( 'All' ),
-                    'archive' => __( 'Product Archives' ),
-                    'shop' => __( 'Shop Page' ),
-                    'cats' => __( 'Product Categories' ),
-                    'tags' => __( 'Product Tags' ),
-                    'products' => __( 'Single Products' ),
-                    'product' => __( 'Single Product' ),
+                    'all' => __( 'All', 'wp-bottom-menu' ),
+                    'archive' => __( 'Product Archives', 'wp-bottom-menu' ),
+                    'shop' => __( 'Shop Page', 'wp-bottom-menu' ),
+                    'cats' => __( 'Product Categories', 'wp-bottom-menu' ),
+                    'tags' => __( 'Product Tags', 'wp-bottom-menu' ),
+                    'products' => __( 'Single Products', 'wp-bottom-menu' ),
+                    'product' => __( 'Single Product', 'wp-bottom-menu' ),
                 ),
             ) );
    
@@ -213,14 +213,14 @@ class WPBottomMenu_Customizer{
                 'type' => 'select',
                 'section' => 'wpbottommenu_section_conditions',
                 'label' => __( 'Singular Elements', 'wp-bottom-menu' ),
-                'description' => __( 'Select a condition' ),
+                'description' => __( 'Select a condition', 'wp-bottom-menu' ),
                 'choices' => array(
-                    'all' => __( 'All' ),
-                    'front-page' => __( 'Front Page' ),
-                    'post' => __( 'Post' ),
-                    'pages' => __( 'Pages' ),
-                    'search' => __( 'Seach Results' ),
-                    'page-404' => __( '404 Page' ),
+                    'all' => __( 'All', 'wp-bottom-menu' ),
+                    'front-page' => __( 'Front Page', 'wp-bottom-menu' ),
+                    'post' => __( 'Post', 'wp-bottom-menu' ),
+                    'pages' => __( 'Pages', 'wp-bottom-menu' ),
+                    'search' => __( 'Seach Results', 'wp-bottom-menu' ),
+                    'page-404' => __( '404 Page', 'wp-bottom-menu' ),
                 ),
             ) );
 
@@ -233,7 +233,7 @@ class WPBottomMenu_Customizer{
                 'type' => 'multiple-select',
                 'section' => 'wpbottommenu_section_conditions',
                 'label' => __( 'Single Pages', 'wp-bottom-menu' ),
-                'description' => __( 'Select a page' ),
+                'description' => __( 'Select a page', 'wp-bottom-menu' ),
                 'choices' => self::get_available_custom_post( 'page' ),
             ) ) );
 
@@ -246,7 +246,7 @@ class WPBottomMenu_Customizer{
                 'type' => 'multiple-select',
                 'section' => 'wpbottommenu_section_conditions',
                 'label' => __( 'Single Post', 'wp-bottom-menu' ),
-                'description' => __( 'Select a condition' ),
+                'description' => __( 'Select a condition', 'wp-bottom-menu' ),
                 'choices' => self::get_available_custom_post( 'post' ),
             ) ) );
 
@@ -259,7 +259,7 @@ class WPBottomMenu_Customizer{
                 'type' => 'multiple-select',
                 'section' => 'wpbottommenu_section_conditions',
                 'label' => __( 'Single Product', 'wp-bottom-menu' ),
-                'description' => __( 'Select products' ),
+                'description' => __( 'Select products', 'wp-bottom-menu' ),
                 'choices' => self::get_available_custom_post( 'product' ),
             ) ) );
 
@@ -273,7 +273,7 @@ class WPBottomMenu_Customizer{
                 'type' => 'multiple-select',
                 'section' => 'wpbottommenu_section_conditions',
                 'label' => __( 'Select User Roles Condition', 'wp-bottom-menu' ),
-                'description' => __( 'WP Bottom Menu will only appear in the user roles you select.' ),
+                'description' => __( 'WP Bottom Menu will only appear in the user roles you select.', 'wp-bottom-menu' ),
                 'choices' => wpbm_get_user_roles()
             ) ) );
                 
@@ -449,9 +449,22 @@ class WPBottomMenu_Customizer{
                 
                 $wp_customize->add_control('wpbottommenu_show_cart_total', array(
                     'label'    => __( 'Show Cart Total', 'wp-bottom-menu' ), 
-                    'description' => 'This option override cart menu title.',
+                    'description' => __( 'This option override cart menu title.', 'wp-bottom-menu' ),
                     'section'  => 'wpbottommenu_section_customize',
                     'settings' => 'wpbottommenu_show_cart_total',
+                    'type' => 'checkbox',
+                ));
+
+                $wp_customize->add_setting( 'wpbottommenu_show_account_name' , array(
+                    'default'     => false,
+                    'type'        => 'option',
+                ));
+                
+                $wp_customize->add_control('wpbottommenu_show_account_name', array(
+                    'label'    => __( 'Show Account Name', 'wp-bottom-menu' ), 
+                    'description' => __( 'This option override account menu title. First name is shown, if there is no first name, the username is shown.', 'wp-bottom-menu' ),
+                    'section'  => 'wpbottommenu_section_customize',
+                    'settings' => 'wpbottommenu_show_account_name',
                     'type' => 'checkbox',
                 ));
 
@@ -477,10 +490,11 @@ class WPBottomMenu_Customizer{
                 ));
 
                 $wp_customize->add_control( new Customizer_Repeater( $wp_customize, 'customizer_repeater_wpbm', array(
-                    'label'   => esc_html__('Menu Item','customizer-repeater'),
+                    'label'   => esc_html__('Menu Item','wp-bottom-menu'),
                     'section' => 'wpbottommenu_section_menuitems',
                     'customizer_repeater_title_control' => true,
                     'customizer_repeater_link_control' => true,
+                    'customizer_repeater_text_control' => true,
                     'customizer_repeater_subtitle_control' => true,
                 )));
 
@@ -491,6 +505,7 @@ class WPBottomMenu_Customizer{
                 $wp_customize->add_control( 'wpbottommenu_howuseicon', array(
                     'label'    => __( 'How to use Icons?', 'wp-bottom-menu' ), 
                     'description' => sprintf(
+                        /* translators: %1$s: FontAwesome URL, %2$s: Remix Icon URL, %3$s: FontAwesome v6 URL */
                         __( '<u>For FontAwesome:</u> Add the names from (%1$s) to the "Icon" field.<br>Example:<code>fa-home</code><hr><u>For FontAwesome v6:</u> Add the names from (%3$s) to the "Icon" field.<br>Example:<code>fa-solid fa-house</code><hr><u>For SVG Icons:</u> simply paste your SVG code in the "Icon" field. SVG Icon Library: %2$s<br>Enable to use SVG <code>Settings > Select Icon Type > Custom SVG</code> ', 'wp-bottom-menu' ),
                         sprintf( '<a target="_blank" href="https://fontawesome.com/v4.7.0/icons/" rel="nofollow">%s</a>', esc_html__( 'FontAwesome', 'wp-bottom-menu' ) ),
                         sprintf( '<a target="_blank" href="https://remixicon.com" rel="nofollow">%s</a>', esc_html__( 'Remix Icon', 'wp-bottom-menu' ) ),
@@ -521,7 +536,7 @@ class WPBottomMenu_Customizer{
         ?>
         <style type="text/css">
             <?php if (!get_option( 'wpbottommenu_display_always', false )): ?>
-                @media (max-width: <?php echo get_option( 'wpbottommenu_display_px', '1024' ); ?>px){
+                @media (max-width: <?php echo esc_attr( get_option( 'wpbottommenu_display_px', '1024' ) ); ?>px){
                     .wp-bottom-menu{
                         display:flex;
                     }
@@ -539,16 +554,16 @@ class WPBottomMenu_Customizer{
             <?php endif; ?>
 
             :root{
-                --wpbottommenu-font-size: <?php echo get_option( 'wpbottommenu_fontsize', '12' );?>px;
-                --wpbottommenu-icon-size: <?php echo get_option( 'wpbottommenu_iconsize', '24' );?>px;
-                --wpbottommenu-text-color: <?php echo get_option( 'wpbottommenu_textcolor', '#555555' );?>;
-                --wpbottommenu-h-text-color: <?php echo get_option( 'wpbottommenu_htextcolor', '#000000' );?>;
-                --wpbottommenu-icon-color: <?php echo get_option( 'wpbottommenu_iconcolor', '#555555' );?>;
-                --wpbottommenu-h-icon-color: <?php echo get_option( 'wpbottommenu_hiconcolor', '#000000' );?>;
-                --wpbottommenu-bgcolor: <?php echo get_option( 'wpbottommenu_bgcolor', '#ffffff' );?>;
-                --wpbottommenu-zindex: <?php echo get_option( 'wpbottommenu_zindex', '9999' ); ?>;
-                --wpbottommenu-cart-count-bgcolor: <?php echo get_option( 'wpbottommenu_cart_count_bgcolor', '#ff0000' );?>;
-                --wpbottommenu-wrapper-padding: <?php echo get_option( 'wpbottommenu_wrapper_padding', '10' );?>px 0;
+                --wpbottommenu-font-size: <?php echo esc_attr( get_option( 'wpbottommenu_fontsize', '12' ) );?>px;
+                --wpbottommenu-icon-size: <?php echo esc_attr( get_option( 'wpbottommenu_iconsize', '24' ) );?>px;
+                --wpbottommenu-text-color: <?php echo esc_attr( get_option( 'wpbottommenu_textcolor', '#555555' ) );?>;
+                --wpbottommenu-h-text-color: <?php echo esc_attr( get_option( 'wpbottommenu_htextcolor', '#000000' ) );?>;
+                --wpbottommenu-icon-color: <?php echo esc_attr( get_option( 'wpbottommenu_iconcolor', '#555555' ) );?>;
+                --wpbottommenu-h-icon-color: <?php echo esc_attr( get_option( 'wpbottommenu_hiconcolor', '#000000' ) );?>;
+                --wpbottommenu-bgcolor: <?php echo esc_attr( get_option( 'wpbottommenu_bgcolor', '#ffffff' ) );?>;
+                --wpbottommenu-zindex: <?php echo esc_attr( get_option( 'wpbottommenu_zindex', '9999' ) ); ?>;
+                --wpbottommenu-cart-count-bgcolor: <?php echo esc_attr( get_option( 'wpbottommenu_cart_count_bgcolor', '#ff0000' ) );?>;
+                --wpbottommenu-wrapper-padding: <?php echo esc_attr( get_option( 'wpbottommenu_wrapper_padding', '10' ) );?>px 0;
             }
 
         </style>

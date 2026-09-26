@@ -17,7 +17,7 @@ class WPBottomMenu_Condition {
         $singular_post_condition = $rule['singular_post_condition'];
         $singular_product_condition = $rule['singular_product_condition'];
 
-        $cpts = apply_filters( 'liquid_condition_cpt', array( 'post', 'liquid-portfolio' ) );
+        $cpts = apply_filters( 'wpbm_cpt_condition', array( 'post' ) );
 
         switch ($condition) {
             // entire
@@ -84,7 +84,7 @@ class WPBottomMenu_Condition {
                         $id = true;
                     } elseif ( $woocommerce_condition === 'products' && is_product() ){
                         $id = true;
-                    } elseif ( $woocommerce_condition === 'product' && is_product() && ( array_search( get_the_ID() , $singular_product_condition ) !== false ) ){
+                    } elseif ( $woocommerce_condition === 'product' && is_product() && ( ( is_array( $singular_product_condition ) && array_search( get_the_ID() , $singular_product_condition ) !== false ) || $singular_product_condition === 'all' ) ){
                         $id = true;
                     }
                 }

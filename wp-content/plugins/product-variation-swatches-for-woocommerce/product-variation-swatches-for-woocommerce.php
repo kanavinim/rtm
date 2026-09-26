@@ -3,15 +3,18 @@
  * Plugin Name:       Product Variation Swatches for Woocommerce
  * Plugin URI:        https://themehigh.com/product/woocommerce-product-variation-swatches
  * Description:       Product Variation Swatches for WooCommerce lets you add variation swatches for variable product attributes in your WooCommerce online store.
- * Version:           2.3.0
+ * Version:           2.4.5
  * Author:            ThemeHigh
  * Author URI:        https://themehigh.com/
  *
  * Text Domain:       product-variation-swatches-for-woocommerce
  * Domain Path:       /languages
- *
+ * 
+ * Requires Plugins: woocommerce
  * WC requires at least: 4.0.0
- * WC tested up to: 6.9
+ * WC tested up to: 11.0
+ * License: GPLv2 or later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  */
 
 
@@ -28,7 +31,7 @@ if (!function_exists('is_woocommerce_active')){
 }
 
 if(is_woocommerce_active()) {
-	define('THWVSF_VERSION', '2.3.0');
+	define('THWVSF_VERSION', '2.4.5');
 	!defined('THWVSF_FILE') && define('THWVSF_FILE', __FILE__);
 	!defined('THWVSF_PATH') && define('THWVSF_PATH', plugin_dir_path( __FILE__ ));
 	!defined('THWVSF_URL') && define('THWVSF_URL', plugins_url( '/', __FILE__ ));
@@ -38,6 +41,13 @@ if(is_woocommerce_active()) {
 	 * admin-specific hooks, and public-facing site hooks.
 	 */
 	require plugin_dir_path( __FILE__ ) . 'includes/class-thwvsf.php';
+
+	add_action( 'before_woocommerce_init', 'thwvsf_woocommerce_init' ) ;
+	function thwvsf_woocommerce_init() {
+	    if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
+	        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+	    }
+	}
 	
 	/**
 	 * Begins execution of the plugin.

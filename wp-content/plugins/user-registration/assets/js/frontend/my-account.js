@@ -3,6 +3,7 @@ jQuery(function ($) {
 	var user_registration_profile_picture_upload = {
 		init: function () {
 			this.init_event();
+			this.handle_user_logout();
 		},
 
 		/**
@@ -102,7 +103,16 @@ jQuery(function ($) {
 								"</span>"
 						);
 					upload_node.text(upload_node_value);
-				},
+
+					$this
+						.closest(".user-registration-profile-header")
+						.find(".ur-new-profile-image-message")
+						.attr("style", "display: none");
+					$this
+						.closest(".user-registration-profile-header")
+						.find(".ur-profile-image-updated-message")
+						.attr("style", "display: block");
+				}
 			});
 		},
 		init_event: function () {
@@ -184,13 +194,65 @@ jQuery(function ($) {
 				.find(".user-registration-profile-picture-error")
 				.remove();
 		},
+		/**
+		 * Displays Logout popup.
+		 */
+		handle_user_logout: function () {
+			$(document).on(
+				"click",
+				".ur-logout, .urcma-users-logout",
+				function (e) {
+					e.preventDefault();
+					e.stopPropagation();
+					var $this = $(this);
+
+					swal.fire({
+						title: $this.text().trim() + "?",
+						html: user_registration_params.logout_popup_text,
+						confirmButtonText: $this.text(),
+						confirmButtonColor: "#F25656",
+						showConfirmButton: true,
+						showCancelButton: true,
+						cancelButtonText:
+							user_registration_params.logout_popup_cancel_text,
+						cancelButtonColor: "#FFFFFF",
+						customClass: {
+							container:
+								"user-registration-swal2-container user-registration-logout-swal2-container",
+							title: "swal2-title-border"
+						},
+						focusConfirm: false,
+						showLoaderOnConfirm: true
+					}).then(function (result) {
+						if (result.isConfirmed) {
+							window.location.href = $this.attr("href");
+						}
+					});
+				}
+			);
+		}
 	};
 
 	// Handle profile picture remove event.
-	$(".profile-pic-remove").on("click", function (e) {
-		e.preventDefault();
-		user_registration_profile_picture_upload.remove_avatar($(this));
-	});
+	$(".profile-pic-remove, .uraf-profile-picture-remove").on(
+		"click",
+		function (e) {
+			e.preventDefault();
+
+			$(this)
+				.closest(".user-registration-profile-header")
+				.find(".ur-new-profile-image-message")
+				.attr("style", "display: block");
+			$(this)
+				.closest(".user-registration-profile-header")
+				.find(".ur-profile-image-updated-message")
+				.attr("style", "display: none");
+			$(this)
+				.closest(".user-registration-profile-header")
+				.find(".user_registration_profile_picture_upload")
+				.trigger("click");
+		}
+	);
 
 	$(document).on(
 		"user_registration_frontend_before_edit_profile_submit",
@@ -205,30 +267,36 @@ jQuery(function ($) {
 	/**
 	 * Dismiss  a pending change of user email.
 	 */
-	$(document).on("click", "input#user_registration_user_email + div.email-updated.inline a", function (e) {
-		e.preventDefault();
+	$(document).on(
+		"click",
+		"input#user_registration_user_email + div.email-updated.inline a",
+		function (e) {
+			e.preventDefault();
 
-		var $this = $(this);
-		var url = new URL(e.target.href);
-		var cancel_email_change = url.searchParams.get("cancel_email_change");
-		var nonce = url.searchParams.get("_wpnonce");
-		var ajaxUrl = user_registration_params.ajax_url;
+			var $this = $(this);
+			var url = new URL(e.target.href);
+			var cancel_email_change = url.searchParams.get(
+				"cancel_email_change"
+			);
+			var nonce = url.searchParams.get("_wpnonce");
+			var ajaxUrl = user_registration_params.ajax_url;
 
-		$.ajax({
-			type: "POST",
-			url: ajaxUrl,
-			data: {
-				action: "user_registration_cancel_email_change",
-				cancel_email_change: cancel_email_change,
-				_wpnonce: nonce,
-			},
-			success: function (response) {
-				if (response.success) {
-					$this.parents("div.email-updated.inline").remove();
+			$.ajax({
+				type: "POST",
+				url: ajaxUrl,
+				data: {
+					action: "user_registration_cancel_email_change",
+					cancel_email_change: cancel_email_change,
+					_wpnonce: nonce
+				},
+				success: function (response) {
+					if (response.success) {
+						$this.parents("div.email-updated.inline").remove();
+					}
 				}
-			},
-		});
-	});
+			});
+		}
+	);
 
 	// Check if the form is edit-profile form and check if ajax submission on edit profile is enabled.
 	if (
@@ -272,4 +340,166 @@ jQuery(function ($) {
 	$("input.flatpickr-input").each(function () {
 		$(this).val($(this).attr("value"));
 	});
+	$(".user-registration-myaccount-notice-box .close").on(
+		"click",
+		function () {
+			$(this).parent().css("display", "none");
+		}
+	);
+	$(".form-login-preview").on("click", function () {
+		var $container = $(this);
+
+		$container.preventDefault();
+	});
+
+	document
+		.querySelectorAll(".form-login-preview")
+		.forEach(function (container) {
+			["click", "change", "input", "submit"].forEach(function (evt) {
+				container.addEventListener(
+					evt,
+					function (event) {
+						event.preventDefault();
+						event.stopImmediatePropagation();
+					},
+					true
+				);
+				container
+					.querySelectorAll("input, select, textarea, button")
+					.forEach(function (el) {
+						el.disabled = true;
+						el.setAttribute("autocomplete", "off");
+					});
+			});
+		});
+
+	var editBtn = $(document).find(".user_registration_profile_picture_upload");
+	var fileInput = document.getElementById("ur-profile-pic");
+
+	if (!editBtn || !fileInput) return;
+
+	editBtn
+		.closest(".button-group")
+		.find(".uraf-profile-picture-upload")
+		.hide();
+	editBtn.off("click").on("click", function (e) {
+		e.preventDefault();
+		e.stopPropagation();
+
+		if (
+			editBtn
+				.closest(".button-group")
+				.find(".uraf-profile-picture-upload").length > 0
+		) {
+			editBtn
+				.closest(".button-group")
+				.find(".uraf-profile-picture-upload")
+				.toggle();
+		} else {
+			fileInput.click();
+			return;
+		}
+	});
+
+	$(document).on("click", function (e) {
+		var clickedInsideMenu =
+			$(e.target).closest(".uraf-profile-picture-upload").length > 0;
+		var clickedEditBtn =
+				$(e.target).closest(".user_registration_profile_picture_upload")
+					.length > 0,
+			menu = $(document)
+				.find(".user_registration_profile_picture_upload")
+				.closest(".button-group")
+				.find(".uraf-profile-picture-upload");
+
+		if (!clickedInsideMenu && !clickedEditBtn) {
+			menu.hide();
+		}
+	});
 });
+
+jQuery(function ($) {
+	var $activeDropdown = null;
+
+	$(document).on("click", ".menu-trigger", function (e) {
+		e.preventDefault();
+		e.stopPropagation();
+
+		var $trigger = $(this);
+		var $menu = $trigger.closest(".action-menu");
+		var $dropdown = $menu.find(".dropdown");
+
+		if ($activeDropdown && !$dropdown.is($activeDropdown)) {
+			$activeDropdown.addClass("hidden");
+		}
+
+		var rect = this.getBoundingClientRect();
+
+		$dropdown.css({
+			position: "fixed",
+			top: rect.bottom + 6,
+			left: rect.left,
+			zIndex: 100000,
+			width: "0px"
+		});
+
+		if ($dropdown.hasClass("hidden")) {
+			$dropdown.removeClass("hidden");
+		} else {
+			$dropdown.addClass("hidden");
+		}
+
+		$activeDropdown = $dropdown.hasClass("hidden") ? null : $dropdown;
+	});
+
+	$(document).on("click", function (e) {
+		if (
+			!$(e.target).closest(".dropdown").length &&
+			!$(e.target).closest(".menu-trigger").length
+		) {
+			$(".dropdown").addClass("hidden");
+			$activeDropdown = null;
+		}
+	});
+
+	ur_init_tooltips($(".user-registration-help-tip"));
+});
+
+/**
+ * Set tooltips for specified elements.
+ *
+ * @param {String|jQuery} $elements Elements to set tooltips for.
+ * @param {JSON} options Overriding options for tooltips.
+ */
+function ur_init_tooltips($elements, options) {
+	if (undefined !== $elements && null !== $elements && "" !== $elements) {
+		var args = {
+			theme: "tooltipster-borderless",
+			maxWidth: 200,
+			multiple: true,
+			interactive: true,
+			position: "bottom",
+			contentAsHTML: true,
+			functionInit: function (instance, helper) {
+				var $origin = jQuery(helper.origin),
+					dataTip = $origin.attr("data-tip");
+
+				if (dataTip) {
+					instance.content(dataTip);
+				}
+			}
+		};
+
+		if (options && "object" === typeof options) {
+			Object.keys(options).forEach(function (key) {
+				args[key] = options[key];
+			});
+		}
+
+		if ("string" === typeof $elements) {
+			jQuery($elements).tooltipster(args);
+		} else {
+			$elements.tooltipster(args);
+		}
+	}
+}

@@ -25,10 +25,10 @@ function rsssl_disable_file_editing_notice( $notices ) {
 		'score' => 5,
 		'output' => array(
 			'true' => array(
-				'msg' => __("The DISALLOW_FILE_EDIT constant is defined and set to false. You can remove it from your wp-config.php.", "really-simple-ssl"),
+				'msg' => __("The DISALLOW_FILE_EDIT constant is defined and set to false. You can remove it from your wp-config.php", "really-simple-ssl"),
 				'icon' => 'open',
 				'dismissible' => true,
-				'url' => 'https://really-simple-ssl.com/disallow_file_edit-defined-set-to-false'
+				'url' => 'disallow_file_edit-defined-set-to-false'
 			),
 		),
 	);

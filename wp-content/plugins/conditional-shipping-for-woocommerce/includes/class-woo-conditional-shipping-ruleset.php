@@ -9,6 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class Woo_Conditional_Shipping_Ruleset {
   private $post_id;
+  private $post;
   private $debug;
 
   /**
@@ -41,7 +42,30 @@ class Woo_Conditional_Shipping_Ruleset {
       return '';
     }
 
-    return __( 'Ruleset', 'woo-conditional-shipping' );
+    return __( 'Ruleset', 'conditional-shipping-for-woocommerce' );
+  }
+
+  /**
+   * Get row actions
+   */
+  public function get_row_actions() {
+    return [
+      'edit' => [
+        'title' => __( 'Edit', 'conditional-shipping-for-woocommerce' ),
+        'url' => $this->get_admin_edit_url(),
+        'class' => 'wcs-ruleset-edit',
+      ],
+      'delete' => [
+        'title' => __( 'Delete', 'conditional-shipping-for-woocommerce' ),
+        'url' => $this->get_admin_delete_url(),
+        'class' => 'wcs-ruleset-delete',
+      ],
+      'clone' => [
+        'title' => __( 'Duplicate', 'conditional-shipping-for-woocommerce' ),
+        'url' => $this->get_admin_duplicate_url(),
+        'class' => 'wcs-ruleset-duplicate',
+      ],
+    ];
   }
 
   /**
@@ -64,18 +88,30 @@ class Woo_Conditional_Shipping_Ruleset {
       'action' => 'delete',
     ), admin_url( 'admin.php?page=wc-settings&tab=shipping&section=woo_conditional_shipping' ) );
 
-    return $url;
+    return wp_nonce_url( $url, 'wcs-delete-ruleset' );
+  }
+
+  /**
+   * Get admin duplicate URL
+   */
+  public function get_admin_duplicate_url() {
+    $url = add_query_arg( [
+      'ruleset_id' => $this->post_id,
+      'action' => 'duplicate',
+    ], admin_url( 'admin.php?page=wc-settings&tab=shipping&section=woo_conditional_shipping' ) );
+
+    return wp_nonce_url( $url, 'wcs-duplicate-ruleset' );
   }
 
   /**
    * Get post
    */
   public function get_post() {
-    if ( $this->post_id ) {
-      return get_post( $this->post_id );
+    if ( ! $this->post ) {
+      $this->post = get_post( $this->post_id );
     }
 
-    return false;
+    return $this->post;
   }
 
   /**
@@ -94,26 +130,81 @@ class Woo_Conditional_Shipping_Ruleset {
   }
 
   /**
-	 * Get products which are selected in conditions
-	 */
-	public function get_products() {
+   * Get products which are selected in conditions
+   */
+  public function get_products() {
     $product_ids = array();
 
-		foreach ( $this->get_conditions() as $condition ) {
-			if ( isset( $condition['product_ids'] ) && is_array( $condition['product_ids'] ) ) {
-				$product_ids = array_merge( $product_ids, $condition['product_ids'] );
-			}
-		}
+    foreach ( $this->get_conditions() as $condition ) {
+      if ( isset( $condition['product_ids'] ) && is_array( $condition['product_ids'] ) ) {
+        $product_ids = array_merge( $product_ids, $condition['product_ids'] );
+      }
+    }
 
-		$products = array();
-		foreach ( $product_ids as $product_id ) {
-			$product = wc_get_product( $product_id );
-			if ( $product ) {
-				$products[$product_id] = wp_kses_post( $product->get_formatted_name() );
-			}
-		}
+    $products = array();
+    foreach ( $product_ids as $product_id ) {
+      $product = wc_get_product( $product_id );
+      if ( $product ) {
+        $products[$product_id] = wp_kses_post( $product->get_formatted_name() );
+      }
+    }
 
-		return $products;
+    return $products;
+  }
+
+  /**
+   * Get coupons which are selected in conditions
+   */
+  public function get_coupons() {
+    $coupon_ids = [];
+
+    foreach ( $this->get_conditions() as $condition ) {
+      if ( isset( $condition['coupon_ids'] ) && is_array( $condition['coupon_ids'] ) ) {
+        $coupon_ids = array_merge( $coupon_ids, $condition['coupon_ids'] );
+      }
+    }
+
+    $general_options = [
+      '_all' => __( '- All coupons -', 'conditional-shipping-for-woocommerce' ),
+      '_free_shipping' => __( '- Free shipping coupons -', 'conditional-shipping-for-woocommerce' ),
+    ];
+
+    $coupons = [];
+    foreach ( $coupon_ids as $coupon_id ) {
+      if ( isset( $general_options[$coupon_id] ) ) {
+        $coupons[$coupon_id] = $general_options[$coupon_id];
+      } else {
+        $coupon_code = wc_get_coupon_code_by_id( $coupon_id );
+        if ( $coupon_code ) {
+          $coupons[$coupon_id] = $coupon_code;
+        }
+      }
+    }
+
+    return $coupons;
+  }
+
+  /**
+   * Get tags which are selected in conditions
+   */
+  public function get_tags() {
+    $tag_ids = [];
+
+    foreach ( $this->get_conditions() as $condition ) {
+      if ( isset( $condition['product_tags'] ) && is_array( $condition['product_tags'] ) ) {
+        $tag_ids = array_merge( $tag_ids, $condition['product_tags'] );
+      }
+    }
+
+    $tags = [];
+    foreach ( $tag_ids as $tag_id ) {
+      $tag = get_term( $tag_id, 'product_tag' );
+      if ( $tag ) {
+        $tags[$tag->term_id] = wp_kses_post( $tag->name );
+      }
+    }
+
+    return $tags;
   }
   
   /**
@@ -132,14 +223,21 @@ class Woo_Conditional_Shipping_Ruleset {
   /**
    * Get actions for the ruleset
    */
-  public function get_actions() {
+  public function get_actions( $translated = false ) {
     $actions = get_post_meta( $this->post_id, '_wcs_actions', true );
 
-    if ( ! $actions ) {
-      return array();
+    if ( ! $actions || ! is_array( $actions ) ) {
+      return [];
     }
 
-    return (array) $actions;
+    // Apply translations
+    if ( $translated ) {
+      foreach ( $actions as $key => $action ) {
+        $actions[$key] = wcs_translate_action( $action );
+      }
+    }
+
+    return $actions;
   }
 
   /**
@@ -208,5 +306,26 @@ class Woo_Conditional_Shipping_Ruleset {
     $this->debug->add_result( $this->get_id(), $passed );
 
     return $passed;
+  }
+
+  /**
+   * Check if notice is applicable
+   */
+  public function notice_applicable( $action ) {
+    if ( isset( $action['shipping_method_ids'] ) && ! empty( $action['shipping_method_ids'] ) ) {
+      $rate = wcs_get_active_rate();
+              
+      if ( $rate ) {
+        $instance_id = $rate->get_instance_id();
+        $title = $rate->get_label();
+      } else {
+        $instance_id = false;
+        $title = '';
+      }
+
+      return wcs_method_selected( $title, $instance_id, $action );
+    }
+
+    return true;
   }
 }

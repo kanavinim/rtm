@@ -31,7 +31,14 @@ $license_plan = ! empty( $license_data->item_plan ) ? $license_data->item_plan :
 				<img src="<?php echo esc_url( UR()->plugin_url() . '/assets/images/logo.svg' ); ?>" alt="">
 			</div>
 			<h4><?php esc_html_e( 'Add New Form', 'user-registration' ); ?></h4>
-			<?php if ( apply_filters( 'user_registration_refresh_templates', true ) ) : ?>
+			<?php
+			/**
+			 * Filter to refresh the template.
+			 *
+			 * @param bool Status of the template.
+			 */
+			if ( apply_filters( 'user_registration_refresh_templates', true ) ) :
+				?>
 				<a href="<?php echo esc_url( $refresh_url ); ?>" class="user-registration-btn page-title-action"><?php esc_html_e( 'Refresh Templates', 'user-registration' ); ?></a>
 			<?php endif; ?>
 			<nav class="user-registration-tab">
@@ -97,7 +104,7 @@ $license_plan = ! empty( $license_data->item_plan ) ? $license_data->item_plan :
 							<?php if ( 'blank' !== $template->slug ) : ?>
 								<div class="form-action">
 									<a href="#" class="user-registration-btn button-primary <?php echo esc_attr( $upgrade_class ); ?>" data-licence-plan="<?php echo esc_attr( $license_plan ); ?>" data-template-name-raw="<?php echo esc_attr( $template->title ); ?>" data-template-name="<?php echo esc_attr( $template_name ); ?>" data-template="<?php echo esc_attr( $template->slug ); ?>"><?php esc_html_e( 'Get Started', 'user-registration' ); ?></a>
-									<a href="<?php echo esc_url( $preview_link ); ?>" target="_blank" class="user-registration-btn button-secondary ur-template-preview"><?php esc_html_e( 'Preview', 'user-registration' ); ?></a>
+									<a href="<?php echo esc_url( $preview_link ); ?>" rel="noreferrer noopener" target="_blank" class="user-registration-btn button-secondary ur-template-preview"><?php esc_html_e( 'Preview', 'user-registration' ); ?></a>
 								</div>
 							<?php endif; ?>
 						</figure>

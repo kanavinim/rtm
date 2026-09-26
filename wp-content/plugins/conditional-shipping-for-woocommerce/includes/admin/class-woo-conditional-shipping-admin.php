@@ -21,6 +21,9 @@ class Woo_Conditional_Shipping_Admin {
 
     // Add admin JS
     add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
+
+    // Dequeue scripts
+    add_action( 'admin_footer', [ $this, 'admin_dequeue_scripts' ], 100, 0 );
     
     // Add link to conditions to the plugins page
     add_filter( 'plugin_action_links_' . WOO_CONDITIONAL_SHIPPING_BASENAME, array( $this, 'add_conditions_link' ) );
@@ -30,8 +33,8 @@ class Woo_Conditional_Shipping_Admin {
 		// without standard section
     add_filter( 'woocommerce_get_settings_shipping', array( $this, 'hide_default_settings' ), 100, 2 );
     
-    // Admin AJAX action for toggling ruleset activity
-    add_action( 'wp_ajax_wcs_toggle_ruleset', array( $this, 'toggle_ruleset' ) );
+    // Admin AJAX actions
+    add_action( 'wp_ajax_wcs_toggle_ruleset', [ $this, 'toggle_ruleset' ] );
 	}
 	
   /**
@@ -39,35 +42,56 @@ class Woo_Conditional_Shipping_Admin {
    */
   public function add_conditions_link( $links ) {
     $url = admin_url( 'admin.php?page=wc-settings&tab=shipping&section=woo_conditional_shipping' );
-    $link = '<a href="' . $url . '">' . __( 'Conditions', 'woo-conditional-shipping' ) . '</a>';
+    $link = '<a href="' . $url . '">' . __( 'Conditions', 'conditional-shipping-for-woocommerce' ) . '</a>';
 
     return array_merge( array( $link ), $links );
   }
 
   /**
-	 * Add admin JS
-	 */
-	public function admin_enqueue_scripts() {
-    wp_enqueue_script( 'jquery-ui-autocomplete' );
-    
-    wp_enqueue_script( 'woo_conditional_shipping_admin_js', plugin_dir_url( __FILE__ ) . '../../admin/js/woo-conditional-shipping.js', array( 'jquery', 'wp-util' ), WOO_CONDITIONAL_SHIPPING_ASSETS_VERSION );
-    
-    wp_enqueue_style( 'woo_conditional_shipping_admin_css', plugin_dir_url( __FILE__ ) . '../../admin/css/woo-conditional-shipping.css', array(), WOO_CONDITIONAL_SHIPPING_ASSETS_VERSION );
-    
-		$ajax_url = add_query_arg( array(
-			'action' => 'wcs_toggle_ruleset',
-		), admin_url( 'admin-ajax.php' ) );
+   * Add admin JS
+   */
+  public function admin_enqueue_scripts() {
+    // Only load on Conditional Shipping page to avoid JS conflicts
+	  if ( ! isset( $_GET['section'] ) || $_GET['section'] !== 'woo_conditional_shipping' ) {
+		  return;
+	  }
 
-		wp_localize_script( 'woo_conditional_shipping_admin_js', 'woo_conditional_shipping', array(
-			'ajax_url' => $ajax_url,
-		) );
+    wp_enqueue_script( 'jquery-ui-autocomplete' );
+    wp_enqueue_script( 'woo_conditional_shipping_admin_js', WOO_CONDITIONAL_SHIPPING_URL . 'admin/js/woo-conditional-shipping.js', [ 'jquery', 'wp-util', 'jquery-ui-sortable', 'jquery-ui-datepicker', 'jquery-ui-dialog' ], WOO_CONDITIONAL_SHIPPING_ASSETS_VERSION );
+    
+    wp_enqueue_style( 'woo_conditional_shipping_admin_css', WOO_CONDITIONAL_SHIPPING_URL . 'admin/css/woo-conditional-shipping.css', [], WOO_CONDITIONAL_SHIPPING_ASSETS_VERSION );
+    
+    wp_localize_script( 'woo_conditional_shipping_admin_js', 'woo_conditional_shipping', [
+      'ajax_urls' => [
+        'toggle_ruleset' => admin_url( 'admin-ajax.php?action=wcs_toggle_ruleset' ),
+        'welcome_submit' => admin_url( 'admin-ajax.php?action=wcs_welcome_submit' ),
+      ],
+      'nonces' => [
+        'ruleset_toggle' => wp_create_nonce( 'wcs-toggle-ruleset' ),
+        'welcome_submit' => wp_create_nonce( 'wcs-welcome-submit' ),
+      ]
+    ] );
+  }
+
+  /**
+   * Dequeue scripts
+   */
+  public function admin_dequeue_scripts() {
+    // Only run on Conditional Shipping page
+	  if ( ! isset( $_GET['section'], $_GET['ruleset_id'] ) || $_GET['section'] !== 'woo_conditional_shipping' || empty( $_GET['ruleset_id'] ) ) {
+		  return;
+	  }
+
+    // Dequeue WooCommerce admin settings because its editPrompt
+    // decreases performance when clicking 'Add condition'
+    wp_dequeue_script( 'woocommerce_settings' );
   }
   
   /**
    * Register section under "Shipping" settings in WooCommerce
    */
   public function register_section( $sections ) {
-    $sections['woo_conditional_shipping'] = __( 'Conditions', 'woo-conditional-shipping' );
+    $sections['woo_conditional_shipping'] = __( 'Conditions', 'conditional-shipping-for-woocommerce' );
 
     return $sections;
 	}
@@ -79,37 +103,91 @@ class Woo_Conditional_Shipping_Admin {
     global $current_section;
     global $hide_save_button;
 
-    if ( 'woo_conditional_shipping' === $current_section ) {
-			if ( isset( $_REQUEST['ruleset_id'] ) ) {
-        $hide_save_button = true;
-
-        if ( $_REQUEST['ruleset_id'] === 'new' ) {
-          $ruleset_id = false;
-        } else {
-          $ruleset_id = wc_clean( wp_unslash( $_REQUEST['ruleset_id'] ) );
-        }
-
-        if ( $ruleset_id && isset( $_REQUEST['action'] ) && 'delete' === $_REQUEST['action'] ) {
-          wp_delete_post( $ruleset_id, false );
-
-          $url = admin_url( 'admin.php?page=wc-settings&tab=shipping&section=woo_conditional_shipping' );
-          wp_safe_redirect( $url );
-          exit;
-        }
-
-        $ruleset = new Woo_Conditional_Shipping_Ruleset( $ruleset_id );
-
-        include 'views/ruleset.html.php';
-      } else {
-        $hide_save_button = true;
-
-        $rulesets = woo_conditional_shipping_get_rulesets();
-
-        $health = $this->health_check();
-        
-        include 'views/settings.html.php';
-      }
+    if ( 'woo_conditional_shipping' !== $current_section ) {
+      return;
     }
+
+    $action = isset( $_GET['action'] ) ? $_GET['action'] : false;
+    $ruleset_id = isset( $_GET['ruleset_id'] ) ? $_GET['ruleset_id'] : false;
+    $hide_save_button = true;
+
+    if ( $ruleset_id ) {
+      if ( $ruleset_id === 'new' ) {
+        $ruleset_id = false;
+      } else {
+        $ruleset_id = absint( wc_clean( wp_unslash( $ruleset_id ) ) );
+      }
+
+      // Delete ruleset
+      if ( $ruleset_id && 'delete' === $action && 'wcs_ruleset' === get_post_type( $ruleset_id ) ) {
+        check_ajax_referer( 'wcs-delete-ruleset' );
+
+        wp_delete_post( $ruleset_id, false );
+
+        $this->store_conditions( $ruleset_id, true );
+
+        $url = admin_url( 'admin.php?page=wc-settings&tab=shipping&section=woo_conditional_shipping' );
+        wp_safe_redirect( $url );
+        exit;
+      }
+      
+      // Duplicate ruleset
+      if ( $ruleset_id && 'duplicate' === $action && 'wcs_ruleset' === get_post_type( $ruleset_id ) ) {
+        check_ajax_referer( 'wcs-duplicate-ruleset' );
+
+        $cloned_ruleset_id = $this->clone_ruleset( $ruleset_id );
+
+        wp_safe_redirect( admin_url( 'admin.php?page=wc-settings&tab=shipping&section=woo_conditional_shipping&ruleset_id=' . $cloned_ruleset_id ) );
+        exit;
+      }
+
+      $ruleset = new Woo_Conditional_Shipping_Ruleset( $ruleset_id );
+
+      include 'views/ruleset.html.php';
+    } else {
+      $rulesets = woo_conditional_shipping_get_rulesets();
+      
+      $add_ruleset_url = admin_url( 'admin.php?page=wc-settings&tab=shipping&section=woo_conditional_shipping&ruleset_id=new' );
+
+      $health = $this->health_check();
+      
+      include apply_filters( 'wcs_settings_tmpl', 'views/settings.html.php' );
+    }
+  }
+
+  /**
+   * Clone ruleset
+   */
+  public function clone_ruleset( $ruleset_id ) {
+    $ruleset = get_post( $ruleset_id );
+
+    $post_id = wp_insert_post( [
+      'post_type' => 'wcs_ruleset',
+      'post_title' => sprintf( __( '%s (Clone)', 'conditional-shipping-for-woocommerce' ), $ruleset->post_title ),
+      'post_status' => 'publish',
+    ] );
+
+    $meta_keys = [
+      '_wcs_operator', '_wcs_conditions', '_wcs_actions',
+    ];
+
+    foreach ( $meta_keys as $meta_key ) {
+      $values = get_post_meta( $ruleset->ID, $meta_key, true );
+
+      // Generate GUIDs for actions and conditions
+      if ( in_array( $meta_key, [ '_wcs_actions', '_wcs_conditions' ], true ) && is_array( $values ) ) {
+        foreach ( $values as $key => $value ) {
+          $values[$key]['guid'] = uniqid();
+        }
+      }
+
+      update_post_meta( $post_id, $meta_key, $values );
+    }
+
+    // Cloned ruleset should be disabled by default
+    update_post_meta( $post_id, '_wcs_enabled', 0 ); 
+
+    return $post_id;
   }
 
   /**
@@ -119,8 +197,25 @@ class Woo_Conditional_Shipping_Admin {
     global $current_section;
     
     if ( 'woo_conditional_shipping' === $current_section && isset( $_POST['wcs_settings'] ) ) {
-      update_option( 'wcs_debug_mode', ( isset( $_POST['wcs_debug_mode'] ) && $_POST['wcs_debug_mode'] ) );
+      $debug = '';
+      if ( isset( $_POST['wcs_debug_mode'] ) && in_array( $_POST['wcs_debug_mode'], [ '', 'admin', '1' ], true ) ) {
+        $debug = $_POST['wcs_debug_mode'];
+      }
+
+      update_option( 'wcs_debug_mode', $debug );
       update_option( 'wcs_disable_all', ( isset( $_POST['wcs_disable_all'] ) && $_POST['wcs_disable_all'] ) );
+
+      // Ruleset ordering
+      $ruleset_order = isset( $_POST['wcs_ruleset_order'] ) ? wc_clean( wp_unslash( $_POST['wcs_ruleset_order'] ) ) : '';
+      $order = [];
+      if ( is_array( $ruleset_order ) && count( $ruleset_order ) > 0 ) {
+        $loop = 0;
+        foreach ( $ruleset_order as $ruleset_id ) {
+          $order[ esc_attr( $ruleset_id ) ] = $loop;
+          $loop++;
+        }
+      }
+      update_option( 'wcs_ruleset_order', $order );
 
       // Increments the transient version to invalidate cache.
       WC_Cache_Helper::get_transient_version( 'shipping', true );
@@ -161,16 +256,47 @@ class Woo_Conditional_Shipping_Admin {
       update_post_meta( $post->ID, '_wcs_operator', $operator );
 
       $conditions = isset( $_POST['wcs_conditions'] ) ? $_POST['wcs_conditions'] : array();
-      update_post_meta( $post->ID, '_wcs_conditions', array_values( (array) $conditions ) );
+      update_post_meta( $post->ID, '_wcs_conditions', $this->preprocess_conditions( array_values( (array) $conditions ) ) );
 
       $actions = isset( $_POST['wcs_actions'] ) ? $_POST['wcs_actions'] : array();
-			update_post_meta( $post->ID, '_wcs_actions', array_values( (array) $actions ) );
-			
-			$enabled = ( isset( $_POST['ruleset_enabled'] ) && $_POST['ruleset_enabled'] ) ? 'yes' : 'no';
-			update_post_meta( $post->ID, '_wcs_enabled', $enabled );
+
+      // Generate GUIDs for actions
+      foreach ( $actions as $key => $action ) {
+        if ( ! isset( $action['guid'] ) || empty( $action['guid'] ) ) {
+          $actions[$key]['guid'] = uniqid();
+        }
+      }
+
+      update_post_meta( $post->ID, '_wcs_actions', array_values( (array) $actions ) );
+      
+      $enabled = ( isset( $_POST['ruleset_enabled'] ) && $_POST['ruleset_enabled'] ) ? 'yes' : 'no';
+      update_post_meta( $post->ID, '_wcs_enabled', $enabled );
+
+      $pro_features = isset( $_POST['wcs_pro_features'] ) ? (bool) $_POST['wcs_pro_features'] : false;
+      update_option( 'wcs_pro_features', ($pro_features ? '1' : '0') );
 
       // Increments the transient version to invalidate cache.
-		  WC_Cache_Helper::get_transient_version( 'shipping', true );
+      WC_Cache_Helper::get_transient_version( 'shipping', true );
+
+      // Register strings for WPML
+      if ( function_exists( 'icl_object_id' ) ) {
+        foreach ( $actions as $key => $action ) {
+          if ( $action['type'] === 'set_title' ) {
+            do_action( 'wpml_register_single_string', 'WooCommerce Conditional Shipping Pro', sprintf( 'Shipping method title (GUID: %s)', $action['guid'] ), $action['title'] );
+          }
+
+          if ( $action['type'] === 'custom_error_msg' ) {
+            do_action( 'wpml_register_single_string', 'WooCommerce Conditional Shipping Pro', sprintf( 'No shipping message (GUID: %s)', $action['guid'] ), $action['error_msg'] );
+          }
+
+          if ( $action['type'] === 'shipping_notice' ) {
+            do_action( 'wpml_register_single_string', 'WooCommerce Conditional Shipping Pro', sprintf( 'Shipping notice (GUID: %s)', $action['guid'] ), $action['notice'] );
+          }
+        }
+      }
+
+      // Store conditions
+      $this->store_conditions( $post->ID );
 
       $url = add_query_arg( array(
         'ruleset_id' => $post->ID,
@@ -179,11 +305,76 @@ class Woo_Conditional_Shipping_Admin {
       exit;
     }
   }
+
+  /**
+   * Store what fields are used so we can trigger
+   * checkout updates
+   */
+  public function store_conditions( $ruleset_id, $delete = false ) {
+    $ruleset_fields = get_option( 'wcs_ruleset_fields', [] );
+
+    if ( $delete ) {
+      unset( $ruleset_fields[$ruleset_id] );
+      update_option( 'wcs_ruleset_fields', $ruleset_fields );
+      return;
+    }
+
+    $ruleset = new Woo_Conditional_Shipping_Ruleset( $ruleset_id );
+
+    // If ruleset is disabled, delete fields
+    if ( ! $ruleset->get_enabled() ) {
+      unset( $ruleset_fields[$ruleset_id] );
+      update_option( 'wcs_ruleset_fields', $ruleset_fields );
+      return;
+    }
+
+    $fields = [
+      'billing_first_name', 'billing_last_name', 'billing_company',
+      'shipping_first_name', 'shipping_last_name', 'shipping_company',
+      'billing_email', 'billing_phone',
+    ];
+
+    $found_fields = [];
+    foreach ( $ruleset->get_conditions() as $condition ) {
+      if ( in_array( $condition['type'], $fields, true ) ) {
+        $found_fields[] = $condition['type'];
+      }
+
+      // Special handling for "previous orders - match guests by email"
+      if ( $condition['type'] === 'orders' && isset( $condition['orders_match_guests_by_email'] ) && $condition['orders_match_guests_by_email'] ) {
+        $found_fields[] = 'billing_email';
+      }
+    }
+
+    $ruleset_fields[$ruleset_id] = array_unique( $found_fields );
+
+    update_option( 'wcs_ruleset_fields', $ruleset_fields );
+  }
+
+  /**
+   * Preprocess conditions
+   */
+  public function preprocess_conditions( $conditions ) {
+    $conditions = array_values( $conditions );
+
+    foreach ( $conditions as $key => $condition ) {
+      if ( isset( $condition['value'] ) && ! empty( $condition['value'] ) ) {
+        $conditions[$key]['value'] = trim( $condition['value'] );
+      }
+
+      if ( isset( $condition['coupon_ids'] ) && is_array( $condition['coupon_ids'] ) ) {
+        $conditions[$key]['coupon_ids'] = array_values( array_unique( $condition['coupon_ids'] ) );
+      }
+    }
+
+    return $conditions;
+  }
   
   /**
-   * Toggle reulset
+   * Toggle ruleset
    */
   public function toggle_ruleset() {
+    check_ajax_referer( 'wcs-toggle-ruleset', 'security' );
     if ( ! current_user_can( 'manage_woocommerce' ) ) {
       http_response_code( 403 );
       die( 'Permission denied' );
@@ -201,15 +392,14 @@ class Woo_Conditional_Shipping_Admin {
       // Increments the transient version to invalidate cache.
 		  WC_Cache_Helper::get_transient_version( 'shipping', true );
 
-      echo json_encode( array(
+      $this->store_conditions( $post->ID );
+
+      wp_send_json( [
         'enabled' => ( get_post_meta( $post->ID, '_wcs_enabled', true ) === 'yes' ),
-      ) );
-      
-      die;
+      ], 200 );
     }
 
-    http_response_code(422);
-    die;
+    wp_send_json( null, 422 );
   }
 
   /**
@@ -234,6 +424,7 @@ class Woo_Conditional_Shipping_Admin {
 
     $shipping_method_actions = array(
       'enable_shipping_methods', 'disable_shipping_methods',
+      'enable_shipping_methods_new',
       'set_price', 'increase_price', 'decrease_price',
     );
 

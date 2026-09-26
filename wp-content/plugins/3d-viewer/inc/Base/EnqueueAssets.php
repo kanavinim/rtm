@@ -1,52 +1,89 @@
 <?php
+
+
 namespace BP3D\Base;
 
-class EnqueueAssets{
-
-    public function register(){
-        add_action('admin_enqueue_scripts', [$this, 'enqueueBackendFiles']);
-        add_action('wp_enqueue_scripts', [$this, 'enqueueFrontEndFiles']);
-        add_filter('script_loader_tag', [$this, 'b3dviewer_script_type_load'] , 10, 3);
-    }
-
-    
-    public function b3dviewer_script_type_load($tag, $handle, $src){
-        // if not your script, do nothing and return original $tag
-        if ( 'bp3d-model-viewer' !== $handle ) {
-            return $tag;
-        }
-        // change the script tag by adding type="module" and return it.
-        $tag = '<script type="module" src="' . esc_url( $src ) . '"></script>';
-        return $tag;
-    }
-
-    public function enqueueFrontEndFiles(){
-        wp_register_style( 'bp3d-slick-theme', BP3D_DIR . 'public/css/slick-theme.css' );
-        wp_register_style( 'bp3d-slick-css', BP3D_DIR . 'public/css/slick.css' );
-        wp_register_style( 'bp3d-custom-style', BP3D_DIR . 'public/css/custom-style.css', ['bp3d-slick-theme', 'bp3d-slick-css'],  BP3D_VERSION);
-
-        wp_register_script('bp3d-model-viewer', BP3D_DIR.'public/js/model-viewer.min.js', [ 'jquery', 'bp3d-slick' ], '1.0.0', true );
-        wp_register_script('bp3d-slick',BP3D_DIR . 'public/js/slick.min.js', [ 'jquery' ], BP3D_VERSION, true );
-        wp_register_script('bp3d-public', BP3D_DIR . 'dist/public.js', [ 'jquery', 'bp3d-slick', 'bp3d-model-viewer' ], BP3D_VERSION, true );
-
-        wp_localize_script( 'bp3d-public', 'assetsUrl', [
-            'siteUrl'   => site_url(),
-            'assetsUrl' => BP3D_DIR . '/public',
-        ]);
-    }
-
-    public function enqueueBackendFiles($hook_suffix){
-        global $post;
-        $post_type = isset($post->post_type) ? $post->post_type : null;
-        $woo_enabled = get_option('b3dviewer_enable_woocommerce', true);
-
-        //script
-        wp_enqueue_script('bp3d-admin-script', BP3D_DIR . 'public/js/admin-script.js', [ 'jquery' ], BP3D_VERSION, true );
-        // style
-        wp_register_style('bp3d-admin-style', BP3D_DIR . 'public/css/admin-style.css', [], BP3D_VERSION );
-        wp_register_style('bp3d-readonly-style', BP3D_DIR . 'public/css/readonly.css',[], BP3D_VERSION );
-        wp_enqueue_style( 'bp3d-admin-style' );
-        wp_enqueue_style( 'bp3d-readonly-style' );
-    }
+if (!defined('ABSPATH')) {
+    exit;
 }
 
+/**
+ * Asset enqueue handler.
+ *
+ * Registers and enqueues all frontend and backend scripts/styles
+ * for the 3D Viewer plugin.
+ */
+class EnqueueAssets
+{
+    /**
+     * Register WordPress hooks for asset enqueuing.
+     */
+    public function register(): void
+    {
+        add_action('admin_enqueue_scripts', [$this, 'enqueueBackendFiles']);
+        add_filter('script_loader_tag', [$this, 'addModuleTypeAttribute'], 10, 3);
+    }
+
+    /**
+     * Add type="module" attribute to the model-viewer script tag.
+     */
+    public function addModuleTypeAttribute($tag, $handle, $src)
+    {
+        if ($handle !== 'bp3d-lib-model-viewer') {
+            return $tag;
+        }
+
+        // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedScript -- Modifying tag of an already enqueued script.
+        return '<script type="module" id="bp3d-lib-model-viewer-js" src="' . esc_url($src) . '"></script>';
+    }
+
+
+
+    /**
+     * Register and enqueue backend admin scripts and styles.
+     */
+    public function enqueueBackendFiles($hook_suffix)
+    {
+        global $post;
+
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $post_type = isset($post->post_type) ? $post->post_type : (isset($_GET['post_type']) ? sanitize_text_field(wp_unslash($_GET['post_type'] ?? '')) : null);
+
+        // Admin script & styles
+        wp_register_script('bp3d-admin-script', BP3D_DIR . 'build/admin.js', ['jquery'], BP3D_VERSION, true);
+        wp_register_style('bp3d-admin-style', BP3D_DIR . 'admin/css/admin-style.css', [], BP3D_VERSION);
+        if (in_array($post_type, ['bp3d-model-viewer', 'product'], true)) {
+            wp_enqueue_style('bp3d-admin-style');
+            wp_enqueue_style('bp3d-readonly-style');
+            wp_enqueue_script('bp3d-admin-script');
+        }
+
+        // Live model preview inside the metabox (bp3d-model-viewer edit screen only).
+        if ($post_type === 'bp3d-model-viewer' && in_array($hook_suffix, ['post.php', 'post-new.php'], true)) {
+            if (!wp_script_is('bp3d-lib-model-viewer', 'registered')) {
+                wp_register_script('bp3d-lib-model-viewer', BP3D_DIR . 'public/js/model-viewer.latest.min.js', [], BP3D_VERSION, true);
+            }
+            if (!wp_script_is('bp3d-lib-o3dviewer', 'registered')) {
+                wp_register_script('bp3d-lib-o3dviewer', BP3D_DIR . 'public/js/o3dv.min.js', [], BP3D_VERSION, true);
+            }
+            wp_enqueue_script('bp3d-lib-model-viewer');
+            wp_enqueue_script('bp3d-lib-o3dviewer');
+
+            wp_enqueue_style('bp3d-admin-preview', BP3D_DIR . 'build/admin-preview.css', [], BP3D_VERSION);
+            wp_enqueue_script(
+                'bp3d-admin-preview',
+                BP3D_DIR . 'build/admin-preview.js',
+                ['react', 'react-dom', 'wp-i18n'],
+                BP3D_VERSION,
+                true
+            );
+            wp_set_script_translations('bp3d-admin-preview', '3d-viewer', BP3D_PATH . 'languages');
+            wp_localize_script('bp3d-admin-preview', 'bp3dPreview', [
+                'modelViewerSrc' => BP3D_DIR . 'public/js/model-viewer.latest.min.js',
+                'o3dviewerSrc' => BP3D_DIR . 'public/js/o3dv.min.js',
+            ]);
+        }
+
+    }
+
+}

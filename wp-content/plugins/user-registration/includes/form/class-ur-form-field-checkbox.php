@@ -46,12 +46,26 @@ class UR_Form_Field_Checkbox extends UR_Form_Field {
 		);
 
 		$this->field_defaults = array(
-			'default_label'      => esc_html__( 'Checkbox', 'user-registration' ),
-			'default_field_name' => 'check_box_' . ur_get_random_number(),
-			'default_options'    => array(
+			'default_label'         => esc_html__( 'Checkbox', 'user-registration' ),
+			'default_field_name'    => 'check_box_' . ur_get_random_number(),
+			'default_options'       => array(
 				esc_html__( 'First Choice', 'user-registration' ),
 				esc_html__( 'Second Choice', 'user-registration' ),
 				esc_html__( 'Third Choice', 'user-registration' ),
+			),
+			'default_image_options' => array(
+				array(
+					'label' => __( 'First Choice', 'user-registration' ),
+					'image' => '',
+				),
+				array(
+					'label' => __( 'Second Choice', 'user-registration' ),
+					'image' => '',
+				),
+				array(
+					'label' => __( 'Third Choice', 'user-registration' ),
+					'image' => '',
+				),
 			),
 		);
 	}
@@ -75,7 +89,7 @@ class UR_Form_Field_Checkbox extends UR_Form_Field {
 	public function validation( $single_form_field, $form_data, $filter_hook, $form_id ) {
 		// Custom Field Validation here..
 
-		$field_label = $single_form_field->general_setting->label;
+		$field_label = $single_form_field->general_setting->field_name;
 		$value       = $form_data->value;
 
 		if ( ! empty( $single_form_field->advance_setting->choice_limit ) ) {
@@ -84,14 +98,16 @@ class UR_Form_Field_Checkbox extends UR_Form_Field {
 			$limit         = $single_form_field->advance_setting->choice_limit;
 
 			if ( $checked_count > $limit ) {
+				$message = array(
+					/* translators: %s - validation message */
+					$field_label => sprintf( __( 'Only %d options can be selected.', 'user-registration' ), $limit ),
+					'individual' => true,
+				);
 				add_filter(
 					$filter_hook,
-					function ( $msg ) use ( $limit, $field_label ) {
-						return sprintf(
-							'Only %d options can be selected for %s.',
-							$limit,
-							"<strong>$field_label</strong>"
-						);
+					function ( $msg ) use ( $message, $form_data ) {
+						$message = apply_filters( 'user_registration_modify_field_validation_response', $message, $form_data );
+						return $message;
 					}
 				);
 			}

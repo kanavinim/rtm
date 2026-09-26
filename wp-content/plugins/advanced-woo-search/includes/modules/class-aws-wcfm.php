@@ -24,6 +24,8 @@ if ( ! class_exists( 'AWS_WCFM' ) ) :
          */
         protected static $_instance = null;
 
+        private $data = array();
+
         /**
          * Main AWS_WCFM Instance
          *
@@ -49,6 +51,14 @@ if ( ! class_exists( 'AWS_WCFM' ) ) :
             add_filter( 'aws_search_query_array', array( $this, 'wcfm_search_query_array' ), 1 );
             add_filter( 'aws_terms_search_query', array( $this, 'wcfm_terms_search_query' ), 1, 2 );
             add_filter( 'aws_search_tax_results', array( $this, 'wcfm_search_tax_results' ), 1 );
+            add_filter( 'aws_indexed_content', array( $this, 'aws_indexed_content' ), 1, 3 );
+            add_action( 'wp_head', array( $this, 'wp_head' ), 1 );
+
+            // Stores list
+            add_filter( 'aws_searchbox_markup', array( $this, 'aws_searchbox_markup' ), 1 );
+            add_action( 'wcfmmp_store_lists_before_sidabar', array( $this, 'wcfmmp_store_lists_before_sidabar' ), 1 );
+            add_action( 'wcfmmp_store_lists_after_sidebar', array( $this, 'wcfmmp_store_lists_after_sidebar' ), 999 );
+
         }
 
         /*
@@ -56,7 +66,9 @@ if ( ! class_exists( 'AWS_WCFM' ) ) :
          */
         function wcfm_excerpt_search_result( $excerpt, $post_id, $product ) {
 
-            if ( function_exists( 'wcfm_get_vendor_id_by_post' ) ) {
+            $show_vendor_info = apply_filters( 'show_wcfm_badge', true, $product );
+
+            if ( $show_vendor_info && function_exists( 'wcfm_get_vendor_id_by_post' ) ) {
 
                 $vendor_id = wcfm_get_vendor_id_by_post( $post_id );
 
@@ -130,6 +142,8 @@ if ( ! class_exists( 'AWS_WCFM' ) ) :
          */
         public function wcfm_search_query_array( $query ) {
 
+            global $wpdb;
+
             $vendor_id = false;
 
             if ( isset( $_REQUEST['aws_tax'] ) && $_REQUEST['aws_tax'] && strpos( $_REQUEST['aws_tax'], 'store:' ) !== false ) {
@@ -143,23 +157,7 @@ if ( ! class_exists( 'AWS_WCFM' ) ) :
 
             if ( $vendor_id ) {
 
-                $store_products = get_posts( array(
-                    'posts_per_page'      => -1,
-                    'fields'              => 'ids',
-                    'post_type'           => 'product',
-                    'post_status'         => 'publish',
-                    'ignore_sticky_posts' => true,
-                    'suppress_filters'    => true,
-                    'no_found_rows'       => 1,
-                    'orderby'             => 'ID',
-                    'order'               => 'DESC',
-                    'lang'                => '',
-                    'author'              => $vendor_id
-                ) );
-
-                if ( $store_products ) {
-                    $query['search'] .= " AND ( id IN ( " . implode( ',', $store_products ) . " ) )";
-                }
+                $query['search'] .= " AND ( id IN ( SELECT {$wpdb->posts}.ID FROM {$wpdb->posts} WHERE {$wpdb->posts}.post_author = {$vendor_id} ) )";
 
             }
 
@@ -172,7 +170,7 @@ if ( ! class_exists( 'AWS_WCFM' ) ) :
          */
         public function wcfm_terms_search_query( $sql, $taxonomy ) {
 
-            global $wpdb;
+            global $wpdb, $WCFMmp;
 
             $store = false;
 
@@ -186,8 +184,13 @@ if ( ! class_exists( 'AWS_WCFM' ) ) :
             if ( $store ) {
                 $all_vendor_tax = array();
                 foreach ( $taxonomy as $taxonomy_slug ) {
-                    $vendor_tax = $store->get_store_taxonomies( $taxonomy_slug );
+                    $vendor_tax = $WCFMmp->wcfmmp_vendor->wcfmmp_get_vendor_taxonomy( $vendor_id, $taxonomy_slug );
                     if ( ! empty( $vendor_tax) ) {
+                        foreach ( $vendor_tax as $vendor_tax_key => $vendor_tax_i ) {
+                            if ( is_array( $vendor_tax_i ) ) {
+                                $vendor_tax[$vendor_tax_key] = implode('', array_values($vendor_tax_i) );
+                            }
+                        }
                         $all_vendor_tax = array_merge( $all_vendor_tax, $vendor_tax );
                     }
                 }
@@ -230,6 +233,68 @@ if ( ! class_exists( 'AWS_WCFM' ) ) :
 
             return $result_array;
 
+        }
+
+        /*
+         * Add product vendor name inside index table
+         */
+        public function aws_indexed_content( $content, $id, $product ) {
+
+            if ( function_exists( 'wcfm_get_vendor_store_name_by_post' ) ) {
+                $vendor_name = wcfm_get_vendor_store_name_by_post( $id );
+                if ( $vendor_name ) {
+                    $content .= ' ' . $vendor_name;
+                }
+            }
+
+            return $content;
+        }
+
+        /*
+         * Limit search inside vendor shop page
+         */
+        function wp_head() {
+
+            $store = $this->get_current_store();
+            if ( ! $store ) {
+                return;
+            }
+
+            $form_action = AWS_Helpers::get_search_url();
+
+            ?>
+
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    let $awsForms = jQuery(".aws-container");
+                    if ( $awsForms.length > 0 ) {
+                        $awsForms.each(function( index ) {
+                            if ( ! jQuery(this).closest("#wcfmmp-store").length > 0 && ! jQuery(this).closest("#wcfmmp-store-content").length > 0 ) {
+                                jQuery(this).find('form').attr('action', '<?php echo $form_action; ?>');
+                                jQuery(this).data('tax', '');
+                            }
+                        });
+                    }
+                });
+            </script>
+
+        <?php }
+
+        /*
+         * Search form inside stores list page
+         */
+        public function aws_searchbox_markup( $markup ) {
+            if ( isset( $this->data['is_stores_sidebar'] ) && $this->data['is_stores_sidebar'] ) {
+                $markup = str_replace( '<form', '<div', $markup );
+                $markup = str_replace( '</form>', '</div>', $markup );
+            }
+            return $markup;
+        }
+        public function wcfmmp_store_lists_before_sidabar() {
+            $this->data['is_stores_sidebar'] = true;
+        }
+        public function wcfmmp_store_lists_after_sidebar() {
+            $this->data['is_stores_sidebar'] = false;
         }
 
         /*

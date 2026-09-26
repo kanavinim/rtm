@@ -56,7 +56,7 @@ abstract class THWVSF_Admin_Settings {
 
 				$active = ( $current_tab == $id ) ? 'nav-tab-active' : '';
 				$label = $label;
-				echo '<a class="nav-tab '.$active.'" href="'. $this->get_admin_url($id) .'">'.$label.'</a>';
+				echo '<a class="nav-tab '.esc_attr($active).'" href="'. esc_url($this->get_admin_url($id)) .'">'.esc_html($label).'</a>';
 
 			} ?>
 		</h2>
@@ -83,9 +83,12 @@ abstract class THWVSF_Admin_Settings {
 			), $atts );
 		
 			$ftype     = isset($field['type']) ? $field['type'] : 'text';
-			$flabel    = isset($field['label']) && !empty($field['label']) ? __($field['label'],'') : '';
-			$sub_label = isset($field['sub_label']) && !empty($field['sub_label']) ? __($field['sub_label'],'') : '';
-			$tooltip   = isset($field['hint_text']) && !empty($field['hint_text']) ? __($field['hint_text'],'') : '';
+			// phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
+			$flabel    = isset($field['label']) && !empty($field['label']) ? __($field['label'],'product-variation-swatches-for-woocommerce') : '';
+			// phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
+			$sub_label = isset($field['sub_label']) && !empty($field['sub_label']) ? __($field['sub_label'],'product-variation-swatches-for-woocommerce') : '';
+			// phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
+			$tooltip   = isset($field['hint_text']) && !empty($field['hint_text']) ? __($field['hint_text'],'product-variation-swatches-for-woocommerce') : '';
 			
 			$field_html = '';
 			
@@ -120,7 +123,7 @@ abstract class THWVSF_Admin_Settings {
 				
 				$label_cell_props = !empty($args['label_cell_props']) ? $args['label_cell_props'] : '';
 				$input_cell_props = !empty($args['input_cell_props']) ? $args['input_cell_props'] : '';
-				
+				// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
 				?>
 				<td <?php echo $label_cell_props ?> >
 					<?php echo $flabel; echo $required_html; 
@@ -129,6 +132,7 @@ abstract class THWVSF_Admin_Settings {
 						<br/><span class="thpladmin-subtitle"><?php echo $sub_label; ?></span>
 						<?php
 					}
+					// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
 					?>
 				</td>
 			
@@ -234,6 +238,7 @@ abstract class THWVSF_Admin_Settings {
 			$field_html = '<select multiple="multiple" '. $field_props .' class="thpladmin-enhanced-multi-select" >';
 			foreach($field['options'] as $value => $label){
 				//$selected = $value === $fvalue ? 'selected' : '';
+				// phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
 				$label = __($label, 'product-variation-swatches-for-woocommerce');
 				$field_html .= '<option value="'. trim($value) .'" >'. $label .'</option>';
 			}
@@ -271,7 +276,8 @@ abstract class THWVSF_Admin_Settings {
 				$selected = $value === $fvalue ? 'rad-selected' : '';	
 				
 				$img_layout = '';
-				$flabel = isset($label['name']) && !empty($label['name']) ? __($label['name'],'') : '';
+				// phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
+				$flabel = isset($label['name']) && !empty($label['name']) ? __($label['name'],'product-variation-swatches-for-woocommerce') : '';
 				$onchange = ( isset($field['onchange']) && !empty($field['onchange']) ) ? ' onclick="'.$field['onchange'].'"' : '';
 				$img_layout = isset($label['layout_image']) && !empty($label['layout_image']) ? $label['layout_image'] : '';				
 				$field_html .='<label  '. $args['label_props'] .' '.$onchange.' class=" '.$value.' '.$selected.'" data-value="'. trim($value) .'"> ';
@@ -335,7 +341,8 @@ abstract class THWVSF_Admin_Settings {
 			), $atts );
 			
 			$fid 	= 'i_'. $field['name'].$design_id;
-			$flabel = isset($field['label']) && !empty($field['label']) ? __($field['label']) : '';
+			// phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
+			$flabel = isset($field['label']) && !empty($field['label']) ? __($field['label'], 'product-variation-swatches-for-woocommerce') : '';
 			$field_props  = $this->prepare_form_field_props($field, $atts,$design_id);
 			$field_props .= $field['checked'] ? ' checked' : '';
 			$field_html .= '<input type="checkbox" class="thwvs-checkbox" id="'. $fid .'" '. $field_props .' />';
@@ -435,7 +442,8 @@ abstract class THWVSF_Admin_Settings {
 
 	public function render_form_tab_sub_title($title, $props=array()){
 
-		$tooltip   = isset($props['hint_text']) && !empty($props['hint_text']) ? __($props['hint_text'],'') : '';
+		// phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText
+		$tooltip   = isset($props['hint_text']) && !empty($props['hint_text']) ? __($props['hint_text'], 'product-variation-swatches-for-woocommerce') : '';
 		?>
 		<tr valign="top"><td colspan="3" style="height:10px;"></td></tr>
 		<tr valign="top">

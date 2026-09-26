@@ -191,6 +191,7 @@ tr.number_field_ci input {
 .notice.ciplugin-review {
     border: 0px;
     padding: 10px 20px;
+    margin-left: 0px;
 }
 .ciplugin-offer {
     padding: 10px 25px;
@@ -279,9 +280,16 @@ a.cit-admin-pro-notice span {
     color: #fff;
     font-size: 16px;
 }
-p#footer-left .dashicons-star-filled {
-    color: #fdb72c;
-    font-size: 13px;
-    display: inherit;
-    line-height: inherit;
+.csf-onload.wpgs-variaiton-wrapper .csf-title {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+
+.csf-onload.wpgs-variaiton-wrapper  .csf-field {
+
+    padding: 10px 30px;
+}
+.csf-onload.wpgs-variaiton-wrapper  .csf-fieldset {
+    width: 100%;
 }

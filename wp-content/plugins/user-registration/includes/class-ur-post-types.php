@@ -25,6 +25,7 @@ class UR_Post_Types {
 		add_action( 'init', array( __CLASS__, 'register_post_types' ), 5 );
 		add_action( 'user_registration_after_register_post_type', array( __CLASS__, 'maybe_flush_rewrite_rules' ) );
 		add_action( 'user_registration_flush_rewrite_rules', array( __CLASS__, 'flush_rewrite_rules' ) );
+		add_action( 'deleted_post', array( __CLASS__, 'handle_form_deletion' ), 10, 2 );
 	}
 
 	/**
@@ -34,11 +35,21 @@ class UR_Post_Types {
 		if ( ! is_blog_installed() || post_type_exists( 'user_registration' ) ) {
 			return;
 		}
-
+		/**
+		 * Fires an action hook to perform additional tasks after registering the custom post type in User Registration.
+		 *
+		 * The 'user_registration_register_post_type' action allows developers to hook into the registration process
+		 * and execute custom code or tasks after the custom post type is successfully registered.
+		 */
 		do_action( 'user_registration_register_post_type' );
 
 		register_post_type(
 			'user_registration',
+			/**
+			 * Applies a filter to customize the arguments for registering the 'user_registration' custom post type.
+			 *
+			 * @param array $default_args The default arguments for registering the 'user_registration' post type.
+			 */
 			apply_filters(
 				'user_registration_post_type',
 				array(
@@ -74,7 +85,12 @@ class UR_Post_Types {
 				)
 			)
 		);
-
+		/**
+		 * Fires an action hook after completing the registration process of the custom post type in User Registration.
+		 *
+		 * The 'user_registration_after_register_post_type' action allows developers to hook into the registration process
+		 * and execute custom code or tasks after all actions related to registering the custom post type are completed.
+		 */
 		do_action( 'user_registration_after_register_post_type' );
 	}
 
@@ -95,6 +111,53 @@ class UR_Post_Types {
 	 */
 	public static function flush_rewrite_rules() {
 		flush_rewrite_rules();
+	}
+
+	/**
+	 * Handle form and page deletion and clean up related options.
+	 * Only triggers when post is permanently deleted from trash, not when moved to trash.
+	 *
+	 * @param int     $post_id Post ID.
+	 * @param WP_Post $post    Post object.
+	 */
+	public static function handle_form_deletion( $post_id, $post ) {
+		// Handle user_registration form deletion
+		if ( 'user_registration' === $post->post_type ) {
+			$default_form_id = get_option( 'user_registration_default_form_page_id', 0 );
+
+			if ( $default_form_id && $default_form_id == $post_id ) {
+				delete_option( 'user_registration_default_form_page_id' );
+				delete_option( 'user_registration_registration_form' );
+
+				$default_membership_form_id = get_option( 'user_registration_default_membership_form_id', 0 );
+				if ( $default_membership_form_id && $default_membership_form_id == $post_id ) {
+					delete_option( 'user_registration_default_membership_form_id' );
+				}
+				delete_option( 'ur_membership_default_membership_field_name' );
+			}
+		}
+
+		// Handle page deletion
+		if ( 'page' === $post->post_type ) {
+			// Define all page options that need to be checked
+			$page_options = array(
+				'user_registration_login_page_id',
+				'user_registration_lost_password_page_id',
+				'user_registration_reset_password_page_id',
+				'user_registration_member_registration_page_id',
+				'user_registration_thank_you_page_id',
+				'user_registration_myaccount_page_id',
+				'user_registration_membership_pricing_page_id',
+			);
+
+			// Check each option and delete if it matches the deleted page
+			foreach ( $page_options as $option_name ) {
+				$option_value = get_option( $option_name, 0 );
+				if ( $option_value && $option_value == $post_id ) {
+					delete_option( $option_name );
+				}
+			}
+		}
 	}
 }
 

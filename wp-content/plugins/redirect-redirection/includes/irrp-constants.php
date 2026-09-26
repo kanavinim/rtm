@@ -5,7 +5,8 @@ if (!defined("ABSPATH")) {
 }
 
 interface IRRPConstants {
-    
+
+    const SUPPORT_URL                        = "https://wordpress.org/support/plugin/redirect-redirection/";
     const PAGE_SETTINGS                     = "irrp-redirection";    
     const OPTIONS_MAIN                      = "irrp_redirection";    
     const OPTIONS_CRON_LOG_DELETE           = "irrp_cron_log_delete";    

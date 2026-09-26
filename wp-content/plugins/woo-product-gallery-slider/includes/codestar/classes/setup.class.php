@@ -12,7 +12,7 @@ if ( ! class_exists( 'CSF_Setup' ) ) {
 
     // Default constants
     public static $premium  = true;
-    public static $version  = '2.2.8';
+    public static $version  = '2.3.1';
     public static $dir      = '';
     public static $url      = '';
     public static $css      = '';
@@ -68,7 +68,7 @@ if ( ! class_exists( 'CSF_Setup' ) ) {
       do_action( 'csf_init' );
 
       // Setup textdomain
-      self::textdomain();
+      //self::textdomain();
 
       add_action( 'after_setup_theme', array( 'CSF', 'setup' ) );
       add_action( 'init', array( 'CSF', 'setup' ) );
@@ -483,6 +483,10 @@ if ( ! class_exists( 'CSF_Setup' ) ) {
 
           if ( ! empty( $field['accordions'] ) ) {
             self::set_used_fields( array( 'fields' => $field['accordions'] ) );
+          }
+
+          if ( ! empty( $field['elements'] ) ) {
+            self::set_used_fields( array( 'fields' => $field['elements'] ) );
           }
 
           if ( ! empty( $field['type'] ) ) {

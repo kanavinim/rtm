@@ -71,7 +71,7 @@ class UR_Form_Field_Date extends UR_Form_Field {
 	 */
 	public function validation( $single_form_field, $form_data, $filter_hook, $form_id ) {
 		$value       = $form_data->value;
-		$field_label = $single_form_field->general_setting->label;
+		$field_label = $single_form_field->general_setting->field_name;
 
 		if ( empty( $value ) ) {
 			return;
@@ -86,30 +86,38 @@ class UR_Form_Field_Date extends UR_Form_Field {
 		}
 
 		if ( $is_enable_date_range ) {
-			$dates = explode( 'to', $value );
+			$dates = array();
+			preg_match( '/(\d{4}-\d{2}-\d{2}|\d{2}-\d{2}-\d{4}|\d{2}\/\d{2}\/\d{4}|[A-Za-z]+\s\d{1,2},\s\d{4})\s*[\w\s]+\s*(\d{4}-\d{2}-\d{2}|\d{2}-\d{2}-\d{4}|\d{2}\/\d{2}\/\d{4}|[A-Za-z]+\s\d{1,2},\s\d{4})/', $value, $matches );
+
+			if ( count( $matches ) == 3 ) {
+				$dates = array( $matches[1], $matches[2] );
+			}
+
 			foreach ( $dates as $date ) {
 				$result = UR_Validation::is_date( trim( $date ) );
 
 				if ( is_wp_error( $result ) ) {
+					$message = array(
+						/* translators: %s - validation message */
+						$field_label => sprintf( __( 'Please select a valid date range.', 'user-registration' ) ),
+						'individual' => true,
+					);
 					add_filter(
 						$filter_hook,
-						function ( $field_label ) {
-							return sprintf(
-								/* translators: %s Field Label */
-								__( 'Please select a valid date range for %s.', 'user-registration' ),
-								$field_label
-							);
+						function ( $msg ) use ( $message, $form_data ) {
+							$message = apply_filters( 'user_registration_modify_field_validation_response', $message, $form_data );
+							return $message;
 						}
 					);
 				}
 
 				if ( $enabled_min_max ) {
 					if ( ! empty( $min_date ) ) {
-						$this->validate_min_date( $date, $min_date, $filter_hook, $field_label );
+						$this->validate_min_date( $date, $min_date, $filter_hook, $field_label, $form_data );
 					}
 
 					if ( ! empty( $max_date ) ) {
-						$this->validate_max_date( $date, $max_date, $filter_hook, $field_label );
+						$this->validate_max_date( $date, $max_date, $filter_hook, $field_label, $form_data );
 					}
 				}
 			}
@@ -120,14 +128,16 @@ class UR_Form_Field_Date extends UR_Form_Field {
 		$result = UR_Validation::is_date( trim( $value ) );
 
 		if ( is_wp_error( $result ) ) {
+			$message = array(
+				/* translators: %s - validation message */
+				$field_label => sprintf( __( 'Please select a valid date.', 'user-registration' ) ),
+				'individual' => true,
+			);
 			add_filter(
 				$filter_hook,
-				function () use ( $field_label ) {
-					return sprintf(
-						/* translators: %s Field Label */
-						__( 'Please select a valid date for %s.', 'user-registration' ),
-						"<strong>$field_label</strong>"
-					);
+				function ( $msg ) use ( $message, $form_data ) {
+					$message = apply_filters( 'user_registration_modify_field_validation_response', $message, $form_data );
+					return $message;
 				}
 			);
 		}
@@ -136,11 +146,11 @@ class UR_Form_Field_Date extends UR_Form_Field {
 
 		if ( $enabled_min_max ) {
 			if ( ! empty( $min_date ) ) {
-				$this->validate_min_date( $value, $min_date, $filter_hook, $field_label );
+				$this->validate_min_date( $value, $min_date, $filter_hook, $field_label, $form_data );
 			}
 
 			if ( ! empty( $max_date ) ) {
-				$this->validate_max_date( $value, $max_date, $filter_hook, $field_label );
+				$this->validate_max_date( $value, $max_date, $filter_hook, $field_label, $form_data );
 			}
 		}
 	}
@@ -153,22 +163,24 @@ class UR_Form_Field_Date extends UR_Form_Field {
 	 * @param [string] $min_date Min Date.
 	 * @param [string] $filter_hook Filter Hook.
 	 * @param [string] $field_label Field Label.
+	 * @param [object] $form_data Form Data.
 	 * @return void
 	 */
-	private function validate_min_date( $date, $min_date, $filter_hook, $field_label ) {
-		$date_timestamp     = strtotime( $date );
+	private function validate_min_date( $date, $min_date, $filter_hook, $field_label, $form_data ) {
+		$date_timestamp     = strtotime( str_replace( '/', '-', $date ) );
 		$min_date_timestamp = strtotime( $min_date );
 
 		if ( $date_timestamp < $min_date_timestamp ) {
+			$message = array(
+				/* translators: %s - validation message */
+				$field_label => sprintf( __( 'Please select a date after %s.', 'user-registration' ), $min_date ),
+				'individual' => true,
+			);
 			add_filter(
 				$filter_hook,
-				function() use ( $field_label, $min_date ) {
-					return sprintf(
-						/* translators: %s Field Label */
-						__( 'Please select a date after %1$s for %2$s.', 'user-registration' ),
-						$min_date,
-						$field_label
-					);
+				function ( $msg ) use ( $message, $form_data ) {
+					$message = apply_filters( 'user_registration_modify_field_validation_response', $message, $form_data );
+					return $message;
 				}
 			);
 		}
@@ -177,26 +189,28 @@ class UR_Form_Field_Date extends UR_Form_Field {
 	/**
 	 * Validate whether date is past the max date.
 	 *
-	 * @param [string] $date Date.
-	 * @param [string] $max_date Max Date.
-	 * @param [string] $filter_hook Filter Hook.
-	 * @param [string] $field_label Field Label.
+	 * @param [string]           $date Date.
+	 * @param [string]           $max_date Max Date.
+	 * @param [string]           $filter_hook Filter Hook.
+	 * @param [string]           $field_label Field Label.
+	 * @param [object] Form Data.
 	 * @return void
 	 */
-	private function validate_max_date( $date, $max_date, $filter_hook, $field_label ) {
-		$date_timestamp     = strtotime( $date );
+	private function validate_max_date( $date, $max_date, $filter_hook, $field_label, $form_data ) {
+		$date_timestamp     = strtotime( str_replace( '/', '-', $date ) );
 		$max_date_timestamp = strtotime( $max_date );
 
 		if ( $date_timestamp > $max_date_timestamp ) {
+			$message = array(
+				/* translators: %s - validation message */
+				$field_label => sprintf( __( 'Please select a date before %s', 'user-registration' ), $max_date ),
+				'individual' => true,
+			);
 			add_filter(
 				$filter_hook,
-				function() use ( $field_label, $max_date ) {
-					return sprintf(
-						/* translators: %s Field Label */
-						__( 'Please select a date before %1$s for %2$s.', 'user-registration' ),
-						$max_date,
-						$field_label
-					);
+				function ( $msg ) use ( $message, $form_data ) {
+					$message = apply_filters( 'user_registration_modify_field_validation_response', $message, $form_data );
+					return $message;
 				}
 			);
 		}

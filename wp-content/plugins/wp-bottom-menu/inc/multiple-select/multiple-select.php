@@ -1,5 +1,7 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 if ( ! class_exists( 'WP_Customize_Control' ) ) {
 	return null;
 }
@@ -36,8 +38,7 @@ class Customize_Control_Multiple_Select extends WP_Customize_Control {
             <select <?php $this->link(); ?> class="wp-bottom-menu-select2" multiple="multiple" style="width: 100%">
                 <?php
                 foreach ( $this->choices as $value => $label ) {
-                    $selected = ( in_array( $this->value(), $this->choices ) ) ? selected( 1, 1, false ) : '';
-                    echo '<option value="' . esc_attr( $value ) . '"' . $selected . '>' . $label . '</option>';
+                    echo '<option value="' . esc_attr( $value ) . '"' . selected( in_array( $this->value(), $this->choices ), true, false ) . '>' . esc_html( $label ) . '</option>';
                 }
                 ?>
             </select>

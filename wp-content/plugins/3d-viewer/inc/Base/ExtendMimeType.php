@@ -1,48 +1,94 @@
 <?php
+
 namespace BP3D\Base;
 
-class ExtendMimeType {
+use BP3D\Helper\Utils;
 
-    function register(){
-        global $wp_version;
-        add_filter( 'upload_mimes', [$this, 'bplugins_stp_mime_types'] );
+if (!defined('ABSPATH')) {
+    exit;
+}
 
-        if ( version_compare( $wp_version, '5.1') >= 0):
-            add_filter( 'wp_check_filetype_and_ext', [$this, 'bplugins_stp_add_allow_upload_extension_exception'], 10, 5);
-        else:
-            add_filter( 'wp_check_filetype_and_ext', [$this, 'bplugins_stp_add_allow_upload_extension_exception'], 10, 4);
-        endif;
+class ExtendMimeType
+{
+
+    public function register()
+    {
+        add_filter('upload_mimes', [$this, 'bplugins_stp_mime_types']);
+        add_filter('wp_check_filetype_and_ext', [$this, 'bplugins_stp_add_allow_upload_extension_exception'], 10, 5);
     }
 
-    function bplugins_stp_mime_types( $mimes ) {
-        // New allowed mime types.
-        $mimes['glb'] = 'model/gltf-binary';
-        $mimes['gltf'] = 'model/gltf-binary';
-        return $mimes;
+    public function getActiveMimeTypes()
+    {
+        return Utils::getAllowedMimeTypes();
     }
 
-    function bplugins_stp_add_allow_upload_extension_exception($data, $file, $filename,$mimes,$real_mime=null){
+    private function getFilteredMimeTypes(): array
+    {
+        $all_mimes = $this->getMimeTypes();
+        $allowed_keys = $this->getActiveMimeTypes();
+
+        $filtered = [];
+        foreach ($allowed_keys as $key) {
+            if (isset($all_mimes[$key])) {
+                $filtered[$key] = $all_mimes[$key];
+            }
+        }
+        return $filtered;
+    }
+
+    public function bplugins_stp_mime_types($mimes)
+    {
+        return wp_parse_args($mimes, $this->getFilteredMimeTypes());
+    }
+
+    public function bplugins_stp_add_allow_upload_extension_exception($data, $file, $filename, $mimes, $real_mime = null)
+    {
         // If file extension is 2 or more 
         $f_sp = explode(".", $filename);
-        $f_exp_count  = count ($f_sp);
-    
-        if($f_exp_count <= 1){
-            return $data;
-        }else{
-            $f_name = $f_sp[0];
-            $ext  = $f_sp[$f_exp_count - 1];
-        }
-    
-        if($ext == 'glb'){
-            $type = 'model/gltf-binary';
-            $proper_filename = '';
-            return compact('ext', 'type', 'proper_filename');
-        }if($ext == 'gltf'){
-            $type = 'model/gltf-binary';
-            $proper_filename = '';
-            return compact('ext', 'type', 'proper_filename');
-        }else {
+        $f_exp_count = count($f_sp);
+
+        if ($f_exp_count <= 1) {
             return $data;
         }
+
+        $ext = strtolower($f_sp[$f_exp_count - 1]);
+
+        $extendedMimes = $this->getFilteredMimeTypes();
+
+        if (isset($extendedMimes[$ext])) {
+            // A denial has to be spelled out: `$data` carries what core already
+            // decided, and core accepts these names because the upload_mimes
+            // filter above registered the extension. Returning it would pass
+            // the file through rather than block it.
+            $reject = ['ext' => false, 'type' => false, 'proper_filename' => false];
+
+            // Hardening: Stop double-extension execution bypass (e.g. script.php.glb)
+            $dangerous_extensions = [
+                'php', 'php3', 'php4', 'php5', 'php7', 'php8', 
+                'phtml', 'phar', 'cgi', 'pl', 'py', 'asp', 'aspx', 
+                'jsp', 'exe', 'bat', 'cmd', 'sh', 'js', 'html', 'htm'
+            ];
+            for ($i = 0; $i < $f_exp_count - 1; $i++) {
+                if (in_array(strtolower($f_sp[$i]), $dangerous_extensions, true)) {
+                    return $reject;
+                }
+            }
+
+            // Hardening: Prevent execution bypass if Magic Mime engine matches PHP
+            if ($real_mime !== null && strpos(strtolower($real_mime), 'php') !== false) {
+                return $reject;
+            }
+
+            $type = $extendedMimes[$ext];
+            $proper_filename = '';
+            return compact('ext', 'type', 'proper_filename');
+        }
+        return $data;
+    }
+
+    private function getMimeTypes(): array
+    {
+        return Utils::SUPPORTED_MIME_TYPES;
     }
 }
+

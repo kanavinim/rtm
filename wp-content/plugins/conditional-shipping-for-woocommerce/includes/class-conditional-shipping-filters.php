@@ -58,7 +58,12 @@ class Woo_Conditional_Shipping_Filters {
 	}
 	
   public static function filter_volume( $condition, $package ) {
-		$package_volume = self::calculate_package_volume( $package );
+		$package_volume = self::calculate_package_volume( $package, $condition );
+
+		$dimension_unit = get_option( 'woocommerce_dimension_unit' );
+		if ( in_array( $dimension_unit, [ 'mm', 'cm' ], true ) ) {
+		  $package_volume = wcs_convert_volume( $package_volume, $dimension_unit, 'm' );
+		}
 
 		if ( isset( $condition['value'] ) && ! empty( $condition['value'] ) ) {
 			$volume = self::parse_number( $condition['value'] );
@@ -74,8 +79,7 @@ class Woo_Conditional_Shipping_Filters {
 
 		if ( isset( $condition['value'] ) && ! empty( $condition['value'] ) ) {
 			$subtotal = self::parse_number( $condition['value'] );
-
-			$subtotal = apply_filters( 'woo_conditional_shipping_subtotal_condition_value', $condition['value'] );
+			$subtotal = apply_filters( 'wcs_convert_price', $subtotal );
 
 			return ! self::compare_numeric_value( $cart_subtotal, $subtotal, $condition['operator'] );
 		}
@@ -87,13 +91,22 @@ class Woo_Conditional_Shipping_Filters {
 		if ( isset( $condition['product_ids'] ) && ! empty( $condition['product_ids'] ) ) {
 			$condition_product_ids = self::merge_product_children_ids( $condition['product_ids'] );
 
-			$products = self::get_cart_products();
+			$products = self::get_cart_products( $package );
+
+			// Special handling for WPML
+			if ( function_exists( 'icl_object_id' ) ) {
+				$default_lang = apply_filters( 'wpml_default_language', NULL );
+				foreach ( $products as $product_id => $product ) {
+					$orig_id = apply_filters( 'wpml_object_id', $product_id, $product->post_type, true, $default_lang );
+
+					$products[$orig_id] = $product;
+				}
+			}
 
 			if ( ! empty( $products ) ) {
 				$product_ids = array_keys( $products );
+
 				return ! self::group_comparison( $product_ids, $condition_product_ids, $condition['operator'] );
-			} else {
-				#error_log( "No products in the order" );
 			}
 		}
 
@@ -105,9 +118,7 @@ class Woo_Conditional_Shipping_Filters {
 	 */
 	public static function get_cart_subtotal( $condition = false ) {
 		if ( $condition && isset( $condition['subset_filter'] ) && ! empty( $condition['subset_filter'] ) ) {
-			if ( strpos( $condition['subset_filter'], 'shipping_class_' ) !== false ) {
-				return self::get_cart_subtotal_for_shipping_class( $condition );
-			} 
+			return self::get_subset_subtotal( $condition );
 		}
 
 		$total = wcs_get_cart_func( 'get_displayed_subtotal' );
@@ -126,14 +137,14 @@ class Woo_Conditional_Shipping_Filters {
 	}
 
 	/**
-	 * Get subtotal for a shipping class
+	 * Get subtotal for a subset of cart items
 	 */
-	private static function get_cart_subtotal_for_shipping_class( $condition ) {
+	private static function get_subset_subtotal( $condition ) {
 		$subtotal = 0;
 
 		$subtotal_includes_coupons = isset( $condition['subtotal_includes_coupons'] ) && $condition['subtotal_includes_coupons'];
 
-		$items = self::get_subset_of_items_by_shipping_class( $condition );
+		$items = self::get_subset_items( $condition );
 
 		$incl_tax = wcs_get_cart_func( 'display_prices_including_tax' );
 
@@ -157,34 +168,65 @@ class Woo_Conditional_Shipping_Filters {
 	}
 
 	/**
-	 * Get subset of cart items by shipping class
+	 * Get subset of items
 	 */
-	public static function get_subset_of_items_by_shipping_class( $condition ) {
-		$inclusive = true;
+	public static function get_subset_items( $condition ) {
+		$subset = [];
+		$items = wcs_get_cart_func( 'get_cart' );
 
-		if ( strpos( $condition['subset_filter'], 'shipping_class_not_' ) !== false ) {
-			$prefix = 'shipping_class_not_';
-			$inclusive = false;
-		} else if ( strpos( $condition['subset_filter'], 'shipping_class_' ) !== false ) {
-			$prefix = 'shipping_class_';
-		}
-
-		$shipping_class_id = str_replace( $prefix, '', $condition['subset_filter'] );
-
-		$subset = array();
-		foreach ( wcs_get_cart_func( 'get_cart' ) as $key => $item ) {
-			if ( isset( $item['data'] ) && method_exists( $item['data'], 'get_shipping_class_id' ) ) {
-				$product_shipping_class_id = self::get_product_shipping_class_id( $item['data'] );
-
-				if ( $inclusive && $product_shipping_class_id == $shipping_class_id ) {
-					$subset[$key] = $item;
-				} else if ( ! $inclusive && $product_shipping_class_id != $shipping_class_id ) {
+		if ( $condition && isset( $condition['subset_filter'] ) && ! empty( $condition['subset_filter'] ) ) {
+			foreach ( $items as $key => $item ) {
+				if ( self::item_in_subset( $item, $condition['subset_filter'] ) ) {
 					$subset[$key] = $item;
 				}
 			}
 		}
 
 		return $subset;
+	}
+
+	/**
+	 * Check if item belongs to subset
+	 */
+	public static function item_in_subset( $item, $subset_filter ) {
+		// Get shipping class ID
+		$product_shipping_class_id = null;
+		if ( isset( $item['data'] ) && is_callable( [ $item['data'], 'get_shipping_class_id' ] ) ) {
+			$product_shipping_class_id = self::get_product_shipping_class_id( $item['data'] );
+		}
+
+		// Get sale status
+		$is_on_sale = null;
+		if ( isset( $item['data'] ) && is_callable( [ $item['data'], 'is_on_sale' ] ) ) {
+			$is_on_sale = $item['data']->is_on_sale();
+		}
+
+		// Not in a shipping class
+		if ( strpos( $subset_filter, 'shipping_class_not_' ) !== false ) {
+			$shipping_class_id = str_replace( 'shipping_class_not_', '', $subset_filter );
+
+			if ( $product_shipping_class_id !== null && $shipping_class_id != $product_shipping_class_id ) {
+				return true;
+			}
+		}
+		// In a shipping class
+		else if ( strpos( $subset_filter, 'shipping_class_' ) !== false ) {
+			$shipping_class_id = str_replace( 'shipping_class_', '', $subset_filter );
+
+			if ( $product_shipping_class_id !== null && $shipping_class_id == $product_shipping_class_id ) {
+				return true;
+			}
+		}
+		// Non-sale product
+		else if ( $subset_filter === 'non_sale_products' ) {
+			return $is_on_sale !== null && ! $is_on_sale;
+		}
+		// Sale product
+		else if ( $subset_filter === 'sale_products' ) {
+			return $is_on_sale !== null && $is_on_sale;
+		}
+
+		return false;
 	}
 
 	/**
@@ -215,10 +257,16 @@ class Woo_Conditional_Shipping_Filters {
 	/**
 	 * Get product IDs in the cart
 	 */
-	private static function get_cart_products() {
-		$products = array();
+	public static function get_cart_products( $package = false ) {
+		$products = [];
 
-		foreach ( wcs_get_cart_func( 'get_cart' ) as $key => $item ) {
+		$items = wcs_get_cart_func( 'get_cart' );
+
+		if ( $package !== false && apply_filters( 'wcs_multi_package_mode', false ) ) {
+			$items = isset( $package['contents'] ) ? $package['contents'] : [];
+		}
+
+		foreach ( $items as $key => $item ) {
 			if ( isset( $item['data'] ) ) {
 				if ( isset( $item['variation_id'] ) && ! empty( $item['variation_id'] ) ) {
 					$products[$item['variation_id']] = $item['data'];
@@ -253,9 +301,7 @@ class Woo_Conditional_Shipping_Filters {
 		$items = $package['contents'];
 
 		if ( is_array( $condition ) && isset( $condition['subset_filter'] ) && ! empty( $condition['subset_filter'] ) ) {
-			if ( strpos( $condition['subset_filter'], 'shipping_class_' ) !== false ) {
-				$items = self::get_subset_of_items_by_shipping_class( $condition );
-			} 
+			$items = self::get_subset_items( $condition );
 		}
 
 		$total_weight = 0;
@@ -267,7 +313,7 @@ class Woo_Conditional_Shipping_Filters {
 				continue;
 			}
 
-			$item_weight = floatval( $product->get_weight() );
+			$item_weight = floatval( apply_filters( 'wcs_item_weight', $product->get_weight(), $data ) );
 
 			if ( $item_weight ) {
 				$total_weight += $item_weight * $data['quantity'];
@@ -280,19 +326,25 @@ class Woo_Conditional_Shipping_Filters {
 	/**
 	 * Calculate cart volume
 	 */
-	private static function calculate_package_volume($package) {
+	private static function calculate_package_volume( $package, $condition ) {
+		$items = $package['contents'];
+
+		if ( is_array( $condition ) && isset( $condition['subset_filter'] ) && ! empty( $condition['subset_filter'] ) ) {
+			$items = self::get_subset_items( $condition );
+		}
+
 		$total_volume = 0;
 
-		foreach ( $package['contents'] as $key => $data ) {
+		foreach ( $items as $key => $data ) {
 			$product = $data['data'];
 
 			if ( ! $product->needs_shipping() ) {
 				continue;
 			}
 
-			$length = $product->get_length();
-			$width = $product->get_width();
-			$height = $product->get_height();
+			$length = apply_filters( 'wcs_item_length', $product->get_length(), $data );
+			$width = apply_filters( 'wcs_item_width', $product->get_width(), $data );
+			$height = apply_filters( 'wcs_item_height', $product->get_height(), $data );
 
 			if ( is_numeric ( $length ) && is_numeric( $width ) && is_numeric( $height ) ) {
 				$volume = $length * $width * $height;
@@ -316,10 +368,10 @@ class Woo_Conditional_Shipping_Filters {
 				continue;
 			}
 
-			$item_height = $product->get_height();
+			$height = apply_filters( 'wcs_item_height', $product->get_height(), $data );
 
-			if ( $item_height ) {
-				$total += floatval( $item_height ) * $data['quantity'];
+			if ( $height ) {
+				$total += floatval( $height ) * $data['quantity'];
 			}
 		}
 
@@ -339,7 +391,7 @@ class Woo_Conditional_Shipping_Filters {
 				continue;
 			}
 
-			$length = $product->get_length();
+			$length = apply_filters( 'wcs_item_length', $product->get_length(), $data );
 
 			if ( $length ) {
 				$total += floatval( $length ) * $data['quantity'];
@@ -362,7 +414,7 @@ class Woo_Conditional_Shipping_Filters {
 				continue;
 			}
 
-			$width = $product->get_width();
+			$width = apply_filters( 'wcs_item_width', $product->get_width(), $data );
 
 			if ( $width ) {
 				$total += floatval( $width ) * $data['quantity'];
@@ -388,8 +440,10 @@ class Woo_Conditional_Shipping_Filters {
 	/**
 	 * Compare value with given operator
 	 */
-	private static function compare_numeric_value( $a, $b, $operator ) {
+	public static function compare_numeric_value( $a, $b, $operator ) {
 		switch ( $operator ) {
+			case 'e':
+				return $a == $b;
 			case 'gt':
 				return $a > $b;
 			case 'gte':
@@ -431,14 +485,12 @@ class Woo_Conditional_Shipping_Filters {
 	/**
 	 * Check is / is not in an array
 	 */
-	private static function is_array_comparison( $needle, $haystack, $operator ) {
+	public static function is_array_comparison( $needle, $haystack, $operator ) {
 		if ( $operator == 'is' ) {
 			return in_array( $needle, $haystack );
 		} else if ( $operator == 'isnot' ) {
 			return ! in_array( $needle, $haystack );
 		}
-
-		error_log( "Invalid operator given in array comparison" );
 
 		return NULL;
 	}

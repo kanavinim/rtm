@@ -10,7 +10,7 @@
  */
 function rsssl_le_read_more( $url, $add_character = ' ' ) {
 	$html = sprintf( __( "For more information, please read this %sarticle%s",
-		'really-simple-ssl' ), '<a target="_blank" href="' . $url . '">',
+		'really-simple-ssl' ), '<a target="_blank" rel="noopener noreferrer" href="' . $url . '">',
 		'</a>' );
 	if ( is_string($add_character) ) {
 		$html = $add_character . $html;
@@ -27,6 +27,9 @@ function rsssl_le_read_more( $url, $add_character = ' ' ) {
  */
 function rsssl_dns_verification_required(){
 
+	if ( get_option('rsssl_manually_changed_verification_type') ) {
+		return rsssl_get_option( 'verification_type' ) === 'dns';
+	}
 	/**
 	 * If our current hosting provider does not allow or require local SSL certificate generation,
 	 * We do not need to DNS verification either.
@@ -41,9 +44,13 @@ function rsssl_dns_verification_required(){
 	}
 
 	if ( rsssl_wildcard_certificate_required() ) {
+		//if the user hasn't manually forced the verification type to anything else, we set it to dns now.
+		//otherwise we get a difference between this requirement, and the actual verification type that could be 'dir'
+		if ( !get_option('rsssl_manually_changed_verification_type') && rsssl_get_option('verification_type')!=='dns' ) {
+			rsssl_update_option('verification_type', 'dns');
+		}
 		return true;
 	}
-
 	return false;
 }
 
@@ -240,6 +247,23 @@ if ( !function_exists('rsssl_get_other_host') ) {
 	}
 }
 
+/**
+ * Add some information to the javascript
+ * @param array $args
+ *
+ * @return array
+ */
+function rsssl_le_localize_script($args){
+	$hosting_dashboard = 'other';
+	if ( rsssl_is_cpanel() ) $hosting_dashboard = 'cpanel';
+	if ( rsssl_is_directadmin() ) $hosting_dashboard = 'directadmin';
+	if ( rsssl_is_plesk() ) $hosting_dashboard = 'plesk';
+	$args['hosting_dashboard'] = $hosting_dashboard;
+	return $args;
+}
+add_filter("rsssl_localize_script", 'rsssl_le_localize_script', 10, 3);
+
+
 if ( !function_exists('rsssl_progress_add')) {
 	/**
 	 * @param string $item
@@ -291,6 +315,8 @@ if ( !function_exists('rsssl_is_ready_for')) {
 
  function rsssl_get_not_completed_steps($item){
 	$sequence = array_column( rsssl_le_steps(), 'id');
+	//drop first
+	array_shift($sequence);
 	//drop all statuses after $item. We only need to know if all previous ones have been completed
 	$index = array_search($item, $sequence);
 	$sequence = array_slice($sequence, 0, $index, true);
@@ -343,27 +369,27 @@ if ( !function_exists('rsssl_get_manual_instructions_text')) {
 	 * @return string
 	 */
 	function rsssl_get_manual_instructions_text( $url ) {
-		$default_url = 'https://really-simple-ssl.com/install-ssl-certificate';
+		$default_url = rsssl_link('install-ssl-certificate');
 		$dashboard_activation_required = rsssl_activation_required();
 		$activated_by_default = rsssl_activated_by_default();
 		$paid_only = rsssl_paid_only();
-		$button_activate = '<br><a href="' . $default_url . '" target="_blank" class="button button-primary">' . __( "Instructions", "really-simple-ssl" ) . '</a>&nbsp;&nbsp;';
-		$button_complete = '<br><a href="' . $default_url . '" target="_blank" class="button button-primary">' . __( "Instructions", "really-simple-ssl" ) . '</a>&nbsp;&nbsp;';
+		$button_activate = '<br><a href="' . $default_url . '" target="_blank" rel="noopener noreferrer" class="button button-primary">' . __( "Instructions", "really-simple-ssl" ) . '</a>&nbsp;&nbsp;';
+		$button_complete = '<br><a href="' . $default_url . '" target="_blank" rel="noopener noreferrer" class="button button-primary">' . __( "Instructions", "really-simple-ssl" ) . '</a>&nbsp;&nbsp;';
 
 		if ( $url === $default_url ) {
 			$complete_manually = sprintf( __( "Please complete manually in your hosting dashboard.", "really-simple-ssl" ), '<a target="_blank" href="' . $url . '">', '</a>' );
 			$activate_manually = sprintf( __( "Please activate it manually on your hosting dashboard.", "really-simple-ssl" ), '<a target="_blank" href="' . $url . '">', '</a>' );
 		} else {
-			$complete_manually = sprintf( __( "Please complete %smanually%s", "really-simple-ssl" ), '<a target="_blank" href="' . $url . '">', '</a>' );
-			$activate_manually = sprintf( __( "Please activate it on your dashboard %smanually%s", "really-simple-ssl" ), '<a target="_blank" href="' . $url . '">', '</a>' );
-			$button_activate   .= '<a href="' . $url . '" target="_blank" class="button button-primary">' . __( "Go to activation", "really-simple-ssl" ) . '</a>';
-			$button_complete   .= '<a href="' . $url . '" target="_blank" class="button button-primary">' . __( "Go to installation", "really-simple-ssl" ) . '</a>';
+			$complete_manually = sprintf( __( "Please complete %smanually%s", "really-simple-ssl" ), '<a target="_blank" rel="noopener noreferrer" href="' . $url . '">', '</a>' );
+			$activate_manually = sprintf( __( "Please activate it on your dashboard %smanually%s", "really-simple-ssl" ), '<a target="_blank" rel="noopener noreferrer" href="' . $url . '">', '</a>' );
+			$button_activate   .= '<a href="' . $url . '" target="_blank" rel="noopener noreferrer" class="button button-primary">' . __( "Go to activation", "really-simple-ssl" ) . '</a>';
+			$button_complete   .= '<a href="' . $url . '" target="_blank" rel="noopener noreferrer" class="button button-primary">' . __( "Go to installation", "really-simple-ssl" ) . '</a>';
 		}
 
 		if ( $activated_by_default ) {
 			$msg
 				= sprintf( __( "According to our information, your hosting provider supplies your account with an SSL certificate by default. Please contact your %shosting support%s if this is not the case.",
-					"really-simple-ssl" ), '<a target="_blank" href="' . $url . '">', '</a>' ) . '&nbsp' .
+					"really-simple-ssl" ), '<a target="_blank "rel="noopener noreferrer" href="' . $url . '">', '</a>' ) . '&nbsp' .
 				  __( "After completing the installation, you can continue to the next step to complete your configuration.", "really-simple-ssl" );
 		} else if ( $dashboard_activation_required ) {
 			$msg = __( "You already have free SSL on your hosting environment.", "really-simple-ssl" ) . '&nbsp' .
@@ -372,12 +398,12 @@ if ( !function_exists('rsssl_get_manual_instructions_text')) {
 			       . $button_activate;
 		} else if ( $paid_only ) {
 			$msg
-				= sprintf( __( "According to our information, your hosting provider does not allow any kind of SSL installation, other then their own paid certificate. For an alternative hosting provider with SSL, see this %sarticle%s.",
-				"really-simple-ssl" ), '<a target="_blank" href="https://really-simple-ssl.com/hosting-providers-with-free-ssl">', '</a>' );
+				= sprintf( __( "According to our information, your hosting provider does not allow any kind of SSL installation, other than their own paid certificate. For an alternative hosting provider with SSL, see this %sarticle%s.",
+				"really-simple-ssl" ), '<a target="_blank" rel="noopener noreferrer" href='.rsssl_link("hosting-providers-with-free-ssl").'>', '</a>' );
 		} else {
 			$msg = __( "Your hosting environment does not allow automatic SSL installation.", "really-simple-ssl" ) . ' ' .
 			       $complete_manually . ' ' .
-			       sprintf( __( "You can follow these %sinstructions%s.", "really-simple-ssl" ), '<a target="_blank" href="' . $default_url . '">', '</a>' ) . '&nbsp' .
+			       sprintf( __( "You can follow these %sinstructions%s.", "really-simple-ssl" ), '<a target="_blank" rel="noopener noreferrer" href="' . $default_url . '">', '</a>' ) . '&nbsp' .
 			       __( "After completing the installation, you can continue to the next step to complete your configuration.", "really-simple-ssl" )
 			       . $button_complete;
 		}
@@ -458,16 +484,6 @@ if ( ! function_exists( 'rsssl_get_domain' ) ) {
     }
 }
 
-function rsssl_insert_after_key($array, $key, $items){
-	$keys = array_keys($array);
-	$key = array_search($key, $keys);
-	$array = array_slice($array, 0, $key, true) +
-	$items +
-	array_slice($array, 3, count($array)-3, true);
-
-	return $array;
-}
-
 if ( !function_exists('rsssl_wildcard_certificate_required') ) {
 	/**
 	 * Check if the site requires a wildcard
@@ -527,5 +543,39 @@ if ( !function_exists('rsssl_generated_by_rsssl')) {
 	 */
 	function rsssl_generated_by_rsssl() {
 		return get_option( 'rsssl_le_certificate_generated_by_rsssl' );
+	}
+}
+
+/**
+ * Checks if a CAA DNS record is preventing the use of Let's Encrypt for the current site.
+ *
+ * @return bool Returns true if a CAA DNS record exists and does not allow Let's Encrypt, false otherwise.
+ */
+if ( ! function_exists( 'rsssl_caa_record_prevents_le' ) ) {
+	function rsssl_caa_record_prevents_le(): bool {
+		// Get DNS CAA records for site_url()
+		$caa_records = dns_get_record( parse_url( site_url(), PHP_URL_HOST ), DNS_CAA );
+
+		// If no CAA records found, return false
+		if ( empty( $caa_records ) ) {
+			return false;
+		}
+
+		// Check if the CAA record contains letsencrypt.org
+		$caa_contains_le = false;
+		foreach ( $caa_records as $caa_record ) {
+			if ( strpos( $caa_record['value'], 'letsencrypt.org' ) !== false ) {
+				$caa_contains_le = true;
+				break;
+			}
+		}
+
+		// If the CAA record is set, but does not contain letsencrypt.org, return true;
+		if ( ! $caa_contains_le ) {
+			return true;
+		}
+
+		// CAA record contains Let's Encrypt, generation allowed
+		return false;
 	}
 }

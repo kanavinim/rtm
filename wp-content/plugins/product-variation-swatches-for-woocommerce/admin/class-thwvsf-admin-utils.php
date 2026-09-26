@@ -62,6 +62,124 @@ class THWVSF_Admin_Utils {
 		'tooltip_text_size'             => array('name'=>'tooltip_text_size','value' => '16px'),
 
 	);
+	static $DESIGN_PROPS_ONE = array(
+
+		'design_name'  => array( 'name'=>'design_name', 'value' => ''),
+		'icon_height'  => array('name'=>'icon_height','value' => '45px'),
+		'icon_width'   => array('name'=>'icon_width','value'=>'45px'),
+		'icon_shape'   => array('name'=>'icon_shape','value'=>'round'),
+
+		'icon_label_height'  => array('name'=>'icon_height','value' => '45px'),
+		'icon_label_width'   => array('name'=>'icon_width','value'=>'auto'),
+		'label_size'             => array('name'=>'label_size','value' => '16px'),
+		'label_background_color' => array('name'=>'label_background_color', 'value' => '#fff'),
+		'label_text_color'       => array('name'=>'label_text_color', 'value' => '#000'),
+			
+		// Active and Hover Settings fields
+		'icon_border_color'          => array('name'=>'icon_border_color', 'value'=>'#d1d7da'),
+		'icon_border_color_hover'    => array('name'=>'icon_border_color_hover', 'value'=>'#aaaaaa'),
+		'icon_border_color_selected' => array('name'=>'icon_border_color_selected','value' => '#827d7d'),
+		'icon_border_width_hover'    => array('name'=>'icon_border_width_hover','value'=>'3px'),
+		'icon_border_width_selected' => array('name'=>'icon_border_width_selected','value'=>'2px'),
+
+		'common_selection_style' => array('name'=>'common_selection_style', 'value'=>'border' ),
+		'tick_color'             => array('name'=>'tick_color', 'value'=>'#ffffff' ),
+		'tick_size'              => array('name'=>'tick_size', 'value'=>'15px' ),
+
+		'label_selection_style'            => array('name'=>'label_selection_style', 'value'=>'border' ),
+		'label_background_color_hover'     => array('name'=>'label_background_color_hover','value'=>'#ffffff'),
+		'label_text_color_hover'           => array('name'=>'label_text_color_hover','value'=>'#000000'),
+		'label_background_color_selection' => array('name'=>'label_background_color_selection','value'=>'#000000'),
+		'label_text_color_selection'       => array('name'=>'label_text_color_selection','value'=>'#ffffff'),
+		'label_tick_color'                 => array('name'=>'label_tick_color', 'value'=>'#000000' ),
+		'label_tick_size'                  => array('name'=>'label_tick_size', 'value'=>'15px' ),
+		'enable_swatch_dropdown'           => array('name'=>'enable_swatch_dropdown', 'value'=>0,'value_type'=>'boolean'),
+		// Tooltip Settings fields
+		'tooltip_enable'                => array('name'=>'tooltip_enable', 'value'=>0,'value_type'=>'boolean'), 
+		'tooltip_text_background_color' => array('name'=>'tooltip_text_background_color','value' => '#000000'),
+		'tooltip_text_color'            => array('name'=>'tooltip_text_color','value' => '#ffffff'),
+		'tooltip_text_size'             => array('name'=>'tooltip_text_size','value' => '16px'),
+
+	);
+
+	static $DESIGN_PROPS_TWO = array(
+
+		'design_name'  => array( 'name'=>'design_name', 'value' => ''),
+		'icon_height'  => array('name'=>'icon_height','value' => '30px'),
+		'icon_width'   => array('name'=>'icon_width','value'=>'50px'),
+		'icon_shape'   => array('name'=>'icon_shape','value'=>'square'),
+
+		'icon_label_height'  => array('name'=>'icon_height','value' => '30px'),
+		'icon_label_width'   => array('name'=>'icon_width','value'=>'auto'),
+		'label_size'             => array('name'=>'label_size','value' => '16px'),
+		'label_background_color' => array('name'=>'label_background_color', 'value' => '#fff'),
+		'label_text_color'       => array('name'=>'label_text_color', 'value' => '#000'),
+			
+		// Active and Hover Settings fields
+		'icon_border_color'          => array('name'=>'icon_border_color', 'value'=>'#d1d7da'),
+		'icon_border_color_hover'    => array('name'=>'icon_border_color_hover', 'value'=>'#aaaaaa'),
+		'icon_border_color_selected' => array('name'=>'icon_border_color_selected','value' => '#827d7d'),
+		'icon_border_width_hover'    => array('name'=>'icon_border_width_hover','value'=>'3px'),
+		'icon_border_width_selected' => array('name'=>'icon_border_width_selected','value'=>'2px'),
+
+		'common_selection_style' => array('name'=>'common_selection_style', 'value'=>'border' ),
+		'tick_color'             => array('name'=>'tick_color', 'value'=>'#ffffff' ),
+		'tick_size'              => array('name'=>'tick_size', 'value'=>'15px' ),
+
+		'label_selection_style'            => array('name'=>'label_selection_style', 'value'=>'border' ),
+		'label_background_color_hover'     => array('name'=>'label_background_color_hover','value'=>'#ffffff'),
+		'label_text_color_hover'           => array('name'=>'label_text_color_hover','value'=>'#000000'),
+		'label_background_color_selection' => array('name'=>'label_background_color_selection','value'=>'#000000'),
+		'label_text_color_selection'       => array('name'=>'label_text_color_selection','value'=>'#ffffff'),
+		'label_tick_color'                 => array('name'=>'label_tick_color', 'value'=>'#000000' ),
+		'label_tick_size'                  => array('name'=>'label_tick_size', 'value'=>'15px' ),
+		'enable_swatch_dropdown'           => array('name'=>'enable_swatch_dropdown', 'value'=>0,'value_type'=>'boolean'),
+		// Tooltip Settings fields
+		'tooltip_enable'                => array('name'=>'tooltip_enable', 'value'=>0,'value_type'=>'boolean'), 
+		'tooltip_text_background_color' => array('name'=>'tooltip_text_background_color','value' => '#000000'),
+		'tooltip_text_color'            => array('name'=>'tooltip_text_color','value' => '#ffffff'),
+		'tooltip_text_size'             => array('name'=>'tooltip_text_size','value' => '16px'),
+
+	);
+
+	static $DESIGN_PROPS_THREE = array(
+
+		'design_name'  => array( 'name'=>'design_name', 'value' => ''),
+		'icon_height'  => array('name'=>'icon_height','value' => '25px'),
+		'icon_width'   => array('name'=>'icon_width','value'=>'25px'),
+		'icon_shape'   => array('name'=>'icon_shape','value'=>'square'),
+
+		'icon_label_height'  => array('name'=>'icon_height','value' => '25px'),
+		'icon_label_width'   => array('name'=>'icon_width','value'=>'auto'),
+		'label_size'             => array('name'=>'label_size','value' => '12px'),
+		'label_background_color' => array('name'=>'label_background_color', 'value' => '#fff'),
+		'label_text_color'       => array('name'=>'label_text_color', 'value' => '#000'),
+			
+		// Active and Hover Settings fields
+		'icon_border_color'          => array('name'=>'icon_border_color', 'value'=>'#d1d7da'),
+		'icon_border_color_hover'    => array('name'=>'icon_border_color_hover', 'value'=>'#aaaaaa'),
+		'icon_border_color_selected' => array('name'=>'icon_border_color_selected','value' => '#827d7d'),
+		'icon_border_width_hover'    => array('name'=>'icon_border_width_hover','value'=>'3px'),
+		'icon_border_width_selected' => array('name'=>'icon_border_width_selected','value'=>'2px'),
+
+		'common_selection_style' => array('name'=>'common_selection_style', 'value'=>'border' ),
+		'tick_color'             => array('name'=>'tick_color', 'value'=>'#ffffff' ),
+		'tick_size'              => array('name'=>'tick_size', 'value'=>'15px' ),
+
+		'label_selection_style'            => array('name'=>'label_selection_style', 'value'=>'border' ),
+		'label_background_color_hover'     => array('name'=>'label_background_color_hover','value'=>'#ffffff'),
+		'label_text_color_hover'           => array('name'=>'label_text_color_hover','value'=>'#000000'),
+		'label_background_color_selection' => array('name'=>'label_background_color_selection','value'=>'#000000'),
+		'label_text_color_selection'       => array('name'=>'label_text_color_selection','value'=>'#ffffff'),
+		'label_tick_color'                 => array('name'=>'label_tick_color', 'value'=>'#000000' ),
+		'label_tick_size'                  => array('name'=>'label_tick_size', 'value'=>'15px' ),
+		'enable_swatch_dropdown'           => array('name'=>'enable_swatch_dropdown', 'value'=>0,'value_type'=>'boolean'),
+		// Tooltip Settings fields
+		'tooltip_enable'                => array('name'=>'tooltip_enable', 'value'=>0,'value_type'=>'boolean'), 
+		'tooltip_text_background_color' => array('name'=>'tooltip_text_background_color','value' => '#000000'),
+		'tooltip_text_color'            => array('name'=>'tooltip_text_color','value' => '#ffffff'),
+		'tooltip_text_size'             => array('name'=>'tooltip_text_size','value' => '16px'),
+	);
 
 	static $GLOBAL_PROPS = array(
 
@@ -84,17 +202,35 @@ class THWVSF_Admin_Utils {
 	    foreach (self::$sample_design_labels as $key => $label) {
 
 	    	$sample_design       = array();
-	    	$sample_designs[$key] = THWVSF_Admin_Utils::get_property_set($settings, $label);
+	    	$sample_designs[$key] = THWVSF_Admin_Utils::get_property_set($settings, $label, $key);
 	    }	
 
 	    return $sample_designs;
 	}
 
-	public static function get_property_set($settings_design = array(),$label = false){
+	public static function get_property_set($settings_design = array(), $label = false, $design_name = 'default'){
 
 		$props_set = array();
+
+		$design_props = array();
+		switch($design_name) {
+			case 'swatch_design_1':
+				$design_props = self::$DESIGN_PROPS_ONE;
+				break;
+
+			case 'swatch_design_2':
+				$design_props = self::$DESIGN_PROPS_TWO;
+				break;
+
+			case 'swatch_design_3':
+				$design_props = self::$DESIGN_PROPS_THREE;
+				break;
+			default :
+				$design_props = self::$DESIGN_PROPS;
+				break;
+		}
 			
-		foreach(self::$DESIGN_PROPS as $pname => $props){
+		foreach($design_props as $pname => $props){
 
 			$pvalue =  isset($settings_design[$pname]) ? $settings_design[$pname] : $props['value'] ;
 

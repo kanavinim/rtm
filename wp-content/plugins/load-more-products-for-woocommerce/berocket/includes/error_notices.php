@@ -31,7 +31,8 @@ if( ! class_exists('BeRocket_error_notices') ) {
             update_option('berocket_plugin_error_'.$plugin_id, $errors, false);
         }
         public static function get_plugin_error_ajax() {
-            if ( ! ( current_user_can( 'manage_options' ) ) ) {
+            $wp_nonce = (empty($_GET['wp_nonce']) ? (empty($_POST['wp_nonce']) ? '' : $_POST['wp_nonce']) : $_GET['wp_nonce']);
+            if ( ! current_user_can( 'manage_options' ) || ! wp_verify_nonce( $wp_nonce, 'berocket_error_notices_get' ) ) {
                 echo __( 'Do not have access for this feature', 'BeRocket_domain' );
                 wp_die();
             }
@@ -62,7 +63,7 @@ if( ! class_exists('BeRocket_error_notices') ) {
             if( count($errors) ) {
                 foreach($errors as $error) {
                     $html .= '<div class="berocket_plugin_error">
-                    <h4><small>'.date('Y-m-d h:i:s',br_get_value_from_array($error, 'time', current_time('timestamp'))) .'</small>'.br_get_value_from_array($error, 'message', 'No error message').'</h4>
+                    <h4><small>'.esc_html(date('Y-m-d h:i:s',br_get_value_from_array($error, 'time', current_time('timestamp')))) .'</small>'.esc_html(br_get_value_from_array($error, 'message', 'No error message')).'</h4>
                     <div style="display:none;">';
                     if( ! empty($error['data']) ) {
                         $error_data = print_r($error['data'], true);
@@ -70,12 +71,12 @@ if( ! class_exists('BeRocket_error_notices') ) {
                             $error_data = substr($error_data, 8);
                             $error_data = substr($error_data, 0, -2);
                         }
-                        $html .= '<pre>'.$error_data.'</pre>';
+                        $html .= '<pre>'.esc_html($error_data).'</pre>';
                     }
                     $html .= '</div>
                     </div>';
                 }
-                $html .= '<button value="'.$plugin_id.'" type="button" class="button berocket_clear_errors_notices">Clear errors for plugin</button>';
+                $html .= '<button value="'.$plugin_id.'" type="button" data-nonce="' . wp_create_nonce('berocket_error_notices_get') . '" class="button berocket_clear_errors_notices">Clear errors for plugin</button>';
             } else {
                 $html .= '<div class="berocket_plugin_error"><h4>Plugin doesn\'t have any errors</h4></div>';
             }
@@ -84,9 +85,10 @@ if( ! class_exists('BeRocket_error_notices') ) {
                     jQuery(this).next().toggle();
                 });
                 jQuery(".berocket_plugin_errors_list.class_'.$block_id.' .berocket_clear_errors_notices").on("click", function() {
-                    var plugin_id = jQuery(this).val();
                     var $this = jQuery(this);
-                    jQuery.post(ajaxurl, {action:"berocket_error_notices_get", plugin_id:plugin_id, clear_errors: true}, function(data) {
+                    var plugin_id = $this.val();
+                    var nonce = $this.data("nonce");
+                    jQuery.post(ajaxurl, {action:"berocket_error_notices_get", plugin_id:plugin_id, clear_errors: true, wp_nonce: nonce}, function(data) {
                         $this.parents(".berocket_plugin_errors_list").first().html(jQuery("<div>"+data+"</div>").find(".berocket_plugin_errors_list").html());
                     }); 
                 });

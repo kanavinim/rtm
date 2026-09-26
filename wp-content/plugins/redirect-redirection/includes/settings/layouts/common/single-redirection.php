@@ -12,7 +12,7 @@ $id = (int) $id;
                 <label for="switch-1_<?php echo $id; ?>" class="custom-switch">
                     <input type="checkbox" id="switch-1_<?php echo $id; ?>"
                           
-                           class="ir-instant-edit-redirect ir-instant-edit-status ir-instant-edit-status-<?php echo $id; ?>" <?php esc_attr_e( $status ); ?> data-db-id="<?php echo $id; ?>">
+                           class="ir-instant-edit-redirect ir-instant-edit-status ir-instant-edit-status-<?php echo $id; ?>" <?php esc_attr_e( $status ); ?> data-db-id="<?php echo $id; ?>" data-db-column="status">
                         <div class="custom-switch-slider round">
                             <span class="on"><?php _e(  "On", "redirect-redirection"  ); ?></span>
                             <span class="off"><?php _e(  "Off", "redirect-redirection"  ); ?></span>

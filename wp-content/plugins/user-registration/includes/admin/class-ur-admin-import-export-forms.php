@@ -134,9 +134,9 @@ class UR_Admin_Import_Export_Forms {
 	public static function import_form() {
 
 		// Check for $_FILES set or not.
-		if ( isset( $_FILES['jsonfile'] ) ) {
+		if ( isset( $_FILES['jsonfile'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Missing
 
-			$filename = isset( $_FILES['jsonfile']['name'] ) ? esc_html( sanitize_text_field( wp_unslash( $_FILES['jsonfile']['name'] ) ) ) : ''; // Get file name.
+			$filename = isset( $_FILES['jsonfile']['name'] ) ? esc_html( sanitize_text_field( wp_unslash( $_FILES['jsonfile']['name'] ) ) ) : ''; //phpcs:ignore WordPress.Security.NonceVerification.Missing
 			$ext      = pathinfo( $filename, PATHINFO_EXTENSION ); // Get file extention.
 
 			// Check for file format.
@@ -161,11 +161,13 @@ class UR_Admin_Import_Export_Forms {
 							$forms = get_posts( $args );
 							foreach ( $forms as $key => $form_obj ) {
 								if ( $form_data->form_post->post_title === $form_obj->post_title ) {
-									$form_data->form_post->post_title = $form_data->form_post->post_title . ' (Imported)';
+									$form_data->form_post->post_title = sanitize_text_field($form_data->form_post->post_title) . ' (Imported)';
 									break;
 								}
 							}
+							$form_data->form_post->post_title = sanitize_text_field($form_data->form_post->post_title);
 							$post_id = wp_insert_post( $form_data->form_post );
+
 							// Check for any error while inserting.
 							if ( is_wp_error( $post_id ) ) {
 								return $post_id;
@@ -188,7 +190,7 @@ class UR_Admin_Import_Export_Forms {
 											$meta_value = ur_maybe_unserialize( $meta_value );
 										}
 
-										add_post_meta( $post_id, $meta_key, $meta_value );
+										add_post_meta( $post_id, $meta_key, sanitize_text_field($meta_value) );
 									}
 								}
 							}

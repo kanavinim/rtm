@@ -1,12 +1,14 @@
 <?php
 defined( 'ABSPATH' ) or die();
-
+require_once rsssl_path . 'lib/admin/class-encryption.php';
+use RSSSL\lib\admin\Encryption;
 require_once( rsssl_le_path . 'integrations/cpanel/functions.php' );
 /**
  * Completely rebuilt and improved on the FreeSSL.tech Auto CPanel class by Anindya Sundar Mandal
  */
 class rsssl_cPanel
 {
+	use Encryption;
     public $host;
     private $username;
     private $password;
@@ -18,7 +20,7 @@ class rsssl_cPanel
     public function __construct()
     {
 	    $username = rsssl_get_option('cpanel_username');
-	    $password = RSSSL_LE()->letsencrypt_handler->decode( rsssl_get_option('cpanel_password') );
+	    $password = $this->decrypt_if_prefixed( rsssl_get_option('cpanel_password') );
 	    $host = rsssl_get_option('cpanel_host');
 	    $this->host =  str_replace( array('http://', 'https://', ':2083',':'), '', $host );
         $this->username = $username;
@@ -123,7 +125,7 @@ class rsssl_cPanel
 	        update_option('rsssl_installation_error', 'cpanel:default', false);
 	        $status = 'error';
 	        $action = $shell_addon_active ? 'skip' : 'continue';
-	        $message = __("Errors were reported during installation","really-simple-ssl").'<br> '.$response->errors[0];
+	        $message = __("Errors were reported during installation.","really-simple-ssl").'<br> '.$response->errors[0];
         }
 
 		return new RSSSL_RESPONSE($status, $action, $message);
@@ -141,7 +143,7 @@ class rsssl_cPanel
 			'You appear to be logging in from an unknown location',
 			'unrecognized IP address',
 		];
-		foreach($triggers as $key => $trigger ) {
+		foreach($triggers as $trigger ) {
 			if (strpos($raw,$trigger)!==false) {
 				return true;
 			}
@@ -160,7 +162,7 @@ class rsssl_cPanel
 			'input-field-login icon password',
 			'name="pass" id="pass"',
 		];
-		foreach($triggers as $key => $trigger ) {
+		foreach($triggers as $trigger ) {
 			if (strpos($raw,$trigger)!==false) {
 				return true;
 			}
@@ -235,10 +237,11 @@ class rsssl_cPanel
 
         // Make the call, and then terminate the cURL caller object.
         $curl_response = curl_exec($ch);
-	    if (curl_errno($ch)) {
-		    $error_msg = curl_error($ch);
-	    }
-        curl_close($ch);
+        if (PHP_VERSION_ID >= 80000) {
+            unset($ch);
+        } else {
+            curl_close($ch);
+        }
 
         //return output.
         return $curl_response;
@@ -286,10 +289,15 @@ class rsssl_cPanel
 		curl_setopt($curl, CURLOPT_POST, 1);
 
 		$response = curl_exec($curl);
-		curl_close($curl);
+		$error    = curl_error( $curl );
+		if (PHP_VERSION_ID >= 80000) {
+			unset($curl);
+		} else {
+			curl_close($curl);
+		}
 
 		if (false === $response) {
-			return new RSSSL_RESPONSE('error', 'stop', __("Unable to connect to cPanel", "really-simple-ssl").' '.curl_error($curl));
+			return new RSSSL_RESPONSE('error', 'stop', __("Unable to connect to cPanel", "really-simple-ssl").' '.$error);
 		}
 
 		if (true === stristr($response, '<html>')) {

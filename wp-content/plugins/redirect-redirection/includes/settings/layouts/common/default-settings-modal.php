@@ -77,7 +77,7 @@ if (!defined("ABSPATH")) {
                         </div>
                     </div>
 
-                    <div class="settings-box__table settings-table settings-table--with-border" style="border-bottom: 0;">
+                    <div class="settings-box__table settings-table settings-table--with-border flex" style="border-bottom: 0;">
                         <div class="settings-table__col settings-table__col--first-child d-flex align-items-center">
                             <span class="settings-table__label"><?php _e( "Set Redirect Header:​", "redirect-redirection" ); ?></span>
                             <span role="button" tabindex="1" class="mb-21 custom-modal__info-btn custom-modal__info-btn--small-devices ir-http-codes-show">
@@ -98,7 +98,7 @@ if (!defined("ABSPATH")) {
                         </span>
                     </div>
 
-                    <div class="settings-box__table settings-table settings-table--with-border">
+                    <div class="settings-box__table settings-table settings-table--with-border flex">
                         <div class="settings-table__col settings-table__col--first-child d-flex align-items-center">
                             <span class="settings-table__label"><?php _e( "Redirect HTTP code:​", "redirect-redirection" ); ?></span>
                             <span role="button" tabindex="1" class="mb-21 custom-modal__info-btn custom-modal__info-btn--small-devices ir-http-codes-show">
@@ -108,7 +108,7 @@ if (!defined("ABSPATH")) {
                                 </p>
                             </span>
                         </div>
-                        <div class="settings-table__col d-flex align-items-center">
+                        <div class="settings-table__col d-flex align-items-center flex">
                             <?php
                             $redirectCode = (empty($settingsData["redirect_code"])) ? 0 : (int) $settingsData["redirect_code"];
                             $ddOptions = [
@@ -153,7 +153,7 @@ if (!defined("ABSPATH")) {
                     $inclusionExclusionRules = (empty($settingsData["inclusion_exclusion_rules"])) ? 0 : (int) $settingsData["inclusion_exclusion_rules"];
                     $rulesContainerClass = $inclusionExclusionRules ? "" : "ir-hidden";
                     ?>
-                    <div class="settings-box__table settings-table" style="<?php echo strpos($rulesContainerClass, "ir-hidden") !== false ? "margin-bottom: 50px" : "" ?>">
+                    <div class="settings-box__table settings-table flex" style="<?php echo strpos($rulesContainerClass, "ir-hidden") !== false ? "margin-bottom: 50px; margin-top: 30px;" : "" ?>">
                         <div class="settings-table__col settings-table__col--first-child">
                             <span class="settings-table__label"><?php _e( "Inclusion & exclusion rules​", "redirect-redirection" ); ?></span>
                         </div>

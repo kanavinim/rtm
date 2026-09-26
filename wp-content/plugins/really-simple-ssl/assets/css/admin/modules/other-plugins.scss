@@ -34,8 +34,8 @@
 		--rsp-other-plugins-color: var(--rsp-pink);
 	  }
 
-	  &.rsssl-burst-statistics {
-		--rsp-other-plugins-color: var(--rsp-green);
+	  &.rsssl-metricool {
+		--rsp-other-plugins-color: var(--rsp-metricool-plugin-color);
 	  }
 
 	  &.rsssl-complianz-gdpr {
@@ -45,6 +45,7 @@
       &.rsssl-complianz-terms-conditions {
         --rsp-other-plugins-color: var(--rsp-black);
       }
+
 
 	  &.rsssl-really-simple-ssl {
 		--rsp-other-plugins-color: var(--rsp-yellow);

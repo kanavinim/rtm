@@ -4,6 +4,7 @@
     'end'   => 1497885000, // timestamp when notice end
     'name'  => 'name', //notice name must be unique for this time period
     'html'  => '', //text or html code as content of notice
+    'type'  => 'info', //(blue), success(green), error(red), warning(yellow)
     'righthtml'  => '<a class="berocket_no_thanks">No thanks</a>', //content in the right block, this is default value. This html code must be added to all notices
     'rightwidth'  => 80, //width of right content is static and will be as this value. berocket_no_thanks block is 60px and 20px is additional
     'nothankswidth'  => 60, //berocket_no_thanks width. set to 0 if block doesn't uses. Or set to any other value if uses other text inside berocket_no_thanks
@@ -17,11 +18,20 @@
         'global' => 'http://berocket.com/images/logo-2.png', //image URL from other site. Image will be copied to uploads folder if it possible
         //'local' => 'http://wordpress-site.com/wp-content/uploads/logo-2.png', //notice will be used this image directly
     ),
+    'conditions' => array(//can be removed if not needed
+        'plugin_id' => 1,//plugin ID that used to check plugin_version_capability
+        'plugin_version_capability' => [0,15],//show notice only when version_capability between 
+        'notice_close_status' => array(//show notice only based on closed status of other notice
+            'notice_priority' => '20',//other notice priority
+            'notice_name' => 'name8',//other notice name
+            'closed' => [1,2]//other notice closed status required
+        ),
+    )
 ));*/
 //delete_option('berocket_admin_notices'); //remove all notice information
 //delete_option('berocket_last_close_notices_time'); //remove wait time before next notice
 //delete_option('berocket_admin_notices_rate_stars');
-if( ! class_exists( 'berocket_admin_notices' ) ) {
+if ( ! class_exists( 'berocket_admin_notices' ) ) {
     /**
      * Class berocket_admin_notices
      */
@@ -39,7 +49,12 @@ if( ! class_exists( 'berocket_admin_notices' ) ) {
                 'end'           => 0,
                 'name'          => 'sale',
                 'html'          => '',
-                'righthtml'     => '<a class="berocket_no_thanks">No thanks</a>',
+                'type'          => 'info',
+                'righthtml'     => '<span class="berocket-notice-dismiss notice-dismiss berocket_no_thanks" role="button" tabindex="0">
+						<span class="screen-reader-text">
+						<input class="berocket-notice-dismiss-check" type="checkbox" value="1">Dismiss this notice.
+						</span>
+					</span>',
                 'rightwidth'    => 80,
                 'nothankswidth' => 60,
                 'contentwidth'  => 400,
@@ -50,13 +65,15 @@ if( ! class_exists( 'berocket_admin_notices' ) ) {
                 'repeat'        => false,
                 'repeatcount'   => 1,
                 'image'         => array(
-                    'global'    => 'http://berocket.com/images/logo-2.png'
+                    'global'    => ''
                 ),
             );
         function __construct($options = array()) {
-            if( ! is_admin() ) return;
+            if ( ! is_admin() ) return;
             $options = array_merge(self::$default_notice_options, $options);
             self::set_notice_by_path($options);
+            add_filter( 'berocket_admin_notice_is_display_notice', array( __CLASS__, 'notice_closed_status' ), 10, 3 );
+            add_filter( 'berocket_admin_notice_is_display_notice_priority', array( __CLASS__, 'notice_closed_status' ), 10, 3 );
         }
         public static function sort_notices($notices) {
             return self::sort_array (
@@ -127,35 +144,67 @@ if( ! class_exists( 'berocket_admin_notices' ) ) {
 
             return $current_notice;
         }
+
+	    public static function get_notice_by_priority_and_name( $priority, $name ) {
+		    $notices = get_option( 'berocket_admin_notices' );
+
+            if ( is_array( $notices ) and ! empty( $notices[ $priority ] ) ) {
+			    foreach ( $notices[ $priority ] as $end_time => $end_level_value ) {
+				    foreach ( $end_level_value as $start_time => $start_level_value ) {
+					    if ( ! empty( $start_level_value[ $name ] ) ) {
+						    return $notices[ $priority ][ $end_time ][ $start_time ][ $name ];
+					    }
+				    }
+			    }
+		    }
+
+		    return false;
+	    }
+
         public static function berocket_array_udiff_assoc_notice($a1, $a2) {
             return json_encode($a1) > json_encode($a2);
         }
+
         public static function set_notice_by_path($options, $replace = false, $find_names = false) {
             self::$subscribed = get_option('berocket_email_subscribed');
             if( self::$subscribed && $options['subscribe'] ) {
                 return false;
             }
-            $notices = get_option('berocket_admin_notices');
             if( $options['end'] < time() && $options['end'] != 0 ) {
                 return false;
             }
-            if( $find_names === false ) {
-                $find_names = array($options['priority'], $options['end'], $options['start'], $options['name']);
-            }
-            if( ! is_array($notices) ) {
-                $notices = array();
+
+	        $notices = get_option('berocket_admin_notices', []);
+
+            // search if $current_notice exists, start and end time should be ignored, use priority and name only
+	        if ( is_array( $notices ) and ! empty( $notices[ $options['priority'] ] ) ) {
+		        foreach ( $notices[ $options['priority'] ] as $end_time => $end_level ) {
+			        foreach ( $end_level as $start_time => $start_level ) {
+				        if ( ! empty( $start_level[ $options['name'] ] ) ) {
+					        $current_notice = &$notices[ $options['priority'] ][ $end_time ][ $start_time ][ $options['name'] ];
+					        // if replace is not passed time should not be changed
+					        if ( ! $replace )
+						        $options['end'] = $current_notice['end'];
+					        break 2;
+				        }
+			        }
+		        }
+	        }
+            // not found, lets create a value
+            if ( empty( $current_notice ) || ! is_array( $current_notice ) ) {
+                if ( ! isset( $notices[ $options['priority'] ] ) || ! is_array( $notices[ $options['priority'] ] ) ) {
+                    $notices[ $options['priority'] ] = array();
+                }
+                if ( ! isset( $notices[ $options['priority'] ][ $options['end'] ] ) || ! is_array( $notices[ $options['priority'] ][ $options['end'] ] ) ) {
+                    $notices[ $options['priority'] ][ $options['end'] ] = array();
+                }
+                if ( ! isset( $notices[ $options['priority'] ][ $options['end'] ][ $options['start'] ] ) || ! is_array( $notices[ $options['priority'] ][ $options['end'] ][ $options['start'] ] ) ) {
+                    $notices[ $options['priority'] ][ $options['end'] ][ $options['start'] ] = array();
+                }
+		        $notices[ $options['priority'] ][ $options['end'] ][ $options['start'] ][ $options['name'] ] = array();
+		        $current_notice = &$notices[ $options['priority'] ][ $options['end'] ][ $options['start'] ][ $options['name'] ];
             }
 
-            $current_notice = &$notices;
-            foreach($find_names as $find_name) {
-                if( ! isset($current_notice[$find_name]) ) {
-                    $current_notice[$find_name] = array();
-                }
-                $new_current_notice = &$current_notice[$find_name];
-                unset($current_notice);
-                $current_notice = &$new_current_notice;
-                unset($new_current_notice);
-            }
             $array_diff = array_udiff_assoc($options, $current_notice, array(__CLASS__, 'berocket_array_udiff_assoc_notice'));
             if( isset($array_diff['image']) ) {
                 unset($array_diff['image']);
@@ -220,9 +269,7 @@ if( ! class_exists( 'berocket_admin_notices' ) ) {
                     $options['image'] = array('width' => 0, 'height' => 0, 'scale' => 0);
                 }
             }
-            if( count($current_notice) == 0 ) {
-                $current_notice = $options;
-            } else {
+            if( count($current_notice) != 0 ) {
                 if( ! empty($options['image']['local']) && $options['image']['local'] != $current_notice['image']['local'] ) {
                     if( isset($current_notice['image']['pathlocal']) ) {
                         unlink($current_notice['image']['pathlocal']);
@@ -231,8 +278,9 @@ if( ! class_exists( 'berocket_admin_notices' ) ) {
                 if( ! $replace ) {
                     $options['closed'] = $current_notice['closed'];
                 }
-                $current_notice = $options;
             }
+	        $current_notice = $options;
+
             $notices = self::sort_notices($notices);
             update_option('berocket_admin_notices', $notices);
             return true;
@@ -251,24 +299,25 @@ if( ! class_exists( 'berocket_admin_notices' ) ) {
             return $current_notice;
         }
         public static function get_notice_for_settings() {
-            $notices = get_option('berocket_admin_notices');
-            $last_notice = get_option('berocket_admin_notices_last_on_options');
-            self::$subscribed = get_option('berocket_email_subscribed');
-            $notices = self::get_notices_with_priority($notices);
-            if( ! is_array($notices) || count($notices) == 0 ) {
-                return false;
-            }
-            if( $last_notice === false ) {
-                $last_notice = 0;
-            } else {
-                $last_notice++;
-            }
-            if( count($notices) <= $last_notice ) {
-                $last_notice = 0;
-            }
-            update_option('berocket_admin_notices_last_on_options', $last_notice);
-            $notice = $notices[$last_notice];
-            return $notice;
+	        $notices          = get_option( 'berocket_admin_notices' );
+	        $last_notice      = get_option( 'berocket_admin_notices_last_on_options' );
+	        self::$subscribed = get_option( 'berocket_email_subscribed' );
+	        $notices          = self::get_notices_with_priority( $notices );
+	        if ( ! is_array( $notices ) || count( $notices ) == 0 ) {
+		        return false;
+	        }
+	        if ( $last_notice === false ) {
+		        $last_notice = 0;
+	        } else {
+		        $last_notice ++;
+	        }
+	        if ( count( $notices ) <= $last_notice ) {
+		        $last_notice = 0;
+	        }
+	        update_option( 'berocket_admin_notices_last_on_options', $last_notice );
+	        $notice = $notices[ $last_notice ];
+
+	        return $notice;
         }
         public static function get_not_closed_notice($array, $end_soon = false, $closed = 0, $count = 3) {
             $notice = false;
@@ -391,16 +440,16 @@ if( ! class_exists( 'berocket_admin_notices' ) ) {
                 } else {
                     $user_email = '';
                 }
-                $notice['righthtml'] =
-                '<form class="berocket_subscribe_form" method="POST" action="' . admin_url( 'admin-ajax.php' ) . '">
+                $notice['html'] .=
+                '<div><form class="berocket_subscribe_form" method="POST" action="' . admin_url( 'admin-ajax.php' ) . '">
                     <input type="hidden" name="berocket_action" value="berocket_subscribe_email">
+                    <input type="hidden" name="wp_nonce" value="' . wp_create_nonce('berocket_subscribe_email') . '">
                     <input class="berocket_subscribe_email" type="email" name="email" value="' . $user_email . '">
                     <input type="submit" class="button-primary button berocket_notice_submit" value="Subscribe">
-                </form>' . $notice['righthtml'];
-                $notice['rightwidth'] += 300;
+                </form></div>';
             }
             echo '
-                <div class="notice berocket_admin_notice berocket_admin_notice_', self::$notice_index, '" data-notice=\'', json_encode($notice_data), '\'>',
+                <div class="notice berocket-notice notice-' . $notice['type'] . ' berocket_admin_notice berocket_admin_notice_', self::$notice_index, '" data-notice=\'', json_encode($notice_data), '\' data-nonce="' . wp_create_nonce('berocket_information_close_notice') . '">',
                     ( empty($notice['image']['local']) ? '' : '<img class="berocket_notice_img" src="' . $notice['image']['local'] . '">' ),
                     ( empty($notice['righthtml']) ? '' :
                     '<div class="berocket_notice_right_content">
@@ -415,46 +464,8 @@ if( ! class_exists( 'berocket_admin_notices' ) ) {
                 $notice['rightwidth'] -= $notice['nothankswidth'];
             }
             echo '<style>
-                .berocket_admin_notice.berocket_admin_notice_', self::$notice_index, ' {
-                    height: ', $notice['height'], 'px;
-                    padding: 0;
-                    min-width: ', max($notice['image']['width'] * $notice['image']['scale'], $notice['rightwidth']), 'px;
-                    border-left: 0 none;
-                    border-radius: 3px;
-                    overflow: hidden;
-                    box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.2);
-                }
-                .berocket_admin_notice.berocket_admin_notice_', self::$notice_index, ' .berocket_notice_img {
-                    height: ', $notice['height'], 'px;
-                    width: ', ($notice['image']['width'] * $notice['image']['scale']), 'px;
-                    float: left;
-                }
-                .berocket_admin_notice .berocket_notice_content_wrap {
-                    margin-left: ', ($notice['image']['width'] * $notice['image']['scale'] + 5), 'px;
-                    margin-right: ', ($notice['rightwidth'] <= 20 ? 0 : $notice['rightwidth'] + 15), 'px;
-                    box-sizing: border-box;
-                    height: ', $notice['height'], 'px;
-                    overflow: auto;
-                    overflow-x: hidden;
-                    overflow-y: auto;
-                    font-size: 16px;
-                    line-height: 1em;
-                    text-align: center;
-                }
-                .berocket_admin_notice.berocket_admin_notice_', self::$notice_index, ' .berocket_notice_right_content {',
-                    ( $notice['rightwidth'] <= 20 ? ' display: none' :
-                    'height: ' . $notice['height'] . 'px;
-                    float: right;
-                    width: ' . $notice['rightwidth'] . 'px;
-                    -webkit-box-shadow: box-shadow: -1px 0 0 0 rgba(0, 0, 0, 0.1);
-                    box-shadow: -1px 0 0 0 rgba(0, 0, 0, 0.1);
-                    padding-left: 10px;' ),
-                '}
                 .berocket_admin_notice.berocket_admin_notice_', self::$notice_index, ' .berocket_no_thanks {',
-                    ( $settings_page && $notice['priority'] <= 5 ? 'display: none!important;' : 'cursor: pointer;
-                    color: #0073aa;
-                    opacity: 0.5;
-                    display: inline-block;' ),
+                    ( $settings_page && $notice['priority'] <= 5 ? 'display: none!important;' : 'cursor: pointer;' ),
                 '}
                 ', ( empty($notice['subscribe']) ? '' : '
                 .berocket_admin_notice.berocket_admin_notice_' . self::$notice_index . ' .berocket_subscribe_form {
@@ -498,57 +509,18 @@ if( ! class_exists( 'berocket_admin_notices' ) ) {
                     background: #ff6e68 none repeat scroll 0 0;
                     color: white;
                 }' ), '
-                @media screen and (min-width: 783px) and (max-width: ', round($notice['image']['width'] * $notice['image']['scale'] + $notice['rightwidth'] + $notice['contentwidth'] + 10 + 200), 'px) {
-                    div.berocket_admin_notice.berocket_admin_notice_', self::$notice_index, ' .berocket_notice_content_wrap {
-                        font-size: 14px;
-                    }
-                    div.berocket_admin_notice.berocket_admin_notice_', self::$notice_index, ' .berocket_button {
-                        padding: 4px 15px;
-                    }
-                }
-                @media screen and (max-width: 782px) {
-                    div.berocket_admin_notice.berocket_admin_notice_', self::$notice_index, ' .berocket_notice_content_wrap {
-                        margin-left: 0;
-                        margin-right: 0;
-                        clear: both;
-                        height: initial;
-                    }
-                    div.berocket_admin_notice.berocket_admin_notice_', self::$notice_index, ' .berocket_notice_content {
-                        line-height: 2.5em;
-                    }
-                    div.berocket_admin_notice.berocket_admin_notice_', self::$notice_index, ' .berocket_notice_content .berocket_button {
-                        line-height: 1em;
-                    }
-                    div.berocket_admin_notice.berocket_admin_notice_', self::$notice_index, ' {
-                        height: initial;
-                        text-align: center;
-                        padding: 20px;
-                    }
-                    .berocket_admin_notice.berocket_admin_notice_', self::$notice_index, ' .berocket_notice_img {
-                        float: none;
-                        display: inline-block;
-                    }
-                    div.berocket_admin_notice.berocket_admin_notice_', self::$notice_index, ' .berocket_notice_right_content {
-                        display: block;
-                        float: none;
-                        clear: both;
-                        width: 100%;
-                        -webkit-box-shadow: none;
-                        box-shadow: none;
-                        padding: 0;
-                    }
-                }
             </style>
             <script>
                 jQuery(document).ready(function() {
                     jQuery(document).on("click", ".berocket_admin_notice.berocket_admin_notice_', self::$notice_index, ' .berocket_no_thanks", function(event){
                         event.preventDefault();
                         var notice = jQuery(this).parents(".berocket_admin_notice.berocket_admin_notice_', self::$notice_index, '").data("notice");
-                        jQuery.post(ajaxurl, {action:"berocket_admin_close_notice", notice:notice}, function(data){});
+                        var nonce = jQuery(this).parents(".berocket_admin_notice.berocket_admin_notice_', self::$notice_index, '").data("nonce");
+                        jQuery.post(ajaxurl, {action:"berocket_admin_close_notice", notice:notice, wp_nonce:nonce}, function(data){});
                         jQuery(this).parents(".berocket_admin_notice.berocket_admin_notice_', self::$notice_index, '").hide();
                     });
                 });';
-            if( $notice['end'] < strtotime(self::$end_soon_time) && $notice['end'] != 0 ) {
+            if ( $notice['end'] < strtotime(self::$end_soon_time) && $notice['end'] != 0 ) {
                 echo 'setInterval(function(){
                     jQuery(".berocket_admin_notice.berocket_admin_notice_', self::$notice_index, ' .berocket_time_left").each(function(i, o) {
                         var left_time = jQuery(o).data("time");
@@ -582,54 +554,554 @@ if( ! class_exists( 'berocket_admin_notices' ) ) {
         }
         public static function echo_styles() {
             if( ! self::$styles_exist ) {
-                self::$styles_exist = true;
-                echo '<style>
-                .berocket_admin_notice .berocket_notice_content {
+	            self::$styles_exist = true;
+	            echo '
+                <style>
+                .berocket-notice {
+                  position:relative
+                }
+                .berocket-notice .berocket-notice-actions {
+                  margin:1em 0
+                }
+                .berocket-notice.notice-error,
+                .berocket-notice.notice-info,
+                .berocket-notice.notice-message,
+                .berocket-notice.notice-success,
+                .berocket-notice.notice-warning {
+                  clear:both;
+                  background:#fff;
+                  border:solid;
+                  border-width:0 0 0 4px;
+                  border-radius:5px;
+                  color:#373737;
+                  margin:5px 15px 2px;
+                  padding:24px 24px 24px 62px!important
+                }
+                .berocket-notice.notice-error:before,
+                .berocket-notice.notice-info:before,
+                .berocket-notice.notice-message:before,
+                .berocket-notice.notice-success:before,
+                .berocket-notice.notice-warning:before {
+                  content:"\f14c";
+                  font-family:dashicons;
+                  font-size:22px;
+                  position:absolute;
+                  top:24px;
+                  left:24px
+                }
+                .rtl .berocket-notice.notice-error:before,
+                .rtl .berocket-notice.notice-info:before,
+                .rtl .berocket-notice.notice-message:before,
+                .rtl .berocket-notice.notice-success:before,
+                .rtl .berocket-notice.notice-warning:before {
+                  top:24px;
+                  right:24px;
+                  bottom:0;
+                  left:0
+                }
+                .rtl .berocket-notice.notice-error,
+                .rtl .berocket-notice.notice-info,
+                .rtl .berocket-notice.notice-message,
+                .rtl .berocket-notice.notice-success,
+                .rtl .berocket-notice.notice-warning {
+                  border-left-width:0;
+                  border-right-width:4px
+                }
+                .wrap .berocket-notice.notice-error,
+                .wrap .berocket-notice.notice-info,
+                .wrap .berocket-notice.notice-message,
+                .wrap .berocket-notice.notice-success,
+                .wrap .berocket-notice.notice-warning {
+                  margin:5px 0 15px
+                }
+                .berocket-notice.notice-error h2,
+                .berocket-notice.notice-info h2,
+                .berocket-notice.notice-message h2,
+                .berocket-notice.notice-success h2,
+                .berocket-notice.notice-warning h2 {
+                  font-size:18px;
+                  line-height:20px;
+                  margin:0 0 16px;
+                  padding: 0 !important
+                }
+                .berocket-notice.notice-error p,
+                .berocket-notice.notice-info p,
+                .berocket-notice.notice-message p,
+                .berocket-notice.notice-success p,
+                .berocket-notice.notice-warning p {
+                  margin:0;
+                  padding:0;
+                  line-height:20px;
+                  font-size: 18px;
+                }
+                .berocket-notice.notice-error ol,
+                .berocket-notice.notice-error ul,
+                .berocket-notice.notice-info ol,
+                .berocket-notice.notice-info ul,
+                .berocket-notice.notice-message ol,
+                .berocket-notice.notice-message ul,
+                .berocket-notice.notice-success ol,
+                .berocket-notice.notice-success ul,
+                .berocket-notice.notice-warning ol,
+                .berocket-notice.notice-warning ul {
+                  max-height:10em;
+                  overflow:auto;
+                  padding-left:2em!important
+                }
+                .rtl .berocket-notice.notice-error ol,
+                .rtl .berocket-notice.notice-error ul,
+                .rtl .berocket-notice.notice-info ol,
+                .rtl .berocket-notice.notice-info ul,
+                .rtl .berocket-notice.notice-message ol,
+                .rtl .berocket-notice.notice-message ul,
+                .rtl .berocket-notice.notice-success ol,
+                .rtl .berocket-notice.notice-success ul,
+                .rtl .berocket-notice.notice-warning ol,
+                .rtl .berocket-notice.notice-warning ul {
+                  padding-left:12px!important;
+                  padding-right:1em!important
+                }
+                .berocket-notice.notice-error ul,
+                .berocket-notice.notice-info ul,
+                .berocket-notice.notice-message ul,
+                .berocket-notice.notice-success ul,
+                .berocket-notice.notice-warning ul {
+                  list-style-type:disc
+                }
+                .berocket-notice.notice-error.right>*,
+                .berocket-notice.notice-info.right>*,
+                .berocket-notice.notice-message.right>*,
+                .berocket-notice.notice-success.right>*,
+                .berocket-notice.notice-warning.right>* {
+                  text-align:right
+                }
+                .rtl .berocket-notice.notice-error.right>*,
+                .rtl .berocket-notice.notice-info.right>*,
+                .rtl .berocket-notice.notice-message.right>*,
+                .rtl .berocket-notice.notice-success.right>*,
+                .rtl .berocket-notice.notice-warning.right>* {
+                  text-align:left
+                }
+                .berocket-notice.notice-error.center>*,
+                .berocket-notice.notice-info.center>*,
+                .berocket-notice.notice-message.center>*,
+                .berocket-notice.notice-success.center>*,
+                .berocket-notice.notice-warning.center>* {
+                  text-align:center
+                }
+                .berocket-notice.notice-error.center>*>ol,
+                .berocket-notice.notice-error.center>*>ul,
+                .berocket-notice.notice-info.center>*>ol,
+                .berocket-notice.notice-info.center>*>ul,
+                .berocket-notice.notice-message.center>*>ol,
+                .berocket-notice.notice-message.center>*>ul,
+                .berocket-notice.notice-success.center>*>ol,
+                .berocket-notice.notice-success.center>*>ul,
+                .berocket-notice.notice-warning.center>*>ol,
+                .berocket-notice.notice-warning.center>*>ul {
+                  text-align:left;
+                  padding-left:1em!important;
+                  font-weight:400
+                }
+                .rtl .berocket-notice.notice-error.center>*>ol,
+                .rtl .berocket-notice.notice-error.center>*>ul,
+                .rtl .berocket-notice.notice-info.center>*>ol,
+                .rtl .berocket-notice.notice-info.center>*>ul,
+                .rtl .berocket-notice.notice-message.center>*>ol,
+                .rtl .berocket-notice.notice-message.center>*>ul,
+                .rtl .berocket-notice.notice-success.center>*>ol,
+                .rtl .berocket-notice.notice-success.center>*>ul,
+                .rtl .berocket-notice.notice-warning.center>*>ol,
+                .rtl .berocket-notice.notice-warning.center>*>ul {
+                  text-align:right;
+                  padding-left:12px!important;
+                  padding-right:1em!important
+                }
+                .berocket-notice.notice-error.center>*>ul,
+                .berocket-notice.notice-info.center>*>ul,
+                .berocket-notice.notice-message.center>*>ul,
+                .berocket-notice.notice-success.center>*>ul,
+                .berocket-notice.notice-warning.center>*>ul {
+                  list-style-type:disc
+                }
+                .berocket-notice.notice-info,
+                .berocket-notice.notice-message {
+                  border-color:#2f7d92;
+                  background-color:#f8fbfc
+                }
+                .berocket-notice.notice-info:before,
+                .berocket-notice.notice-info a,
+                .berocket-notice.notice-message:before,
+                .berocket-notice.notice-message a {
+                  color:#2f7d92
+                }
+                .berocket-notice.notice-info a:focus,
+                .berocket-notice.notice-info a:hover,
+                .berocket-notice.notice-message a:focus,
+                .berocket-notice.notice-message a:hover {
+                  color:#2f7d92;
+                  text-decoration:none
+                }
+                .berocket-notice.notice-info .notice-dismiss:before,
+                .berocket-notice.notice-message .notice-dismiss:before {
+                  color:#2f7d92
+                }
+                .berocket-notice.notice-warning {
+                  border-color:#e8ae57;
+                  background-color:#fbf6e5
+                }
+                .berocket-notice.notice-warning:before {
+                  color:#e8ae57
+                }
+                .berocket-notice.notice-warning a {
+                  color:#996415;
+                  border-color:#996415
+                }
+                .berocket-notice.notice-warning a:focus,
+                .berocket-notice.notice-warning a:hover {
+                  color:#996415;
+                  border-color:#996415;
+                  text-decoration:none
+                }
+                .berocket-notice.notice-warning .notice-dismiss:before {
+                  color:#e8ae57
+                }
+                .berocket-notice.notice-error {
+                  border-color:#db552b;
+                  background-color:rgba(219,85,43,.1)
+                }
+                .berocket-notice.notice-error:before,
+                .berocket-notice.notice-error a {
+                  color:#db552b;
+                  border-color:#db552b
+                }
+                .berocket-notice.notice-error a:focus,
+                .berocket-notice.notice-error a:hover {
+                  color:#db552b;
+                  border-color:#db552b;
+                  text-decoration:none
+                }
+                .berocket-notice.notice-error .notice-dismiss:before {
+                  color:#db552b
+                }
+                .berocket-notice.notice-success {
+                  border-color:#1c7d6b;
+                  background-color:rgba(28,125,107,.1)
+                }
+                .berocket-notice.notice-success .notice-dismiss:before,
+                .berocket-notice.notice-success:before {
+                  color:#1c7d6b
+                }
+                .berocket-notice.is-dismissible {
+                  position:relative
+                }
+                .rtl .berocket-notice.is-dismissible {
+                  padding-right:62px;
+                  padding-left:24px
+                }
+                .berocket-notice.is-dismissible .notice-dismiss {
+                  text-decoration:none
+                }
+                .berocket-notice.is-dismissible .notice-dismiss.berocket-notice-dismiss {
+                  padding:12px
+                }
+                .berocket-notice.is-dismissible .notice-dismiss.berocket-notice-dismiss:before {
+                  content:"\33";
+                  font-family:berocket-icons;
+                  font-size:12px
+                }
+                .berocket-notice.is-dismissible .notice-dismiss.berocket-notice-dismiss:focus:before,
+                .berocket-notice.is-dismissible .notice-dismiss.berocket-notice-dismiss:hover:before {
+                  color:#373737
+                }
+                .berocket-notice.is-dismissible p [class*=button-] {
+                  margin:-5px 5px
+                }
+                .berocket-notice .berocket-notice-collapse-hide {
+                  position:absolute;
+                  top:0;
+                  right:1px;
+                  border:none;
+                  margin:0;
+                  padding:9px;
+                  background:0 0;
+                  color:#b4b9be;
+                  cursor:pointer
+                }
+                .rtl .berocket-notice .berocket-notice-collapse-hide {
+                  right:auto;
+                  left:1px
+                }
+                .berocket-notice .berocket-notice-collapse-hide,
+                .berocket-notice .berocket-notice-collapse-show {
+                  cursor:pointer
+                }
+                .berocket-notice .berocket-notice-collapse-hide:before,
+                .berocket-notice .berocket-notice-collapse-show:before {
+                  background:0 0;
+                  color:#b4b9be;
+                  display:block;
+                  font:400 16px/20px dashicons;
+                  speak:none;
+                  height:20px;
+                  width:20px;
+                  text-align:center;
+                  -webkit-font-smoothing:antialiased;
+                  -moz-osx-font-smoothing:grayscale
+                }
+                .berocket-notice .berocket-notice-collapse-hide:hover:before,
+                .berocket-notice .berocket-notice-collapse-show:hover:before {
+                  color:#d54e21
+                }
+                .berocket-notice .berocket-notice-collapse-hide:before {
+                  content:"\f460"
+                }
+                .berocket-notice .berocket-notice-collapsed-text .berocket-notice-collapse-show:before {
+                  content:"\f132";
+                  float:left
+                }
+                .rtl .berocket-notice .berocket-notice-collapsed-text .berocket-notice-collapse-show:before {
+                  float:right
+                }
+                .berocket-notice .notice-collapse-header {
+                  display:none
+                }
+                .berocket-notice .notice-action-link {
+                  display:block;
+                  position:absolute;
+                  right:1em;
+                  bottom:0.8em;
+                  font-size: 1.3em;
+                  font-weight: 600;
+                }
+                .rtl .berocket-notice .notice-action-link {
+                  right:auto;
+                  left:1em
+                }
+                .berocket-notice table {
+                  border-spacing:0;
+                  border-collapse:collapse;
+                  margin:0 auto
+                }
+                .berocket-notice table td,
+                .berocket-notice table th {
+                  vertical-align:top;
+                  text-align:left;
+                  padding:2px
+                }
+                .berocket-notice table thead {
+                  font-weight:400
+                }
+                .berocket-notice table thead tr {
+                  background:#222;
+                  background:rgba(34,34,34,.8);
+                  color:#ccc
+                }
+                .berocket-notice table thead th {
+                  text-transform:capitalize;
+                  border-right:1px solid #ccc
+                }
+                .berocket-notice table thead th:last-child {
+                  border-right:none
+                }
+                .berocket-notice table tbody tr {
+                  background:#ccc;
+                  background:hsla(0,0%,80%,.8)
+                }
+                .berocket-notice table tbody tr:nth-child(2n) td:nth-child(odd),
+                .berocket-notice table tbody tr:nth-child(odd) td:nth-child(2n) {
+                  background:#fff;
+                  background:hsla(0,0%,100%,.8)
+                }
+                .berocket-notice table tbody td p:first-child {
+                  margin-top:0;
+                  padding-top:0
+                }
+                .berocket-notice table tbody td p:last-child {
+                  margin-bottom:0;
+                  padding-bottom:0
+                }
+                .berocket-notice table tbody td code {
+                  font-family:monospace;
+                  white-space:pre;
+                  display:block
+                }
+                .berocket-notice-toggle {
+                  font-size:.85em;
+                  position:absolute;
+                  bottom:5px;
+                  right:15px;
+                  color:#aaa;
+                  cursor:pointer
+                }
+                .rtl .berocket-notice-toggle {
+                  right:auto;
+                  left:15px
+                }
+                .berocket-notice-toggle:after {
+                  content:"";
+                  vertical-align:middle;
+                  margin-left:.3em;
+                  display:inline-block;
+                  border:.3em solid transparent
+                }
+                .rtl .berocket-notice-toggle:after {
+                  margin-left:0;
+                  margin-right:.3em
+                }
+                .expanded .berocket-notice-toggle:after {
+                  border-bottom:.45em solid;
+                  margin-top:-.25em
+                }
+                .minimized .berocket-notice-toggle:after {
+                  border-left:.5em solid
+                }
+                .rtl .minimized .berocket-notice-toggle:after {
+                  border-left:.3em solid transparent;
+                  border-right:.5em solid
+                }
+                .berocket-notice.scan-links-notice {
+                  padding:12px 20px 12px 40px!important
+                }
+                .rtl .berocket-notice.scan-links-notice {
+                  padding:12px 40px 12px 20px!important
+                }
+                .berocket-notice.scan-links-notice:before {
+                  top:12px;
+                  left:12px;
+                  font-size:16px
+                }
+                .rtl .berocket-notice.scan-links-notice:before {
+                  left:unset;
+                  right:12px
+                }
+                .berocket-notice.scan-links-notice p {
+                  margin-bottom:8px
+                }
+                .berocket-notice-icon {
+                  display:flex;
+                  align-items:center
+                }
+                .berocket-notice-icon>i:before {
+                  margin-right:16px;
+                  font-size:25px
+                }
+                .rtl .berocket-notice-icon>i:before {
+                  margin-right:0;
+                  margin-left:16px
+                }
+                .berocket-notice-icon .berocket-ico-warning:before {
+                  color:#ffb900
+                }
+                .br-notice-text-label {
                     display: inline-block;
-                    vertical-align: middle;
-                    padding: 2px 5px;
-                    max-width: 99%;
-                    box-sizing: border-box;
+                    background-color: #ffd453;
+                    padding: 6px 11px 11px;
+                    border-radius: 20px;
                 }
-                .berocket_admin_notice .berocket_notice_after_content {
+                /* or 
                     display: inline-block;
-                    vertical-align: middle;
-                    height: 100%;
-                    width: 0px;
+                    background-position: center top;
+                    background-image: linear-gradient(to bottom, #fbf6e5 0%, #ffe65a 50%, #fbf6e5 100%);
+                    background-size: 100% 1em;
+                    background-repeat: no-repeat;
+                 */
+                .berocket-notice-template-big {
+                    display: flex
                 }
-                .berocket_admin_notice .berocket_no_thanks:hover {
-                    opacity: 1;
-                }
-                .berocket_admin_notice .berocket_time_left_block {
-                    display: inline-block;
-                    text-align: center;
-                    vertical-align: middle;
-                    padding: 0 0 0 10px;
-                }
-                .berocket_notice_content .berocket_button {
-                    margin: 0 0 0 10px;
-                    min-width: 80px;
-                    padding: 6px 16px;
-                    vertical-align: baseline;
-                    color: #fff;
-                    box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
-                    text-shadow: none;
-                    border: 0 none;
-                    -moz-user-select: none;
-                    background: #ff5252 none repeat scroll 0 0;
-                    box-sizing: border-box;
-                    cursor: pointer;
-                    font-size: 15px;
-                    outline: 0 none;
+                .berocket-notice-description-container {
+                    padding-top: 0;
+                    padding-bottom: 0;
                     position: relative;
+                    top: -8px; 
+                    width: 50%;
+                }
+                .berocket-notice-actions-container {
                     text-align: center;
-                    text-decoration: none;
-                    transition: box-shadow 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) 0s, background-color 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) 0s;
-                    white-space: nowrap;
-                    height: auto;
-                    display: inline-block;
-                    font-weight: bold;
-                    line-height: 120%;
+                    display: flex;
+                    justify-items: center;
+                    flex-wrap: wrap;
+                    width: 50%;
+                    line-height: 
+                }
+                .berocket-notice-buttons-container {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    margin-top: 25px;
+                    width: 100%;
+                }
+                @media only screen and (max-width: 1400px) {
+                    .berocket-notice-actions-container {
+                        width: 370px;
+                    }
+                    .berocket-notice-buttons-container {
+                        flex-wrap: wrap;
+                        margin-top: 15px;
+                    }
+                    .berocket-notice-buttons-container span {
+                        display: none;
+                    }
+                    .berocket-notice-buttons-container a {
+                        margin-top: 10px;
+                    }
+                    .berocket-notice-buttons-container a.button {
+                        padding-left: 10px !important;
+                        padding-right: 10px !important;
+                        font-size: 22px !important;
+                        width: 100%;
+                    }
+                    .berocket-notice-description-container {
+                        width: 100%;
+                    }
+                }
+                @media only screen and (max-width: 1200px) {
+                    .berocket-notice-template-big {
+                        flex-wrap: wrap;
+                    }
+                    .berocket-notice-description-container {
+                        width: 100%;
+                        text-align: center;
+                    }
+                    .berocket-notice-description-container ul {
+                        display: none;
+                    }
+                    .berocket-notice-actions-container {
+                        margin: 15px auto 0;
+                    }
+                }
+                @media only screen and (max-width: 782px) {
+                    .berocket-notice .notice-action-link {
+                        margin-top: 15px !important;
+                        display: inline-block;
+                        position: static;
+                    }
+                    .berocket-notice p {
+                        margin-right: 0 !important;
+                    }
+                    .berocket-notice-description-container h1 {
+                        line-height: 1.2 !important;
+                    }
+                    .berocket-notice-actions-container {
+                        width: 100%;
+                    }
+                }
+                @media only screen and (max-width: 500px) {
+                    .berocket-notice.notice-error, 
+                    .berocket-notice.notice-info, 
+                    .berocket-notice.notice-message, 
+                    .berocket-notice.notice-success, 
+                    .berocket-notice.notice-warning {
+                        padding: 24px 24px 24px 32px !important;
+                    }
+                    .berocket-notice.notice-error::before, 
+                    .berocket-notice.notice-info::before, 
+                    .berocket-notice.notice-message::before, 
+                    .berocket-notice.notice-success::before, 
+                    .berocket-notice.notice-warning::before {
+                        top: 21px;
+                        left: 5px;
+                    }
                 }
                 </style>';
             }
@@ -664,10 +1136,11 @@ if( ! class_exists( 'berocket_admin_notices' ) ) {
                                 var data = $this.serialize();
                                 data = data+"&action="+$this.find("[name=\'berocket_action\']").val();
                             } else {
+                                var wpNonce = $this.find("[name=\'wp_nonce\']").val() || "";
                                 if( jQuery(".berocket_plugin_id_subscribe").length ) {
-                                    var data = {email:email, action: $this.find("[name=\'berocket_action\']").val(), plugin:jQuery(".berocket_plugin_id_subscribe").val()};
+                                    var data = {email:email, action: $this.find("[name=\'berocket_action\']").val(), plugin:jQuery(".berocket_plugin_id_subscribe").val(), wp_nonce:wpNonce};
                                 } else {
-                                    var data = {email:email, action: $this.find("[name=\'berocket_action\']").val()};
+                                    var data = {email:email, action: $this.find("[name=\'berocket_action\']").val(), wp_nonce:wpNonce};
                                 }
                             }
                             var url = $this.attr("action");
@@ -704,13 +1177,14 @@ if( ! class_exists( 'berocket_admin_notices' ) ) {
             }
         }
         public static function close_notice($notice = FALSE) {
-            if ( ! ( current_user_can( 'manage_options' ) ) ) {
+            $wp_nonce = ( empty($_POST['wp_nonce']) ? '' : $_POST['wp_nonce'] );
+            if ( ! current_user_can( 'manage_options' ) || ! wp_verify_nonce( $wp_nonce, 'berocket_information_close_notice' ) ) {
                 echo __( 'Do not have access for this feature', 'BeRocket_domain' );
                 wp_die();
             }
             self::$subscribed = get_option('berocket_email_subscribed');
             if( ( $notice == FALSE || ! is_array($notice) ) && ! empty($_POST['notice']) ) {
-                $notice = sanitize_textarea_field($_POST['notice']);
+                $notice = $_POST['notice'];
             }
             if (empty($notice) || ! is_array($notice)
             || (empty($notice['start']) && $notice['start'] !== '0')
@@ -718,8 +1192,14 @@ if( ! class_exists( 'berocket_admin_notices' ) ) {
             || (empty($notice['priority']) && $notice['priority'] !== '0')
             || (empty($notice['name'])) ) {
                 $notice = self::get_notice();
+            } else {
+                $notice['start']    = intval($notice['start']);
+                $notice['end']      = intval($notice['end']);
+                $notice['priority'] = intval($notice['priority']);
+                $notice['name']     = sanitize_textarea_field($notice['name']);
             }
             if( empty($notice) || ! is_array($notice) ) {
+	            echo __( 'Notice not found', 'BeRocket_domain' );
                 wp_die();
             }
             $find_names = array($notice['priority'], $notice['end'], $notice['start'], $notice['name']);
@@ -743,10 +1223,12 @@ if( ! class_exists( 'berocket_admin_notices' ) ) {
                 self::set_notice_by_path($current_notice, true);
             }
             update_option('berocket_last_close_notices_time', time());
+	        echo __( 'Notice updated', 'BeRocket_domain' );
             wp_die();
         }
         public static function subscribe() {
-            if ( ! ( current_user_can( 'manage_options' ) ) ) {
+	        $wp_nonce = ( empty($_POST['wp_nonce']) ? '' : $_POST['wp_nonce'] );
+            if ( ! ( current_user_can( 'manage_options' ) ) || ! wp_verify_nonce( $wp_nonce, 'berocket_subscribe_email' ) ) {
                 echo __( 'Do not have access for this feature', 'BeRocket_domain' );
                 wp_die();
             }
@@ -774,7 +1256,7 @@ if( ! class_exists( 'berocket_admin_notices' ) ) {
                 ));
                 if( ! is_wp_error($response) ) {
                     $out = wp_remote_retrieve_body($response);
-                    echo $out;
+                    echo wp_kses_post($out);
                 }
             }
             wp_die();
@@ -784,12 +1266,46 @@ if( ! class_exists( 'berocket_admin_notices' ) ) {
                 'start' => 0,
                 'end'   => 0,
                 'name'  => 'subscribe',
-                'html'  => 'Subscribe to get latest BeRocket news and updates, plugin recommendations and configuration help, promotional email with discount codes.',
+                'html'  => '<h2>Subscribe to get latest BeRocket news and updates, plugin recommendations and configuration 
+						help, promotional email with discount codes.</h2>',
                 'subscribe'  => true,
                 'image'  => array(
                     'local' => plugin_dir_url( __FILE__ ) . '../assets/images/ad_white_on_orange.webp',
                 ),
             ));
+        }
+        public static function notice_closed_status($display_notice, $item, $search_data) {
+            if( ! $display_notice ) {
+                return $display_notice;
+            }
+            if( ! empty($item['conditions']) && is_array($item['conditions'])
+                && isset($item['conditions']['notice_close_status']) && is_array($item['conditions']['notice_close_status']) 
+                && isset($item['conditions']['notice_close_status']['notice_name']) && isset($item['conditions']['notice_close_status']['notice_priority'])
+                && isset($item['conditions']['notice_close_status']['closed']) ) {
+                $notices            = get_option('berocket_admin_notices');
+                $notice_name        = $item['conditions']['notice_close_status']['notice_name'];
+                $notice_priority    = $item['conditions']['notice_close_status']['notice_priority'];
+                $closed             = $item['conditions']['notice_close_status']['closed'];
+                if( ! is_array($closed) ) {
+                    $closed = array($closed);
+                }
+                $notice_exist = false;
+                if ( is_array( $notices ) and ! empty( $notices[ $notice_priority ] ) ) {
+                    foreach ( $notices[ $notice_priority ] as $end_time => $end_level ) {
+                        foreach ( $end_level as $start_time => $start_level ) {
+                            if ( ! empty( $start_level[ $notice_name ] ) ) {
+                                $display_notice = in_array($start_level[ $notice_name ]['closed'], $closed);
+                                $notice_exist = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if( ! $notice_exist ) {
+                    $display_notice = false;
+                }
+            }
+            return $display_notice;
         }
     }
     add_action( 'admin_notices', array('berocket_admin_notices', 'display_admin_notice') );
@@ -843,7 +1359,8 @@ if( ! class_exists( 'berocket_admin_notices_rate_stars' ) ) {
                                 data-prevent="0"
                                 data-function="berocket_rate_star_close_notice"
                                 data-later="0"
-                                data-thanks_html=\'<picture><source type="image/webp" srcset="'.plugin_dir_url( __FILE__ ).'../assets/images/Thank-you.webp" alt="Feature Request"><img src="https://berocket.com/images/plugin/Thank-you.png" style="width: 100%;" alt="Feature Request"></picture><h3 class="berocket_thank_you_rate_us">'.__('Each good feedback is very important for plugin growth', 'BeRocket_domain').'</h3>\'
+                                data-wp_nonce="' . wp_create_nonce('berocket_rate_stars_close') . '"
+                                data-thanks_html=\'<picture><source type="image/webp" srcset="'.plugin_dir_url( __FILE__ ).'../assets/images/Thank-you.webp" alt="Feature Request"><img src="https://berocket.com/images/plugin/Thank-you.png" style="max-width: 100%;" alt="Feature Request"></picture><h3 class="berocket_thank_you_rate_us">'.__('Each good feedback is very important for plugin growth', 'BeRocket_domain').'</h3>\'
                                 href="https://wordpress.org/support/plugin/'.$plugin['free_slug'].'/reviews/?filter=5#new-post"
                                 target="_blank">'.__('Ok, you deserved it', 'BeRocket_domain').'</a>
                             <span class="brfirts"> | </span>
@@ -852,6 +1369,7 @@ if( ! class_exists( 'berocket_admin_notices_rate_stars' ) ) {
                                 data-action="berocket_rate_stars_close"
                                 data-prevent="1"
                                 data-later="1"
+                                data-wp_nonce="' . wp_create_nonce('berocket_rate_stars_close') . '"
                                 data-function="berocket_rate_star_close_notice"
                                 href="#later">
                                     <span class="brfeature_hide_mobile">'.__('Maybe later', 'BeRocket_domain').'</span>
@@ -863,6 +1381,7 @@ if( ! class_exists( 'berocket_admin_notices_rate_stars' ) ) {
                                 data-action="berocket_rate_stars_close"
                                 data-prevent="1"
                                 data-later="0"
+                                data-wp_nonce="' . wp_create_nonce('berocket_rate_stars_close') . '"
                                 data-function="berocket_rate_star_close_notice"
                                 href="#close">
                                     <span class="brfeature_hide_mobile">'.__('I already did', 'BeRocket_domain').'</span>
@@ -936,7 +1455,8 @@ if( ! class_exists( 'berocket_admin_notices_rate_stars' ) ) {
             update_option('berocket_admin_notices_rate_stars', $disabled);
         }
         function disable_rate_notice() {
-            if ( ! ( current_user_can( 'manage_options' ) ) ) {
+            $wp_nonce = (empty($_GET['wp_nonce']) ? (empty($_POST['wp_nonce']) ? '' : $_POST['wp_nonce']) : $_GET['wp_nonce']);
+            if ( ! current_user_can( 'manage_options' ) || ! wp_verify_nonce( $wp_nonce, 'berocket_rate_stars_close' ) ) {
                 echo __( 'Do not have access for this feature', 'BeRocket_domain' );
                 wp_die();
             }
@@ -954,14 +1474,15 @@ if( ! class_exists( 'berocket_admin_notices_rate_stars' ) ) {
             wp_die();
         }
         function feature_request_send() {
-            if ( ! ( current_user_can( 'manage_options' ) ) ) {
+            $wp_nonce = ( empty($_POST['wp_nonce']) ? '' : $_POST['wp_nonce'] );
+            if ( ! current_user_can( 'manage_options' ) || ! wp_verify_nonce( $wp_nonce, 'berocket_feature_request_send' ) ) {
                 echo __( 'Do not have access for this feature', 'BeRocket_domain' );
                 wp_die();
             }
-            $plugin = (empty($_GET['brfeature_plugin']) ? (empty($_POST['brfeature_plugin']) ? '' : $_POST['brfeature_plugin']) : $_GET['brfeature_plugin']);
-            $email = (empty($_GET['brfeature_email']) ? (empty($_POST['brfeature_email']) ? '' : $_POST['brfeature_email']) : $_GET['brfeature_email']);
-            $title = (empty($_GET['brfeature_title']) ? (empty($_POST['brfeature_title']) ? '' : $_POST['brfeature_title']) : $_GET['brfeature_title']);
-            $description = (empty($_GET['brfeature_description']) ? (empty($_POST['brfeature_description']) ? '' : $_POST['brfeature_description']) : $_GET['brfeature_description']);
+            $plugin = sanitize_key(wp_unslash(empty($_GET['brfeature_plugin']) ? (empty($_POST['brfeature_plugin']) ? '' : $_POST['brfeature_plugin']) : $_GET['brfeature_plugin']));
+            $email = sanitize_email(wp_unslash(empty($_GET['brfeature_email']) ? (empty($_POST['brfeature_email']) ? '' : $_POST['brfeature_email']) : $_GET['brfeature_email']));
+            $title = sanitize_text_field(wp_unslash(empty($_GET['brfeature_title']) ? (empty($_POST['brfeature_title']) ? '' : $_POST['brfeature_title']) : $_GET['brfeature_title']));
+            $description = sanitize_textarea_field(wp_unslash(empty($_GET['brfeature_description']) ? (empty($_POST['brfeature_description']) ? '' : $_POST['brfeature_description']) : $_GET['brfeature_description']));
             if( ! empty($plugin) && ! empty($title) && ! empty($description) ) {
                 $response = wp_remote_post( 'https://berocket.com/api/data/add_feature_request', array(
                     'body'        => array(
@@ -992,8 +1513,9 @@ if( ! class_exists( 'berocket_admin_notices_rate_stars' ) ) {
                                 data-action="berocket_rate_stars_close"
                                 data-prevent="0"
                                 data-later="0"
+                                data-wp_nonce="' . wp_create_nonce('berocket_rate_stars_close') . '"
                                 data-function="berocket_rate_star_close_notice"
-                                data-thanks_html=\'<picture><source type="image/webp" srcset="'.plugin_dir_url( __FILE__ ).'../assets/images/Thank-you.webp" alt="Feature Request"><img src="https://berocket.com/images/plugin/Thank-you.png" style="width: 100%;" alt="Feature Request"></picture><h3 class="berocket_thank_you_rate_us">'.__('Each good feedback is very important for plugin growth', 'BeRocket_domain').'</h3>\'
+                                data-thanks_html=\'<picture><source type="image/webp" srcset="'.plugin_dir_url( __FILE__ ).'../assets/images/Thank-you.webp" alt="Feature Request"><img src="https://berocket.com/images/plugin/Thank-you.png" style="max-width: 100%;" alt="Feature Request"></picture><h3 class="berocket_thank_you_rate_us">'.__('Each good feedback is very important for plugin growth', 'BeRocket_domain').'</h3>\'
                                 href="https://wordpress.org/support/plugin/'.$plugin['free_slug'].'/reviews/?filter=5#new-post"
                                 target="_blank">'.__('Ok, you deserved it', 'BeRocket_domain').'</a>
                                 <p>'.__('Support the plugin by setting good feedback.<br>We really need this.', 'BeRocket_domain').'</p>
@@ -1099,7 +1621,7 @@ if( ! class_exists( 'berocket_admin_notices_rate_stars' ) ) {
                     'price'     => '44',
                     'slug'      => 'ajax_filters',
                     'image'     => $host . 'Filters.png',
-                    'image_top' => 'https://e8e3g4v6.rocketcdn.me/wp-content/uploads/2022/11/top-banner-filters.jpg?v=new',
+                    'image_top' => 'https://e8e3g4v6.delivery.rocketcdn.me/wp-content/uploads/2022/11/top-banner-filters.jpg?v=new',
                     'title'     => 'WooCommerce AJAX Products Filter',
                     'desc'      => "Increase conversions by making the product search easier and suitable for your customers' needs",
                     'desc_top'  => 'Get nice URLs and correct variations filtering for your shop with WooCommerce AJAX Products Filter for only ${price}!',
@@ -1113,7 +1635,7 @@ if( ! class_exists( 'berocket_admin_notices_rate_stars' ) ) {
                     'price'     => '34',
                     'slug'      => 'products_label',
                     'image'     => $host . 'Labels.png',
-                    'image_top' => 'https://e8e3g4v6.rocketcdn.me/wp-content/uploads/2022/11/top-banner-labels.jpg?v=new',
+                    'image_top' => 'https://e8e3g4v6.delivery.rocketcdn.me/wp-content/uploads/2022/11/top-banner-labels.jpg?v=new',
                     'title'     => 'WooCommerce Advanced Product Labels',
                     'desc'      => "Capture client's attention on needed products. Create labels easily and quickly",
                     'desc_top'  => 'Capture client\'s attention on needed products. Create labels easily and quickly for only ${price}!',
@@ -1127,7 +1649,7 @@ if( ! class_exists( 'berocket_admin_notices_rate_stars' ) ) {
                     'price'     => '34',
                     'slug'      => 'list_grid',
                     'image'     => $host . 'GridList.png',
-                    'image_top' => 'https://e8e3g4v6.rocketcdn.me/wp-content/uploads/2022/11/top-banner-gridlist.jpg?v=new',
+                    'image_top' => 'https://e8e3g4v6.delivery.rocketcdn.me/wp-content/uploads/2022/11/top-banner-gridlist.jpg?v=new',
                     'title'     => 'WooCommerce Grid/List View',
                     'desc'      => "Users need option to see more info. Add Grid/List toggle and Products per page to show more",
                     'desc_top'  => 'Users need option to see more info. Add Grid/List toggle and Products per page to show more for only ${price}!',
@@ -1141,7 +1663,7 @@ if( ! class_exists( 'berocket_admin_notices_rate_stars' ) ) {
                     'price'     => '34',
                     'slug'      => 'BeRocket_LMP',
                     'image'     => $host . 'LoadMore.png',
-                    'image_top' => 'https://e8e3g4v6.rocketcdn.me/wp-content/uploads/2022/11/top-banner-loadmore.jpg?v=new',
+                    'image_top' => 'https://e8e3g4v6.delivery.rocketcdn.me/wp-content/uploads/2022/11/top-banner-loadmore.jpg?v=new',
                     'title'     => 'WooCommerce Load More Products',
                     'desc'      => "Load next page' products with infinite scrolling, AJAX pagination or load more products button",
                     'desc_top'  => 'Load next page\' products with infinite scrolling, AJAX pagination or load more products button for only ${price}!',
@@ -1155,7 +1677,7 @@ if( ! class_exists( 'berocket_admin_notices_rate_stars' ) ) {
                     'price'     => '34',
                     'slug'      => 'MM_Quantity',
                     'image'     => $host . 'MinMax.png',
-                    'image_top' => 'https://e8e3g4v6.rocketcdn.me/wp-content/uploads/2022/11/top-banner-minmax.jpg?v=new',
+                    'image_top' => 'https://e8e3g4v6.delivery.rocketcdn.me/wp-content/uploads/2022/11/top-banner-minmax.jpg?v=new',
                     'title'     => 'WooCommerce Min/Max Quantity',
                     'desc'      => "Define quantity rules for orders, products and variations. Group the products and limit all of them together",
                     'desc_top'  => 'Define quantity rules for orders, products and variations. Group the products and limit all of them together for only ${price}!',
@@ -1169,7 +1691,7 @@ if( ! class_exists( 'berocket_admin_notices_rate_stars' ) ) {
                     'price'     => '34',
                     'slug'      => 'tab_manager',
                     'image'     => $host . 'Tabs.png',
-                    'image_top' => 'https://e8e3g4v6.rocketcdn.me/wp-content/uploads/2022/11/top-banner-tabs.jpg?v=new1',
+                    'image_top' => 'https://e8e3g4v6.delivery.rocketcdn.me/wp-content/uploads/2022/11/top-banner-tabs.jpg?v=new1',
                     'title'     => 'WooCommerce Product Tabs Manager',
                     'desc'      => "Upgrade your tabs to a powerful marketing instrument. Show there related products or special info.",
                     'desc_top'  => 'Upgrade your tabs to a powerful marketing instrument. Show there related products or special info for only ${price}!',
@@ -1183,7 +1705,7 @@ if( ! class_exists( 'berocket_admin_notices_rate_stars' ) ) {
                     'price'     => '34',
                     'slug'      => 'image_watermark',
                     'image'     => $host . 'Watermark.png',
-                    'image_top' => 'https://e8e3g4v6.rocketcdn.me/wp-content/uploads/2022/11/top-banner-watermarks.jpg?v=new',
+                    'image_top' => 'https://e8e3g4v6.delivery.rocketcdn.me/wp-content/uploads/2022/11/top-banner-watermarks.jpg?v=new',
                     'title'     => 'WooCommerce Products Image Watermark',
                     'desc'      => "Don't let them steal it. Add watermarks to protect your images",
                     'desc_top'  => 'Don\'t let them steal it. Add watermarks to protect your images for only ${price}!',
@@ -1202,8 +1724,8 @@ if( ! class_exists( 'berocket_admin_notices_rate_stars' ) ) {
                     }
 
                     foreach ( $plugins as &$plugin ) {
-                        if ( $plugin[ 'plugin_id' ] == berocket_isset( $plugin_data[ 'id' ] ) && isset( $plugin_data[ 'price' ] ) ) {
-                            $plugin[ 'price' ] = $plugin_data[ 'price' ];
+                        if ( $plugin[ 'plugin_id' ] == berocket_isset( $plugin_data[ 'id' ] ) && isset( $plugin_data[ 'price' ] ) && is_scalar( $plugin_data[ 'price' ] ) ) {
+                            $plugin[ 'price' ] = sanitize_text_field( (string) $plugin_data[ 'price' ] );
                             break;
                         }
                     }
@@ -1233,41 +1755,45 @@ if( ! class_exists( 'berocket_admin_notices_rate_stars' ) ) {
 	            if( $plugin === false ) {
 		            $plugin = self::get_plugin_data( 1 );
 	            }
-                if ( time() > 1637841600 and time() < 1637841600+302400 ) {
-                    echo "
-                    <div class='berocket-above-settings-banner' style='background: #1a1a1a; padding: 0;'>
-                        <a href='{$plugin['url']}?utm_source=free_plugin&utm_medium=settings&utm_campaign={$cur_plugin->info['plugin_name']}&utm_content=top' target='_blank' 
-                        style='background: transparent; width: auto; border: 0 none; box-shadow: none; padding: 0; margin: 0;'>
-                            <img alt='{$plugin['title']}' src='https://berocket.ams3.cdn.digitaloceanspaces.com/g/bf21-1202x280.jpg' style='display: block;'>
-                        </a>
-                    </div>";
-                } else if ( time() > 1637841600+302400 and time() < 1637841600+302400+518400 ) {
-	                echo "
-                    <div class='berocket-above-settings-banner berocket-cm21-settings-wrapper' style='background: #07002e; padding: 0;'>
-                        <a href='{$plugin['url']}?utm_source=free_plugin&utm_medium=settings&utm_campaign={$cur_plugin->info['plugin_name']}&utm_content=top' target='_blank' >
-                            <img alt='{$plugin['title']}' src='https://berocket.ams3.cdn.digitaloceanspaces.com/g/cm21.jpg'>
-                            <div class='berocket-cm21-settings'>
-                                <div class='berocket-cm21-settings-header'>
-                                    <p>Don't lose another 5% of the discount. Purchase now!</p>
-                                </div>
-                                <p style='top: 30%; left: 6%; '><span>Monday: <span style='padding-left: 20px; font-size: 1.25em; font-weight: bold;'>-30%</span></span></p>
-                                <p style='top: 32%; left: 55%;'><span>Tuesday: <span style='padding-left: 15px; font-size: 1.2em; font-weight: bold;'>-25%</span></span></p>
-                                <p style='top: 48%; left: 10%;'><span>Wednesday: <span style='padding-left: 5px; font-size: 1.15em'>-20%</span></span></p>
-                                <p style='top: 50%; left: 59%;'><span>Thursday: <span style='padding-left: 10px; font-size: 1.1em'>-15%</span></span></p>
-                                <p style='top: 66%; left: 16%;'><span>Friday: <span style='padding-left: 20px; font-size: 0.9em'>-10%</span></span></p>
-                                <p style='top: 68%; left: 63%;'><span>Saturday: <span style='padding-left: 15px; font-size: 0.9em'>-5%</span></span></p>
-                            </div>
-                            <div class='berocket-cm21-settings-mobiles-title' style='display: none;'>Up to 30% off sitewide!</div>
-                        </a>
-                    </div>";
+
+	            $start_time = mktime(0, 0, 0, 4, 13, 2026);
+	            $end_time   = mktime(23, 59, 59, 4, 17, 2026);
+	            $c_notice   = berocket_admin_notices::get_notice_by_path(array(
+                    19,
+                    $end_time,
+                    $start_time,
+                    'spring_premium_days_2026'
+                ));
+	            $is_closed = false;
+	            if ( ! isset( $c_notice['closed'] ) or $c_notice['closed'] > 0 ) {
+		            $is_closed = true;
+	            }
+
+                if ( ! $is_closed and time() >= $start_time and time() < $end_time ) {
+                    // do nothing
                 } else {
+	                $banner = [ "get_it_now"              => __( 'Get it now', 'BeRocket_domain' ),
+                                "remove_banner"           => __( 'Remove banner', 'BeRocket_domain' ),
+                                "unlock_premium"          => __( 'Unlock Premium', 'BeRocket_domain' ),
+                                "upgrade_now"             => __( 'Upgrade Now', 'BeRocket_domain' ),
+                                "go_premium"              => __( 'Go Premium', 'BeRocket_domain' ),
+                                "unlock_all_features"     => __( 'Unlock All Features', 'BeRocket_domain' ),
+                                "access_premium_features" => __( 'Access Premium Features', 'BeRocket_domain' ),
+                                "power_up_your_store"     => __( 'Power Up Your Store', 'BeRocket_domain' ),
+                                "remove_limits"           => __( 'Remove Limits', 'BeRocket_domain' ),
+                                "unlock_everything"       => __( 'Unlock Everything', 'BeRocket_domain' ),
+                                "remove_this_banner"      => __( 'Remove This Banner', 'BeRocket_domain' ) ];
+	                $banner_key = array_rand( $banner );
 	                echo "
                     <div class='berocket-above-settings-banner' style='background: {$plugin['bg_top']};'>
                         <div style='background-image: url(\"{$plugin['image_top']}\")'>
                             <div>
                                 <h1>{$plugin['title']}</h1>
                                 <p>" . ( empty( $plugin['desc_top'] ) ? $plugin['desc'] : $plugin['desc_top'] ) . "</p>
-                                <a href='{$plugin['url']}" . ( str_contains( $plugin[ 'url' ], '?') ? '&' : '?' ) . "utm_source=free_plugin&utm_medium=settings&utm_campaign={$cur_plugin->info['plugin_name']}&utm_content=top' target='_blank'>" . __( 'Get it now', 'BeRocket_domain' ) . "</a>
+                                <a href='{$plugin['url']}" . ( strpos( $plugin['url'], '?' ) !== false ? '&' : '?' ) .
+                                    "utm_source=plugin&utm_medium=banner&utm_campaign=upgrade&utm_content=top_" . $banner_key .
+                                    "&utm_term={$cur_plugin->info['plugin_sku']}' target='_blank'>" . $banner[ $banner_key ] .
+                                "</a>
                             </div>
                         </div>
                     </div>
@@ -1512,7 +2038,7 @@ if( ! class_exists( 'berocket_admin_notices_rate_stars' ) ) {
         function show_related_window( $html, $plugin_id, $plugin, $location = 'sidebar' ) {
             add_action( 'admin_footer', array( $this, 'wp_footer_js' ) );
             $plugins = self::get_plugin_data();
-            $plugins_use = array_rand($plugins, 2);
+            $plugins_use = [array_rand($plugins)];
 
             foreach($plugins_use as $plugin_use) {
                 $plugin_data = $plugins[$plugin_use];
@@ -1526,9 +2052,10 @@ if( ! class_exists( 'berocket_admin_notices_rate_stars' ) ) {
                             <h3>' . $plugin_data[ 'title' ] . '</h3>
                             <p>' . $plugin_data[ 'desc' ] . '</p>
                             <a class="brfirst" href="' . $plugin_data[ 'url' ]
-                                . ( str_contains( $plugin_data[ 'url' ], '?') ? '&' : '?' )
-                                . 'utm_source=free_plugin&utm_medium=settings&utm_campaign=' . $plugin->info['plugin_name']
-                                . '&utm_content=sidebar" target="_blank">From: $' . $plugin_data[ 'price' ] . '</a>
+                                . ( strpos( $plugin_data[ 'url' ], '?' ) !== false ? '&' : '?' )
+                                . 'utm_source=plugin&utm_medium=settings&utm_term=' . ( $plugin->info['plugin_sku'] ?? $plugin->info['plugin_name'] )
+                                . '&utm_campaign=upgrade&utm_content=sidebar"'
+                                . ' target="_blank">From: $' . $plugin_data[ 'price' ] . '</a>
                         </div>
                     </div>
                 </div>';
@@ -1684,6 +2211,7 @@ if( ! class_exists( 'berocket_admin_notices_rate_stars' ) ) {
                             </picture>
                             <form class="berocket_feature_request_inside">
                                 <input name="brfeature_plugin" type="hidden" value="'.$plugin['id'].'">
+                                <input name="wp_nonce" type="hidden" value="' . wp_create_nonce('berocket_feature_request_send') . '">
                                 <input name="brfeature_title" placeholder="'.__('Feature Title', 'BeRocket_domain').'">
                                 <input name="brfeature_email" placeholder="'.__('Email (optional)', 'BeRocket_domain').'">
                                 <textarea name="brfeature_description" placeholder="'.__('Feature Description', 'BeRocket_domain').'"></textarea>
@@ -1694,7 +2222,7 @@ if( ! class_exists( 'berocket_admin_notices_rate_stars' ) ) {
                         <div class="berocket_feature_request_thanks" style="display: none;">
                             <picture>
                                 <source type="image/webp" srcset="'.plugin_dir_url( __FILE__ ).'../assets/images/Thank-you.webp" alt="Feature Request">
-                                <img src="https://berocket.com/images/plugin/Thank-you.png" style="width: 100%;" alt="Feature Request">
+                                <img src="https://berocket.com/images/plugin/Thank-you.png" style="max-width: 100%;" alt="Feature Request">
                             </picture>';
                     if( empty($disabled[$plugin_id]) || $disabled[$plugin_id]['time'] != 0 ) {
                         $html .= '
@@ -1706,8 +2234,9 @@ if( ! class_exists( 'berocket_admin_notices_rate_stars' ) ) {
                                 data-action="berocket_rate_stars_close"
                                 data-prevent="0"
                                 data-later="0"
+                                data-wp_nonce="' . wp_create_nonce('berocket_rate_stars_close') . '"
                                 data-function="berocket_rate_star_close_notice"
-                                data-thanks_html=\'<picture><source type="image/webp" srcset="'.plugin_dir_url( __FILE__ ).'../assets/images/Thank-you.webp" alt="Feature Request"><img src="https://berocket.com/images/plugin/Thank-you.png" style="width: 100%;" alt="Feature Request"></picture><h3 class="berocket_thank_you_rate_us">'.__('Each good feedback is very important for plugin growth', 'BeRocket_domain').'</h3>\'
+                                data-thanks_html=\'<picture><source type="image/webp" srcset="'.plugin_dir_url( __FILE__ ).'../assets/images/Thank-you.webp" alt="Feature Request"><img src="https://berocket.com/images/plugin/Thank-you.png" style="max-width: 100%;" alt="Feature Request"></picture><h3 class="berocket_thank_you_rate_us">'.__('Each good feedback is very important for plugin growth', 'BeRocket_domain').'</h3>\'
                                 href="https://wordpress.org/support/plugin/'.$plugin['free_slug'].'/reviews/?filter=5#new-post"
                                 target="_blank">'.__('This plugin deserves 5 stars', 'BeRocket_domain').'</a></li>
                             <li><a class="berocket_rate_next_time brsecond"
@@ -1717,6 +2246,7 @@ if( ! class_exists( 'berocket_admin_notices_rate_stars' ) ) {
                                 data-action="berocket_rate_stars_close"
                                 data-prevent="1"
                                 data-later="0"
+                                data-wp_nonce="' . wp_create_nonce('berocket_rate_stars_close') . '"
                                 data-function="berocket_rate_star_close_notice"
                                 href="#close">'.__('I already rated it', 'BeRocket_domain').'</a></li>
                             </ul>
@@ -1952,4 +2482,3 @@ if( ! class_exists( 'berocket_admin_notices_rate_stars' ) ) {
     }
     new berocket_admin_notices_rate_stars;
 }
-?>

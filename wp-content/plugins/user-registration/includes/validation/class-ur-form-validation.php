@@ -54,10 +54,59 @@ class UR_Form_Validation extends UR_Validation {
 	 */
 	public function __construct() {
 		add_action( 'user_registration_validate_form_data', array( $this, 'validate_form' ), 10, 6 );
-		add_action( 'user_registration_validate_profile_update_ajax', array( $this, 'validate_update_profile_AJAX' ), 10, 3 );
-		add_action( 'user_registration_validate_profile_update_post', array( $this, 'validate_update_profile_POST' ), 10, 2 );
+		add_action( 'user_registration_validate_profile_update', array( $this, 'validate_update_profile' ), 10, 4 );
+		add_filter( 'user_registration_reorganize_form_data', array( $this, 'reorganize_form_data' ), 10, 3 );
 	}
 
+	/**
+	 * Reorganize form data according to the actual form structure instead of the submitted data structure
+	 *
+	 * @param $valid_form_data
+	 * @param $form_field_data
+	 * @param $form_id
+	 *
+	 * @return array
+	 */
+	public function reorganize_form_data( $valid_form_data, $form_field_data, $form_id ) {
+		if ( ! is_array( $valid_form_data ) ) {
+			$valid_form_data = array();
+		}
+
+		if ( empty( $form_field_data ) ) {
+			return $valid_form_data;
+		}
+		$new_form_data = array();
+
+		$form_row_data = get_post_meta( $form_id, 'user_registration_form_row_data', true );
+
+		$row_datas = ! empty( $form_row_data ) ? json_decode( $form_row_data ) : array();
+
+		$repeater_fields     = array();
+		$repeater_field_data = array();
+		foreach ( $row_datas as $individual_row_data ) {
+
+			if ( isset( $individual_row_data->repeater_id ) && isset( $individual_row_data->field_name ) ) {
+				array_push( $repeater_fields, $individual_row_data->fields );
+
+				$repeater_field_data[ $individual_row_data->field_name ] = $valid_form_data[ $individual_row_data->field_name ] ?? array();
+			}
+		}
+
+		foreach ( $form_field_data as $key => $data ) {
+			if ( empty( $data->general_setting->field_name ) ) {
+				continue;
+			}
+			$field_name = $data->general_setting->field_name;
+			if ( in_array( $field_name, $repeater_fields ) ) {
+				continue;
+			} elseif ( array_key_exists( $field_name, $valid_form_data ) ) {
+				$new_form_data[ $field_name ] = $valid_form_data[ $field_name ];
+			}
+		}
+
+		$new_form_data = array_merge( $new_form_data, $repeater_field_data );
+		return $new_form_data;
+	}
 
 	/**
 	 * Validates the user submitted registration form field values.
@@ -68,7 +117,7 @@ class UR_Form_Validation extends UR_Validation {
 	 * @param [int]    $form_id Form Id.
 	 * @param [array]  $response_array UR_Frontend_Form_Handler::$response_array reference.
 	 * @param [string] $user_pass User Password reference.
-	 * @return void
+	 * @return array Valid form data, returned so a later callback on the same filter doesn't wipe it.
 	 */
 	public function validate_form( &$valid_form_data, $form_field_data, $form_data, $form_id, &$response_array, &$user_pass ) {
 		$this->valid_form_data = $valid_form_data;
@@ -83,21 +132,33 @@ class UR_Form_Validation extends UR_Validation {
 		$enable_auto_password_generation = ur_string_to_bool( ur_get_single_post_meta( $form_id, 'user_registration_pro_auto_password_activate' ) );
 
 		if ( $enable_auto_password_generation ) {
+			/**
+			 * Action auto generate password.
+			 *
+			 * @param array $form_id The form id.
+			 */
 			do_action( 'user_registration_auto_generate_password', $form_id );
+			/**
+			 * Filter auto generated password.
+			 * Default value is 'user_pass'.
+			 */
 			$user_pass = apply_filters( 'user_registration_auto_generated_password', 'user_pass' );
 			$this->validate_form_data( $form_id, $form_field_data, $form_data );
 		} else {
 			$this->match_password( $form_field_data, $form_data );
 			$this->validate_form_data( $form_id, $form_field_data, $form_data );
 			$this->validate_password_data( $form_field_data, $form_data );
-			$user_pass = $this->valid_form_data['user_pass']->value;
+			$user_pass = isset( $this->valid_form_data['user_pass']->value ) ? $this->valid_form_data['user_pass']->value : '';
 		}
-
-		// Modify UR_Frontend_Form_Handler::$response_array variable.
-		$response_array = array_merge( $response_array, $this->response_array );
+		if ( ! is_null( $this->response_array ) ) {
+			// Modify UR_Frontend_Form_Handler::$response_array variable.
+			$response_array = array_merge( $response_array, $this->response_array );
+		}
 
 		// Modify UR_Frontend_Form_Handler::$valid_form_data variable.
 		$valid_form_data = $this->valid_form_data;
+
+		return $valid_form_data;
 	}
 
 
@@ -110,28 +171,71 @@ class UR_Form_Validation extends UR_Validation {
 	 * @param  array $form_data  Form data to validate.
 	 */
 	public function validate_form_data( $form_id, $form_field_data = array(), $form_data = array() ) {
-		$form_data_field     = wp_list_pluck( $form_data, 'field_name' );
-		$form_field_data     = apply_filters( 'user_registration_add_form_field_data', $form_field_data, $form_id );
-		$form_key_list       = wp_list_pluck( wp_list_pluck( $form_field_data, 'general_setting' ), 'field_name' );
-		$duplicate_field_key = array_diff_key( $form_data_field, array_unique( $form_data_field ) );
+		// Submitted field data is client-supplied JSON, so an entry can arrive without field_name (e.g. a display-only field).
+		$request_form_keys = wp_list_pluck( array_filter( $form_data, function ( $field ) {
+			return isset( $field->field_name );
+		} ), 'field_name' );
+
+		/**
+		 * Filter the form field data.
+		 *
+		 * @param array $form_field_data The form data.
+		 * @param int $form_id The form ID.
+		 */
+		$form_field_data = apply_filters( 'user_registration_add_form_field_data', $form_field_data, $form_id );
+
+		$required_fields     = wp_list_pluck( wp_list_pluck( $form_field_data, 'general_setting' ), 'field_name' );
+		$duplicate_field_key = array_diff_key( $request_form_keys, array_unique( $request_form_keys ) );
 		if ( count( $duplicate_field_key ) > 0 ) {
 			array_push( $this->response_array, __( 'Duplicate field key in form, please contact site administrator.', 'user-registration' ) );
 		}
 
-		$contains_search = count( array_intersect( ur_get_required_fields(), $form_data_field ) ) == count( ur_get_required_fields() );
+		$contains_search = count( array_intersect( ur_get_required_fields(), $request_form_keys ) ) == count( ur_get_required_fields() );
 
 		if ( false === $contains_search ) {
 			array_push( $this->response_array, __( 'Required form field not found.', 'user-registration' ) );
 		}
 
+		foreach ( $form_data as $data ) {
+
+			if ( isset( $data->field_type ) && 'repeater' === $data->field_type ) {
+				/**
+				 * Action validate honeypot container.
+				 *
+				 * @param array $data The data.
+				 * @param string $filter_hook The dynamic Filter hook.
+				 * @param int $form_id The form ID.
+				 * @param array $form_data The form data.
+				 */
+				list( $this->response_array, $this->valid_form_data ) = apply_filters(
+					'user_registration_validate_repeater_fields',
+					array(
+						$this->response_array,
+						$this->valid_form_data,
+					),
+					$data,
+					$form_id,
+					$form_data,
+					$form_field_data
+				);
+				$required_fields                                      = apply_filters( 'user_registration_missing_repeater_field_keys', $required_fields, $form_id );
+
+			} else {
+
+				list( $response_array, $valid_form_data ) = user_registration_validate_form_field_data( $data, $form_data, $form_id, $this->response_array, $form_field_data, array() );
+				$this->response_array                     = $response_array;
+				$this->valid_form_data                    = array_merge( $this->valid_form_data, $valid_form_data );
+			}
+		}
+
 		// Check if a required field is missing.
-		$missing_item = array_diff( $form_key_list, $form_data_field );
+		$missing_item = array_diff( $required_fields, $request_form_keys );
 
 		if ( count( $missing_item ) > 0 ) {
 
 			foreach ( $missing_item as $key => $value ) {
 
-				$ignorable_field = array( 'user_pass', 'user_confirm_password', 'user_confirm_email', 'stripe_gateway' );
+				$ignorable_field = array( 'user_pass', 'user_confirm_password', 'user_confirm_email', 'stripe_gateway', 'authorizenet_gateway' );
 
 				// Ignoring confirm password and confirm email field, since they are handled separately.
 				if ( ! in_array( $value, $ignorable_field, true ) ) {
@@ -139,83 +243,7 @@ class UR_Form_Validation extends UR_Validation {
 				}
 			}
 		}
-
-		foreach ( $form_data as $data ) {
-
-			if ( in_array( $data->field_name, $form_key_list, true ) ) {
-				$form_data_index    = array_search( $data->field_name, $form_key_list, true );
-				$single_form_field  = $form_field_data[ $form_data_index ];
-				$general_setting    = isset( $single_form_field->general_setting ) ? $single_form_field->general_setting : new stdClass();
-				$single_field_key   = $single_form_field->field_key;
-				$single_field_label = isset( $general_setting->label ) ? $general_setting->label : '';
-				$single_field_value = isset( $data->value ) ? $data->value : '';
-				$data->extra_params = array(
-					'field_key' => $single_field_key,
-					'label'     => $single_field_label,
-				);
-
-				/**
-				 * Validate form fields according to the validations set in $validations array.
-				 *
-				 * @see this->get_field_validations()
-				 */
-
-				$validations = $this->get_field_validations( $single_field_key );
-
-				if ( $this->is_field_required( $single_form_field, $form_data ) ) {
-					array_unshift( $validations, 'required' );
-				}
-
-				if ( ! empty( $validations ) ) {
-					if ( in_array( 'required', $validations, true ) || ! empty( $single_field_value ) ) {
-						foreach ( $validations as $validation ) {
-							$result = self::$validation( $single_field_value );
-
-							if ( is_wp_error( $result ) ) {
-								$this->add_error( $result, $single_field_label );
-								break;
-							}
-						}
-					}
-				}
-
-				/**
-				 * Hook to update form field data.
-				 */
-				$field_hook_name = 'user_registration_form_field_' . $single_form_field->field_key . '_params';
-				$data            = apply_filters( $field_hook_name, $data, $single_form_field );
-
-				$this->valid_form_data[ $data->field_name ] = self::get_sanitize_value( $data );
-
-				/**
-				 * Hook to custom validate form field.
-				 */
-				$hook        = "user_registration_validate_{$single_form_field->field_key}";
-				$filter_hook = $hook . '_message';
-
-				if ( isset( $data->field_type ) && 'email' === $data->field_type ) {
-					do_action( 'user_registration_validate_email_whitelist', $data->value, $filter_hook, $single_form_field, $form_id );
-				}
-
-				if ( 'honeypot' === $single_form_field->field_key ) {
-					do_action( 'user_registration_validate_honeypot_container', $data, $filter_hook, $form_id, $form_data );
-				}
-
-				if (
-					isset( $single_form_field->advance_setting->enable_conditional_logic ) && ur_string_to_bool( $single_form_field->advance_setting->enable_conditional_logic )
-				) {
-					$single_form_field->advance_setting->enable_conditional_logic = ur_string_to_bool( $single_form_field->advance_setting->enable_conditional_logic );
-				}
-
-				do_action( $hook, $single_form_field, $data, $filter_hook, $this->form_id );
-				$response = apply_filters( $filter_hook, '' );
-				if ( ! empty( $response ) ) {
-					array_push( $this->response_array, $response );
-				}
-			}
-		}
 	}
-
 
 	/**
 	 * Triger validation method for user fields
@@ -227,20 +255,18 @@ class UR_Form_Validation extends UR_Validation {
 	public function add_hook( $form_field_data = array(), $form_data = array() ) {
 		$form_key_list = wp_list_pluck( wp_list_pluck( $form_field_data, 'general_setting' ), 'field_name' );
 		foreach ( $form_data as $data ) {
-			if ( in_array( $data->field_name, $form_key_list, true ) ) {
-				$form_data_index   = array_search( $data->field_name, $form_key_list, true );
-				$single_form_field = $form_field_data[ $form_data_index ];
-				$class_name        = ur_load_form_field_class( $single_form_field->field_key );
-				$hook              = "user_registration_validate_{$single_form_field->field_key}";
-				add_action(
-					$hook,
-					array(
-						$class_name::get_instance(),
-						'validation',
-					),
-					10,
-					4
-				);
+			if ( isset( $data->field_type ) && 'repeater' === $data->field_type ) {
+				if ( isset( $data->value ) ) {
+					$data_arr = (array) $data->value;
+					foreach ( $data_arr as $row_id => $value ) {
+						foreach ( $value as $field_data ) {
+							$field_name = isset( $field_data->field_name ) ? trim( str_replace( 'user_registration_', '', $field_data->field_name ) ) : '';
+							$this->run_field_validations_on_registration( $form_field_data, $field_name, $form_key_list );
+						}
+					}
+				}
+			} elseif ( isset( $data->field_name ) ) {
+				$this->run_field_validations_on_registration( $form_field_data, $data->field_name, $form_key_list );
 			}
 		}
 	}
@@ -275,7 +301,7 @@ class UR_Form_Validation extends UR_Validation {
 					$form_data->value = sanitize_textarea_field( $form_data->value );
 					break;
 				case 'number':
-					$form_data->value = intval( $form_data->value );
+					$form_data->value = floatval( $form_data->value );
 					break;
 				case 'nickname':
 				case 'first_name':
@@ -298,6 +324,12 @@ class UR_Form_Validation extends UR_Validation {
 					$form_data->value = isset( $form_data->value ) ? wp_kses_post( $form_data->value ) : '';
 			}
 		}
+		/**
+		 * Filter the sanitize field.
+		 *
+		 * @param array $form_data The form data.
+		 * @param string $field_key The form key.
+		 */
 		return apply_filters( 'user_registration_sanitize_field', $form_data, $field_key );
 	}
 
@@ -315,7 +347,10 @@ class UR_Form_Validation extends UR_Validation {
 		$has_confirm_email   = false;
 		$email               = '';
 
-		$form_data_field = wp_list_pluck( $form_data, 'field_name' );
+		// Submitted field data is client-supplied JSON, so an entry can arrive without field_name (e.g. a display-only field).
+		$form_data_field = wp_list_pluck( array_filter( $form_data, function ( $field ) {
+			return isset( $field->field_name );
+		} ), 'field_name' );
 		$form_key_list   = wp_list_pluck( wp_list_pluck( $form_field_data, 'general_setting' ), 'field_name' );
 
 		// Check if a required field is missing.
@@ -327,6 +362,10 @@ class UR_Form_Validation extends UR_Validation {
 		}
 
 		foreach ( $form_data as $index => $single_data ) {
+
+			if ( ! isset( $single_data->field_name ) ) {
+				continue;
+			}
 
 			if ( 'user_confirm_email' == $single_data->field_name ) {
 				$confirm_email_value = $single_data->value;
@@ -361,7 +400,10 @@ class UR_Form_Validation extends UR_Validation {
 		$has_confirm_password = false;
 		$password             = '';
 
-		$form_data_field = wp_list_pluck( $form_data, 'field_name' );
+		// Submitted field data is client-supplied JSON, so an entry can arrive without field_name (e.g. a display-only field).
+		$form_data_field = wp_list_pluck( array_filter( $form_data, function ( $field ) {
+			return isset( $field->field_name );
+		} ), 'field_name' );
 		$form_key_list   = wp_list_pluck( wp_list_pluck( $form_field_data, 'general_setting' ), 'field_name' );
 
 		// Check if a required field is missing.
@@ -373,6 +415,10 @@ class UR_Form_Validation extends UR_Validation {
 		}
 
 		foreach ( $form_data as $index => $single_data ) {
+			if ( ! isset( $single_data->field_name ) ) {
+				continue;
+			}
+
 			if ( 'user_confirm_password' == $single_data->field_name ) {
 				$confirm_password     = $single_data->value;
 				$has_confirm_password = true;
@@ -407,6 +453,10 @@ class UR_Form_Validation extends UR_Validation {
 
 		// Find email, username and password value.
 		foreach ( $form_data as $data ) {
+			if ( isset( $data->extra_params ) && 'object' === gettype( $data->extra_params ) ) {
+				$data->extra_params = (array) $data->extra_params;
+			}
+
 			if ( isset( $data->extra_params['field_key'] ) ) {
 				if ( 'user_email' === $data->extra_params['field_key'] ) {
 					$email_value = strtolower( $data->value );
@@ -444,10 +494,14 @@ class UR_Form_Validation extends UR_Validation {
 				if ( isset( $form_field_data[ $key ]->advance_setting->field_visibility ) && 'edit_form' === $form_field_data[ $key ]->advance_setting->field_visibility ) {
 					return;
 				} else {
-					$field_label = $form_field_data[ $key ]->general_setting->label;
-					/* translators: %s - Field Label */
-					$response = sprintf( __( '<strong>%s</strong> is a required field.', 'user-registration' ), $field_label );
-					array_push( $this->response_array, $response );
+					// phpcs:ignore WordPress.Security.NonceVerification.Missing
+					$urcl_hide_fields = isset( $_POST['urcl_hide_fields'] ) ? (array) json_decode( stripslashes( $_POST['urcl_hide_fields'] ), true ) : array();
+					if ( ! in_array( $form_field_data[ $key ]->general_setting->field_name, $urcl_hide_fields, true ) ) {
+						$field_label = $form_field_data[ $key ]->general_setting->label;
+						/* translators: %s - Field Label */
+						$response = sprintf( __( '<strong>%s</strong> is a required field.', 'user-registration' ), $field_label );
+						array_push( $this->response_array, $response );
+					}
 				}
 			}
 		}
@@ -464,7 +518,11 @@ class UR_Form_Validation extends UR_Validation {
 			'privacy_policy' => array( 'is_boolean' ),
 			'number'         => array( 'is_numeric' ),
 		);
-
+		/**
+		 * Filter the field validations.
+		 *
+		 * @param array $validations The validation list.
+		 */
 		$this->field_validations = apply_filters( 'user_registration_field_validations', $validations );
 	}
 
@@ -494,13 +552,14 @@ class UR_Form_Validation extends UR_Validation {
 	 * @param string     $label Field label.
 	 * @return void
 	 */
-	public function add_error( $error, $label = '' ) {
+	public function add_error( $error, $label = '', $response_array = array() ) {
 		if ( ! empty( $error ) && is_wp_error( $error ) ) {
 			$error_code = $error->get_error_code();
 			$message    = $this->get_error_message( $error_code, $label );
 
-			array_push( $this->response_array, $message );
+			array_push( $response_array, $message );
 		}
+		return $response_array;
 	}
 
 
@@ -513,12 +572,12 @@ class UR_Form_Validation extends UR_Validation {
 	 */
 	public function get_error_message( $error_code = '', $field_label = '' ) {
 		$errors = array(
-			'invalid_email'     => 'Please enter a valid email for %s.',
-			'invalid_url'       => 'Please enter a valid url for %s.',
-			'invalid_date'      => 'Please enter a valid date for %s.',
-			'empty_field'       => '%s is a required field.',
-			'non_boolean_value' => 'Please enter a valid value for %s.',
-			'non_numeric_data'  => 'Please enter a numeric value for %s.',
+			'invalid_email'     => ur_string_translation( 0, 'user_registration_invalid_email_error_message', 'Please enter a valid email for %s.' ),
+			'invalid_url'       => ur_string_translation( 0, 'user_registration_invalid_url_error_message', 'Please enter a valid url for %s.' ),
+			'invalid_date'      => ur_string_translation( 0, 'user_registration_invalid_date_error_message', 'Please enter a valid date for %s.' ),
+			'empty_field'       => ur_string_translation( 0, 'user_registration_empty_field_error_message', '%s is a required field.' ),
+			'non_boolean_value' => ur_string_translation( 0, 'user_registration_non_boolean_value_error_message', 'Please enter a valid value for %s.' ),
+			'non_numeric_data'  => ur_string_translation( 0, 'user_registration_non_numeric_data_error_message', 'Please enter a numeric value for %s.' ),
 		);
 
 		$error_code = str_replace( 'user_registration_validation_', '', $error_code );
@@ -542,6 +601,7 @@ class UR_Form_Validation extends UR_Validation {
 	 * and conditional logic.
 	 *
 	 * @param [object] $field Field object.
+	 * @param array    $form_data Form Data.
 	 * @return boolean
 	 */
 	public function is_field_required( $field, $form_data = array() ) {
@@ -557,109 +617,245 @@ class UR_Form_Validation extends UR_Validation {
 				$is_required = true;
 			}
 		}
-
+		/**
+		 * Filter the is field required.
+		 *
+		 * @param boolean $is_required The file name.
+		 * @param array $field The field setting.
+		 * @param array $form_data The form data.
+		 */
 		return apply_filters( 'user_registration_is_field_required', $is_required, $field, $form_data );
 	}
 
 
 	/**
-	 * Validate form data on update profile from My Account page
-	 * when submitted using AJAX submission.
+	 * Validate update profile data submitted.
 	 *
-	 * @param [array] $form_fields Form Field Settings.
-	 * @param [array] $form_data Form Data.
+	 * @param [array] $form_fields Form Fields.
+	 * @param array   $form_data Form Data.
 	 * @param [int]   $form_id Form Id.
+	 * @param [int]   $user_id User Id.
 	 * @return void
 	 */
-	public function validate_update_profile_AJAX( $form_fields, $form_data, $form_id ) {
-
-		$form_key_list = array_map(
-			function( $el ) {
-				return str_replace( 'user_registration_', '', $el );
-			},
-			array_keys( $form_fields )
+	public function validate_update_profile( $form_fields, $form_data, $form_id, $user_id ) {
+		$logger = ur_get_logger();
+		$logger->info(
+			sprintf( 'validate_update_profile started - form_id: %s, user_id: %s', $form_id, $user_id ),
+			array( 'source' => 'ur-profile-validation' )
 		);
 
+		$form_field_data = ur_get_form_field_data( $form_id );
+
 		$request_form_keys = array_map(
-			function( $el ) {
+			function ( $el ) {
 				return $el->field_name;
 			},
 			$form_data
 		);
 
-		if ( array_diff( $form_key_list, $request_form_keys ) ) {
+		$skippable_fields = $this->get_update_profile_validation_skippable_fields( $form_field_data );
+
+		$form_key_list = wp_list_pluck( wp_list_pluck( $form_field_data, 'general_setting' ), 'field_name' );
+
+		$required_fields = array_filter( array_diff( $form_key_list, $skippable_fields ) );
+
+		$filteredfields = array_filter(
+			$form_field_data,
+			function ( $fields ) use ( $logger, $form_id ) {
+				$fields = json_decode( json_encode( $fields ) );
+				if ( ! is_object( $fields ) ) {
+					$logger->warning(
+						sprintf(
+							'validate_update_profile - skipped non-object field entry (type: %s) for form_id: %s. Value: %s',
+							gettype( $fields ),
+							$form_id,
+							wp_json_encode( $fields )
+						),
+						array( 'source' => 'ur-profile-validation' )
+					);
+					return false;
+				}
+				return property_exists( $fields, 'advance_setting' ) && is_object( $fields->advance_setting ) && property_exists( $fields->advance_setting, 'field_visibility' ) && 'reg_form' === $fields->advance_setting->field_visibility;
+			}
+		);
+
+		$invisible_field_names = array_column( $filteredfields, 'general_setting' );//phpcs:ignore;
+		$invisible_field_names = array_column( $invisible_field_names, 'field_name' ); //phpcs:ignore;
+		$required_fields       = array_diff( $required_fields, $invisible_field_names );
+
+		$this->add_hook( $form_field_data, $form_data );
+
+		foreach ( $form_data as $data ) {
+
+			if ( isset( $data->field_type ) && 'repeater' === $data->field_type ) {
+				do_action(
+					'user_registration_validate_edit_profile_repeater_fields',
+					$data,
+					$form_data,
+					$form_id,
+					$form_field_data,
+					$form_fields
+				);
+				$required_fields = apply_filters( 'user_registration_missing_repeater_field_keys', $required_fields, $form_id );
+			} else {
+				user_registration_validate_edit_profile_form_field_data( $data, $form_data, $form_id, $form_field_data, $form_fields, $user_id );
+			}
+		}
+
+		if ( array_diff( $required_fields, $request_form_keys ) ) {
+			$missing = array_diff( $required_fields, $request_form_keys );
+			$logger->error(
+				sprintf(
+					'validate_update_profile - missing required fields for form_id: %s, user_id: %s. Missing: %s',
+					$form_id,
+					$user_id,
+					implode( ', ', $missing )
+				),
+				array( 'source' => 'ur-profile-validation' )
+			);
 			ur_add_notice( 'Some fields are missing in the submitted form. Please reload the page.', 'error' );
 			return;
 		}
 
-		$form_field_data = $this->get_form_field_data( $form_id );
-		$form_key_list   = wp_list_pluck( wp_list_pluck( $form_field_data, 'general_setting' ), 'field_name' );
-		$form_key_list   = apply_filters( 'user_registration_form_key_list', $form_key_list );
-
-		// Triger validation method for user fields. Useful for custom fields validation.
-		$this->add_hook( $form_field_data, $form_data );
-
-		foreach ( $form_data as $data ) {
-			$single_field_name = $data->field_name;
-
-			if ( in_array( $single_field_name, $form_key_list, true ) ) {
-				$field_setting      = $form_fields[ 'user_registration_' . $single_field_name ];
-				$single_field_label = isset( $field_setting['label'] ) ? $field_setting['label'] : '';
-				$single_field_key   = $field_setting['field_key'];
-				$single_field_value = isset( $data->value ) ? $data->value : '';
-				$data->extra_params = array(
-					'field_key' => $single_field_key,
-					'label'     => $single_field_label,
-				);
-
-				$form_data_index   = array_search( $data->field_name, $form_key_list, true );
-				$single_form_field = $form_field_data[ $form_data_index ];
-
-				/**
-				 * Validate form field according to the validations set in $validations array.
-				 *
-				 * @see this->get_field_validations()
-				 */
-
-				$validations = $this->get_field_validations( $single_field_key );
-
-				$required = isset( $single_form_field->general_setting->required ) ?
-							$single_form_field->general_setting->required :
-							false;
-
-				$urcl_hide_fields = isset( $_POST['urcl_hide_fields'] ) ? (array) json_decode( stripslashes( $_POST['urcl_hide_fields'] ), true ) : array(); //phpcs:ignore;
-
-				if ( ! in_array( $single_field_name, $urcl_hide_fields, true ) && ur_string_to_bool( $required ) ) {
-					array_unshift( $validations, 'required' );
-				}
-
-				if ( ! empty( $validations ) ) {
-					if ( in_array( 'required', $validations, true ) || ! empty( $single_field_value ) ) {
-						foreach ( $validations as $validation ) {
-							$result = self::$validation( $single_field_value );
-
-							if ( is_wp_error( $result ) ) {
-								$error_code = $result->get_error_code();
-								$message    = $this->get_error_message( $error_code, $single_field_label );
-								ur_add_notice( $message, 'error' );
-								break;
-							}
-						}
-					}
-				}
-
-				if ( 'email' === $field_setting['type'] ) {
-					do_action( 'user_registration_validate_email_whitelist', sanitize_text_field( $single_field_value ), '', $field_setting, $form_id );
-				}
-
-				$this->run_field_validations( $single_field_key, $single_form_field, $data, $form_id );
-			}
-		}
+		$logger->info(
+			sprintf( 'validate_update_profile completed successfully - form_id: %s, user_id: %s', $form_id, $user_id ),
+			array( 'source' => 'ur-profile-validation' )
+		);
 	}
 
 
 	/**
-	 * Run all validations and checks defined in the validation() method of field class.
+	 * Returns a list of fields to skip validation for like Confirmation Fields,
+	 * Woocommerce fields and Payment fields that are not submitted on profile update.
+	 *
+	 * @param [array] $form_data Form fields data.
+	 * @return array
+	 */
+	public function get_update_profile_validation_skippable_fields( $form_data ) {
+		$skippable_fields = array();
+
+		$skippable_field_types = array(
+			'user_pass',
+			'user_confirm_email',
+			'user_confirm_password',
+			'profile_picture',
+			'hidden',
+			'invite_code',
+			'billing_address_title',
+			'billing_first_name',
+			'billing_last_name',
+			'billing_company',
+			'billing_email',
+			'billing_phone',
+			'separate_shipping',
+			'billing_address_1',
+			'billing_address_2',
+			'billing_city',
+			'billing_state',
+			'billing_country',
+			'billing_postcode',
+			'shipping_address_title',
+			'shipping_first_name',
+			'shipping_last_name',
+			'shipping_company',
+			'shipping_country',
+			'shipping_address_1',
+			'shipping_address_2',
+			'shipping_city',
+			'shipping_state',
+			'shipping_postcode',
+			'single_item',
+			'multiple_choice',
+			'range',
+			'quantity_field',
+			'total_field',
+			'stripe_gateway',
+			'captcha',
+			'signature',
+			'membership',
+			'subscription_plan',
+			'coupon',
+		);
+
+		$form_skippable_fields = array_filter(
+			$form_data,
+			function ( $field ) use ( $skippable_field_types ) {
+				if ( in_array( $field->field_key, $skippable_field_types, true ) ) {
+
+					if ( 'range' === $field->field_key && ( isset( $field->advance_setting->enable_payment_slider ) && ! ur_string_to_bool( $field->advance_setting->enable_payment_slider ) ) ) {
+						return false;
+					}
+
+					return true;
+				}
+
+				return false;
+			}
+		);
+
+		// Retrieves the hidden fields in profile update form.
+		$field_visibility_skip_fields = array_filter(
+			$form_data,
+			function ( $field ) {
+				if ( ! empty( $field->advance_setting->field_visibility ) && 'reg_form' === $field->advance_setting->field_visibility ) {
+					return true;
+				}
+
+				return false;
+			}
+		);
+
+		$field_visibility_skippable_fields = wp_list_pluck( wp_list_pluck( $field_visibility_skip_fields, 'general_setting' ), 'field_name' );
+		$form_skippable_fields             = wp_list_pluck( wp_list_pluck( $form_skippable_fields, 'general_setting' ), 'field_name' );
+		$skippable_fields                  = array_merge( $form_skippable_fields, $field_visibility_skippable_fields );
+
+		/**
+		 * Add fields to skip validation on update profile.
+		 *
+		 * @param [array] $skippable_fields Skippable fields array.
+		 * @param [array] $form_data Form Fields data array.
+		 *
+		 * @since 3.0.4
+		 */
+		return apply_filters( 'user_registration_update_profile_validation_skip_fields', $skippable_fields, $form_data );
+	}
+
+	/**
+	 * Run all validations and checks defined in the validation() method of field class on registration.
+	 *
+	 * @param [array]  $form_field_data Form Field data.
+	 * @param [string] $field_name Field key.
+	 * @param [array]  $form_key_list List of form field keys.
+	 * @return void
+	 */
+	public function run_field_validations_on_registration( $form_field_data, $field_name, $form_key_list ) {
+
+		if ( in_array( $field_name, $form_key_list, true ) ) {
+			$form_data_index   = array_search( $field_name, $form_key_list, true );
+			$single_form_field = $form_field_data[ $form_data_index ];
+			$class_name        = ur_load_form_field_class( $single_form_field->field_key );
+			$hook              = "user_registration_validate_{$single_form_field->field_key}";
+
+			if ( class_exists( $class_name ) ) {
+
+				/**
+				 * Action to run form field validations.
+				 */
+				add_action(
+					$hook,
+					array(
+						$class_name::get_instance(),
+						'validation',
+					),
+					10,
+					4
+				);
+			}
+		}
+	}
+
+	/**
+	 * Run all validations and checks defined in the validation() method of field class on profile update.
 	 *
 	 * @param [string] $single_field_key Field Key.
 	 * @param [array]  $single_form_field Field Settings.
@@ -667,7 +863,7 @@ class UR_Form_Validation extends UR_Validation {
 	 * @param [int]    $form_id Form Id.
 	 * @return void
 	 */
-	public function run_field_validations( $single_field_key, $single_form_field, $data, $form_id ) {
+	public function run_field_validations_on_profile_update( $single_field_key, $single_form_field, $data, $form_id ) {
 
 		// Bypass validations for these fields on update profile.
 		if ( in_array( $single_field_key, array( 'user_login', 'user_email' ), true ) ) {
@@ -677,213 +873,35 @@ class UR_Form_Validation extends UR_Validation {
 		// Validate custom field validations of field class.
 		$hook        = "user_registration_validate_{$single_field_key}";
 		$filter_hook = $hook . '_message';
+
+		/**
+		 * Action validate single field.
+		 *
+		 * The dynamic portion of the hook name, $hook.
+		 *
+		 * @param array $single_form_field The form field.
+		 * @param array $data The form data.
+		 * @param string $filter_hook The dynamic filter hook.
+		 * @param int $this->form_id The form ID.
+		 */
 		do_action( $hook, $single_form_field, $data, $filter_hook, $this->form_id );
 
+		/**
+		 * Filter the validate message.
+		 *
+		 * The dynamic portion of the hook name, $filter_hook.
+		 * Default value is blank string.
+		 */
 		$response = apply_filters( $filter_hook, '' );
+
 		if ( ! empty( $response ) ) {
-			ur_add_notice( $response, 'error' );
-		}
-	}
-
-
-
-	/**
-	 * Returns settings for all form fields in proper array format.
-	 *
-	 * Uses UR_FrontEnd_Form_Handler::get_form_field_data() function.
-	 *
-	 * @param integer $form_id Form Id.
-	 * @return array
-	 */
-	public function get_form_field_data( $form_id = 0 ) {
-
-		$post_content_array = ( $form_id ) ? UR()->form->get_form( $form_id, array( 'content_only' => true ) ) : array();
-
-		$form_field_data = UR_Frontend_Form_Handler::get_form_field_data( $post_content_array );
-
-		return $form_field_data;
-	}
-
-
-
-	/**
-	 * This format returns form field data in object format.
-	 *
-	 * In Non-ajax method of update profile, form data is received in key => value format
-	 * which is different from the data received while using ajax submission.
-	 *
-	 * So, to maintain consistency of form data object while passing to different functions,
-	 * data is formatted properly.
-	 *
-	 * @param [array] $form_field_data Form Field Data.
-	 * @return array
-	 */
-	public function get_form_data_from_post( $form_field_data ) {
-
-		$fields = array();
-
-		foreach ( $form_field_data as $field ) {
-			$field_name = $field->general_setting->field_name;
-			$key        = 'user_registration_' . $field_name;
-
-			$field_obj             = new StdClass();
-			$field_obj->field_name = $field_name;
-			$field_obj->value      = isset( $_POST[ $key ] ) ? ur_clean( $_POST[ $key ] ) : ''; // phpcs:ignore
-
-			if ( isset( $field->field_key ) ) {
-				$field_obj->field_type = $field->field_key;
+			if ( ! defined( 'DOING_AJAX' ) || ! DOING_AJAX && ! ur_option_checked( 'user_registration_ajax_form_submission_on_edit_profile', false ) ) {
+				$response = array_values( $response );
+				ur_add_notice( $response[0], 'error' );
+			} else {
+				ur_add_notice( $response, 'error' );
 			}
-
-			if ( isset( $field->general_setting->label ) ) {
-				$field_obj->label = $field->general_setting->label;
-			}
-
-			$fields[ $field_name ] = $field_obj;
-		}
-		return $fields;
-	}
-
-
-
-	/**
-	 * Validate update profile data submitted via POST http request.
-	 *
-	 * @param [array] $form_fields Form Fields.
-	 * @param [int]   $form_id Form Id.
-	 * @return void
-	 */
-	public function validate_update_profile_POST( $form_fields, $form_id ) {
-		$user_id = get_current_user_id();
-
-		// phpcs:disable WordPress.Security.NonceVerification
-
-		$form_field_data = $this->get_form_field_data( $form_id );
-		$form_key_list   = wp_list_pluck( wp_list_pluck( $form_field_data, 'general_setting' ), 'field_name' );
-
-		$form_data = $this->get_form_data_from_post( $form_field_data );
-
-		// Triger validation method for user fields. Useful for custom fields validation.
-		$this->add_hook( $form_field_data, $form_data );
-
-		foreach ( $form_fields as $key => $field ) {
-			if ( isset( $field['field_key'] ) ) {
-				if ( ! isset( $field['type'] ) ) {
-					$field['type'] = 'text';
-				}
-
-				// Get Value.
-				switch ( $field['type'] ) {
-					case 'checkbox':
-						if ( isset( $_POST[ $key ] ) && is_array( $_POST[ $key ] ) ) {
-							$_POST[ $key ] = wp_unslash( $_POST[ $key ] ); // phpcs:ignore
-						} else {
-							$_POST[ $key ] = (int) isset( $_POST[ $key ] );
-						}
-						break;
-
-					case 'wysiwyg':
-						if ( isset( $_POST[ $key ] ) ) {
-							$_POST[ $key ] = sanitize_text_field( htmlentities( wp_unslash( $_POST[ $key ] ) ) ); // phpcs:ignore
-						} else {
-							$_POST[ $key ] = '';
-						}
-						break;
-
-					case 'email':
-						if ( isset( $_POST[ $key ] ) ) {
-							$_POST[ $key ] = sanitize_email( wp_unslash( $_POST[ $key ] ) );
-						} else {
-							$user_data     = get_userdata( $user_id );
-							$_POST[ $key ] = $user_data->data->user_email;
-						}
-						break;
-					case 'profile_picture':
-						if ( isset( $_POST['profile_pic_url'] ) ) {
-							$_POST[ $key ] = sanitize_text_field( wp_unslash( $_POST['profile_pic_url'] ) );
-						} else {
-							$_POST[ $key ] = '';
-						}
-						break;
-
-					default:
-						$_POST[ $key ] = isset( $_POST[ $key ] ) ? ur_clean( $_POST[ $key ] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
-						break;
-				}
-
-				$single_field_name  = str_replace( 'user_registration_', '', $key );
-				$single_field_label = isset( $field['label'] ) ? $field['label'] : '';
-				$single_field_key   = $field['field_key'];
-				$single_field_value = isset( $_POST[ $key ] ) ? ur_clean( $_POST[ $key ] ) : ''; // phpcs:ignore
-
-				$form_data_index   = array_search( $single_field_name, $form_key_list, true );
-				$single_form_field = $form_field_data[ $form_data_index ];
-
-				/**
-				 * Validate form field according to the validations set in $validations array.
-				 *
-				 * @see this->get_field_validations()
-				 */
-
-				$validations = $this->get_field_validations( $single_field_key );
-
-				$required         = isset( $single_form_field->general_setting->required ) ? $single_form_field->general_setting->required : 0;
-				$urcl_hide_fields = isset( $_POST['urcl_hide_fields'] ) ? (array) json_decode( stripslashes( $_POST['urcl_hide_fields'] ), true ) : array(); //phpcs:ignore;
-
-				$disabled = false;
-				if ( isset( $field['custom_attributes'] ) && isset( $field['custom_attributes']['readonly'] ) && isset( $field['custom_attributes']['disabled'] ) ) {
-					if ( 'readonly' === $field['custom_attributes']['readonly'] || 'disabled' === $field['custom_attributes']['disabled'] ) {
-						$disabled = true;
-					}
-				}
-
-
-				if ( ! in_array( $single_field_name, $urcl_hide_fields, true ) && ur_string_to_bool( $required ) && ! $disabled ) {
-					array_unshift( $validations, 'required' );
-				}
-
-				if ( ! empty( $validations ) ) {
-					if ( in_array( 'required', $validations, true ) || ! empty( $single_field_value ) ) {
-						foreach ( $validations as $validation ) {
-							$result = self::$validation( $single_field_value );
-
-							if ( is_wp_error( $result ) ) {
-								$error_code = $result->get_error_code();
-								$message    = $this->get_error_message( $error_code, $single_field_label );
-								ur_add_notice( $message, 'error' );
-								break;
-							}
-						}
-					}
-				}
-
-				// Hook to allow modification of value.
-				$single_field_value = apply_filters( 'user_registration_process_myaccount_field_' . $key, wp_unslash( $single_field_value ) );
-
-				if ( 'email' === $field['type'] ) {
-					do_action( 'user_registration_validate_email_whitelist', sanitize_text_field( wp_unslash( $single_field_value ) ), '', $field, $form_id );
-				}
-
-				if ( 'user_email' === $field['field_key'] ) {
-
-					// Check if email already exists before updating user details.
-					if ( email_exists( sanitize_text_field( wp_unslash( $single_field_value ) ) ) && email_exists( sanitize_text_field( wp_unslash( $single_field_value ) ) ) !== $user_id ) {
-						ur_add_notice( esc_html__( 'Email already exists', 'user-registration' ), 'error' );
-					}
-				}
-
-				$this->run_field_validations(
-					$single_field_key,
-					$single_form_field,
-					$form_data[ $single_field_name ],
-					$form_id
-				);
-
-				// Action to add extra validation to edit profile fields.
-				do_action( 'user_registration_validate_' . $key, wp_unslash( $single_field_value ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-
-				//phpcs:enable WordPress.Security.NonceVerification
-
-			}
+			remove_all_filters( $filter_hook );
 		}
 	}
 }

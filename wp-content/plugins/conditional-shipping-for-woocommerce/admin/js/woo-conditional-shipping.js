@@ -17,11 +17,17 @@ jQuery(document).ready(function($) {
 			this.operators = table.data( 'operators' );
 			this.conditions = table.data( 'conditions' );
 
+			this.initTagSearch();
+			this.initMetaSearch();
+			this.initCouponSearch();
+			this.initDatepicker();
 			this.insertExisting();
+			this.insertEmpty();
+			this.validateInputs();
 
 			if ( ! this.triggersInit ) {
 				this.triggerFieldUpdates();
-				this.triggerRemoveConditions();
+				this.triggerRemoveCondition();
 				this.triggerAddCondition();
 				this.triggerToggleValueInputs();
 
@@ -50,22 +56,15 @@ jQuery(document).ready(function($) {
 			for ( var i = 0; i < this.conditions.length; i++ ) {
 				this.addCondition( this.conditions[i] );
 			}
-
-			$( document.body ).trigger( 'wc-enhanced-select-init' );
-
-			this.toggleAllValueInputs();
 		},
 
 		/**
-		 * Toggle all value inputs
+		 * Insert empty condition
 		 */
-		toggleAllValueInputs: function() {
-			var self = this;
-
-			$( 'tbody tr', this.table ).each( function() {
-				self.toggleOperators( $( this ) );
-				self.toggleValueInputs( $( this ) );
-			});
+		insertEmpty: function() {
+			if ( $( 'tbody tr', this.table ).length == 0 ) {
+				this.addCondition({});
+			}
 		},
 
 		/**
@@ -80,6 +79,8 @@ jQuery(document).ready(function($) {
 
 			row.addClass( 'wcs-operator-' + operator );
 			row.addClass( 'wcs-type-' + type );
+
+			$( '.wcs-values select:data(placeholder)', row ).trigger( 'change' );
 		},
 
 		/**
@@ -119,6 +120,11 @@ jQuery(document).ready(function($) {
 		 * Add new condition
 		 */
 		addCondition: function( data ) {
+			// Add GUID if it's missing
+			if ( ! data['guid'] ) {
+				data['guid'] = this.uniqId();
+			}
+
 			// Get index
 			var index = this.table.data( 'index' );
 			if (typeof index == 'undefined') { index = 0; }
@@ -144,20 +150,207 @@ jQuery(document).ready(function($) {
 				});
 			}
 
+			// Add tags
+			var tags_data = this.table.data( 'selected-tags' );
+			data.selected_tags = [];
+			if ( typeof data.product_tags !== 'undefined' && data.product_tags !== null && data.product_tags.length > 0 ) {
+				jQuery.each( data.product_tags, function( index, tag_id ) {
+					if ( typeof tags_data[tag_id] !== 'undefined' ) {
+						data.selected_tags.push({
+							'id': tag_id,
+							'title': tags_data[tag_id]
+						});
+					}
+				});
+			}
+
+			// Add coupons
+			var coupons_data = this.table.data( 'selected-coupons' );
+			data.selected_coupons = [];
+			if ( typeof data.coupon_ids !== 'undefined' && data.coupon_ids !== null && data.coupon_ids.length > 0 ) {
+				jQuery.each( data.coupon_ids, function( index, coupon_id ) {
+					if ( typeof coupons_data[coupon_id] !== 'undefined' ) {
+						data.selected_coupons.push({
+							'id': coupon_id,
+							'title': coupons_data[coupon_id]
+						});
+					}
+				});
+			}
+
 			// Render template and add to the table
 			$( 'tbody', this.table ).append( row_template( data ) );
 
 			$( document.body ).trigger( 'wc-enhanced-select-init' );
 
-			this.toggleAllValueInputs();
+			let addedRow = $( 'tbody tr:last-child', this.table );
+			this.toggleOperators( addedRow );
+			this.toggleValueInputs( addedRow );
+		},
+
+		/**
+		 * Meta search
+		 */
+		initMetaSearch: function() {
+			$( document.body ).on( 'wc-enhanced-select-init', function() {
+				$( ':input.wcs-product-meta-field-search' ).filter( ':not(.enhanced)' ).each( function() {
+					var select2_args = {
+						allowClear : $( this ).data( 'allow_clear' ) ? true : false,
+						dropdownAutoWidth : true,
+						placeholder : $( this ).data( 'placeholder' ),
+						minimumInputLength: $( this ).data( 'minimum_input_length' ) ? $( this ).data( 'minimum_input_length' ) : 2,
+						escapeMarkup : function( m ) {
+							return m;
+						},
+						ajax: {
+							url: wc_enhanced_select_params.ajax_url,
+							dataType: 'json',
+							delay: 250,
+							data: function( params ) {
+								return {
+									term: params.term,
+									action: 'wcs_json_search_meta_keys',
+								};
+							},
+							processResults: function( data ) {
+								var terms = [];
+								if ( data ) {
+									$.each( data, function( id, term ) {
+										terms.push({
+											id: term.id,
+											text: term.name
+										});
+									});
+								}
+								return {
+									results: terms
+								};
+							},
+							cache: true
+						}
+					};
+
+					$( this ).selectWoo( select2_args ).addClass( 'enhanced' );
+				});
+			} );
+		},
+
+		/**
+		 * Tag search
+		 */
+		initTagSearch: function() {
+			$( document.body ).on( 'wc-enhanced-select-init', function() {
+				$( ':input.wcs-tag-search' ).filter( ':not(.enhanced)' ).each( function() {
+					var select2_args = {
+						allowClear        : $( this ).data( 'allow_clear' ) ? true : false,
+						placeholder       : $( this ).data( 'placeholder' ),
+						minimumInputLength: $( this ).data( 'minimum_input_length' ) ? $( this ).data( 'minimum_input_length' ) : 3,
+						escapeMarkup      : function( m ) {
+							return m;
+						},
+						ajax: {
+							url: wc_enhanced_select_params.ajax_url,
+							dataType: 'json',
+							delay: 250,
+							data: function( params ) {
+								return {
+									term: params.term,
+									action: 'wcs_json_search_tags',
+								};
+							},
+							processResults: function( data ) {
+								var terms = [];
+								if ( data ) {
+									$.each( data, function( id, term ) {
+										terms.push({
+											id: term.term_id,
+											text: term.name
+										});
+									});
+								}
+								return {
+									results: terms
+								};
+							},
+							cache: true
+						}
+					};
+
+					$( this ).selectWoo( select2_args ).addClass( 'enhanced' );
+				});
+			} );
+		},
+
+		/**
+		 * Datepicker
+		 */
+		initDatepicker: function() {
+			$( document.body ).on( 'wc-enhanced-select-init', function() {
+				$( ':input.wcs-datepicker' ).filter( ':not(.enhanced)' ).each( function() {
+					$( this ).datepicker({
+						dateFormat: 'yy-mm-dd',
+					}).addClass( 'enhanced' );
+				} );
+			} );
+		},
+
+		/**
+		 * Coupon search
+		 */
+		 initCouponSearch: function() {
+			$( document.body ).on( 'wc-enhanced-select-init', function() {
+				$( ':input.wcs-coupon-search' ).filter( ':not(.enhanced)' ).each( function() {
+					var select2_args = {
+						allowClear        : $( this ).data( 'allow_clear' ) ? true : false,
+						placeholder       : $( this ).data( 'placeholder' ),
+						minimumInputLength: 1,
+						escapeMarkup      : function( m ) {
+							return m;
+						},
+						ajax: {
+							url: wc_enhanced_select_params.ajax_url,
+							dataType: 'json',
+							delay: 250,
+							data: function( params ) {
+								return {
+									coupon: params.term,
+									action: 'wcs_json_search_coupons',
+								};
+							},
+							processResults: function( data ) {
+								var coupons = [];
+								if ( data ) {
+									$.each( data, function( id, coupon ) {
+										coupons.push({
+											id: coupon.id,
+											text: coupon.code
+										});
+									});
+								}
+								return {
+									results: coupons
+								};
+							},
+							cache: true
+						}
+					};
+
+					$( this ).selectWoo( select2_args ).addClass( 'enhanced' );
+				});
+			} );
 		},
 
 		/**
 		 * Remove selected conditions when clicking the button
 		 */
-		triggerRemoveConditions: function() {
-			$( document ).on( 'click', 'button#wcs-remove-conditions', function() {
-				$( '.condition_row input.remove_condition:checked', this.table ).closest( 'tr.condition_row' ).remove();
+		triggerRemoveCondition: function() {
+			var self = this;
+
+			$( document ).on( 'click', 'a.wcs-remove-condition', function( e ) {
+				e.preventDefault();
+				
+				$( this ).closest( 'tr' ).remove();
+				self.insertEmpty();
 			});
 		},
 
@@ -169,6 +362,8 @@ jQuery(document).ready(function($) {
 
 			$( document ).on( 'click', 'button#wcs-add-condition', function() {
 				self.addCondition( {} );
+
+				$( 'input[name="wcs_pro_features"]' ).trigger( 'change' );
 			});
 		},
 
@@ -184,13 +379,94 @@ jQuery(document).ready(function($) {
 			});
 		},
 
+		/**
+		 * Validate inputs
+		 */
+		validateInputs: function() {
+			var self = this;
+
+			// Clear previous errors
+			$(document).on('input', 'input.wcs_text_value_input', function () {
+				self.clearInputValidation($(this));
+			});
+			$(document).on('change', '.condition_row select', function () {
+				let row = $(this).closest('tr');
+				self.clearInputValidation($('input.wcs_text_value_input', row));
+			});
+
+			$('form#mainform').on('submit', function(e) {
+				// Check that all fields with "greater than", "less than" etc.
+				// have numerical values EXCEPT date and time
+				let rowElements = [
+					'tr.wcs-operator-gt',
+					'tr.wcs-operator-gte',
+					'tr.wcs-operator-lt',
+					'tr.wcs-operator-lte',
+					'tr.wcs-operator-e',
+				].join(', ');
+				let exclude = [
+					'.wcs-type-date',
+					'.wcs-type-time',
+				].join(', ');
+
+				$(rowElements).each(function () {
+					if ($(this).is(':not(' + exclude + ')')) {
+						let inputEl = $('input.wcs_text_value_input', this);
+
+						if (inputEl.is(':visible')) {
+							let inputValue = inputEl.val();
+							inputValue = inputValue.trim().replace(',', '.');
+
+							if (inputValue === '' || isNaN(inputValue)) {
+								self.markNumericInvalid(inputEl, 'Please enter a number.');
+								e.preventDefault();
+							}
+						}
+					}
+				});
+			});
+		},
+
+		/**
+		 * Mark input as invalid
+		 */
+		markNumericInvalid: function($input, message) {
+			$input.addClass('has-error');
+			$input[0].setCustomValidity(message);
+			$input[0].reportValidity();
+		},
+
+		/**
+		 * Clear input validation
+		 */
+		clearInputValidation: function($input) {
+			$input.removeClass('has-error');
+			$input[0].setCustomValidity('');
+		},
+
+		/**
+		 * Remove CSS class starting with a string
+		 */
 		removeClassStartingWith: function(el, filter) {
 			el.removeClass(function (index, className) {
 				return (className.match(new RegExp("\\S*" + filter + "\\S*", 'g')) || []).join(' ');
 			});
-		}
-	};
+		},
 
+		/**
+		 * Generate unique ID
+		 */
+		uniqId: function() {
+			let result = [];
+			let hexRef = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'];
+
+			for (let n = 0; n < 13; n++) {
+			  result.push(hexRef[Math.floor(Math.random() * 16)]);
+			}
+			return result.join('');
+		}
+		
+	};
 	wcsConditionsTable.init();
 
 	var wcsActionsTable = {
@@ -210,11 +486,14 @@ jQuery(document).ready(function($) {
 			this.actions = table.data( 'actions' );
 
 			this.insertExisting();
+			this.insertEmpty();
 
 			if ( ! this.triggersInit ) {
 				this.triggerFieldUpdates();
 				this.triggerAddAction();
-				this.triggerRemoveActions();
+				this.triggerRemoveAction();
+				this.triggerToggleMatchByName();
+				this.triggerHelpModal();
 
 				this.triggersInit = true;
 			}
@@ -231,6 +510,12 @@ jQuery(document).ready(function($) {
 
 				self.toggleValueInputs( row );
 			});
+
+			$( document ).on( 'change', 'select.wcs-price-mode', function() {
+				var row = $( this ).closest( 'tr' );
+
+				self.toggleValueInputs( row );
+			});
 		},
 
 		/**
@@ -240,21 +525,15 @@ jQuery(document).ready(function($) {
 			for ( var i = 0; i < this.actions.length; i++ ) {
 				this.addAction( this.actions[i] );
 			}
-
-			$( document.body ).trigger( 'wc-enhanced-select-init' );
-
-			this.toggleAllValueInputs();
 		},
 
 		/**
-		 * Toggle all value inputs
+		 * Insert empty condition
 		 */
-		toggleAllValueInputs: function() {
-			var self = this;
-
-			$( 'tbody tr', this.table ).each( function() {
-				self.toggleValueInputs( $( this ) );
-			});
+		insertEmpty: function() {
+			if ( $( 'tbody tr', this.table ).length == 0 ) {
+				this.addAction( {} );
+			}
 		},
 
 		/**
@@ -262,10 +541,38 @@ jQuery(document).ready(function($) {
 		 */
 		toggleValueInputs: function( row ) {
 			this.removeClassStartingWith( row, 'wcs-action-type-' );
+			this.removeClassStartingWith( row, 'wcs-price-mode-' );
 
-			var type = $( 'select.wcs_action_type_select', row ).val();
+			let type = $( 'select.wcs_action_type_select', row ).val();
+			let priceMode = $( 'select.wcs-price-mode', row ).val();
 
 			row.addClass( 'wcs-action-type-' + type );
+			row.addClass( 'wcs-price-mode-' + priceMode );
+
+			$( '.wcs-methods select:data(placeholder)', row ).trigger( 'change' );
+		},
+
+		/**
+		 * Trigger toggle match by name
+		 */
+		triggerToggleMatchByName: function() {
+			var self = this;
+
+			$( document ).on( 'change', '.wcs-methods select', function( e ) {
+				var row = $( this ).closest( 'tr' );
+
+				self.toggleMatchByName( row );
+			} );
+		},
+
+		/**
+		 * Toggle match by name
+		 */
+		toggleMatchByName: function( row ) {
+			var methods = $( '.wcs-methods select', row ).val();
+			var nameMatch = $.inArray( '_name_match', methods ) !== -1;
+
+			$( '.wcs-match-by-name', row ).toggle( nameMatch );
 		},
 
 		/**
@@ -288,15 +595,23 @@ jQuery(document).ready(function($) {
 
 			$( document.body ).trigger( 'wc-enhanced-select-init' );
 
-			this.toggleAllValueInputs();
+			let addedRow = $( 'tbody tr:last-child', this.table );
+
+			this.toggleValueInputs( addedRow );
+			this.toggleMatchByName( addedRow );
 		},
 
 		/**
 		 * Remove selected actions when clicking the button
 		 */
-		triggerRemoveActions: function() {
-			$( document ).on( 'click', 'button#wcs-remove-actions', function() {
-				$( '.action_row input.remove_action:checked', this.table ).closest( 'tr.action_row' ).remove();
+		triggerRemoveAction: function() {
+			var self = this;
+
+			$( document ).on( 'click', 'a.wcs-remove-action', function( e ) {
+				e.preventDefault();
+				
+				$( this ).closest( 'tr' ).remove();
+				self.insertEmpty();
 			});
 		},
 
@@ -308,6 +623,30 @@ jQuery(document).ready(function($) {
 
 			$( document ).on( 'click', 'button#wcs-add-action', function() {
 				self.addAction( {} );
+
+				$( 'input[name="wcs_pro_features"]' ).trigger( 'change' );
+			});
+		},
+
+		/**
+		 * Trigger help modal
+		 */
+		triggerHelpModal: function() {
+			$('#wcs-actions-help-modal').dialog({
+				autoOpen: false,
+				modal: true,
+				width: 600,
+				dialogClass: 'wcs-actions-help-modal-container',
+				buttons: { Close: function() { $(this).dialog('close'); } }
+			});
+
+			$('.wcs-action-help-tip').on('click', function(e) {
+				e.preventDefault();
+				$('#wcs-actions-help-modal').dialog('open');
+			});
+
+			$(document).on('click', '.ui-widget-overlay', function() {
+				$('#wcs-actions-help-modal').dialog('close');
 			});
 		},
 
@@ -317,13 +656,46 @@ jQuery(document).ready(function($) {
 			});
 		}
 	};
-
 	wcsActionsTable.init();
+
+	/**
+	 * Toggle Pro features
+	 */
+	$( 'input[name="wcs_pro_features"]' ).change( function( e ) {
+		var displayFeatures = $( this ).is( ':checked' );
+
+		$( '.wcs-table .wcs-condition option:disabled').toggle( displayFeatures );
+		$( '.wcs-table .wcs-action option:disabled').toggle( displayFeatures );
+
+		$( '.wcs-table .wcs-condition optgroup' ).each( function() {
+			var visibleOptions = $( 'option:not(:disabled)', this ).length;
+
+			$( this ).toggle( ( visibleOptions > 0 || displayFeatures ) );
+		} );
+
+		$( '.wcs-table .wcs-action optgroup' ).each( function() {
+			var visibleOptions = $( 'option:not(:disabled)', this ).length;
+
+			$( this ).toggle( ( visibleOptions > 0 || displayFeatures ) );
+		} );
+	} );
+	$( 'input[name="wcs_pro_features"]' ).trigger( 'change' );
+
+	/**
+	 * Sortable rulesets
+	 */
+	$( 'table.wcs-rulesets tbody' ).sortable( {
+		items: 'tr',
+		cursor: 'move',
+		axis: 'y',
+		handle: 'td.wcs-ruleset-sort',
+		scrollSensitivity: 40
+	} );
 
 	/**
 	 * Warn when deleting ruleset
 	 */
-	$( document ).on( 'click', '.woo-conditional-shipping-ruleset-delete', function( e ) {
+	$( document ).on( 'click', '.wcs-ruleset-delete', function( e ) {
 		return confirm( "Are you sure?" );
 	} );
 
@@ -338,20 +710,21 @@ jQuery(document).ready(function($) {
 	} );
 
 	/**
-	 * AJAX toggle
+	 * AJAX toggle for rulesets
 	 */
-	$( document ).on( 'click', '.woo-conditional-shipping-ruleset-status .woocommerce-input-toggle', function( e ) {
+	$( document ).on( 'click', '.wcs-ruleset-status .woocommerce-input-toggle', function( e ) {
 		e.preventDefault();
 
 		var self = this;
 
 		var data = {
 			id: $( this ).data( 'id' ),
+			security: woo_conditional_shipping.nonces.ruleset_toggle
 		};
 
 		$.ajax( {
 			type: 'post',
-			url: woo_conditional_shipping.ajax_url,
+			url: woo_conditional_shipping.ajax_urls.toggle_ruleset,
 			data: data,
 			dataType: 'json',
 			beforeSend: function() {
@@ -377,4 +750,51 @@ jQuery(document).ready(function($) {
 			}
 		} );
 	} );
+
+	/**
+	 * Welcome form submit
+	 */
+	var wcsWelcomeForm = $( '#wcs-welcome-form' ).closest( 'form' );
+	if ( wcsWelcomeForm.length > 0 ) {
+		$( document ).on( 'submit', wcsWelcomeForm, function( e ) {
+			e.preventDefault();
+
+			$.ajax( {
+				type: 'post',
+				url: woo_conditional_shipping.ajax_urls.welcome_submit,
+				data: {
+					license_key: $( 'input#wcs-license-key-input' ).val(),
+					security: woo_conditional_shipping.nonces.welcome_submit,
+				},
+				dataType: 'json',
+				beforeSend: function() {
+					$( '.wcs-spinner' ).css( 'visibility', 'visible' );
+					$( '.wcs-success, .wcs-error' ).hide();
+				},
+				success: function( response ) {
+					if (response.status === 'success') {
+						$( '.wcs-success' ).show();
+
+						// Remove "Changes you made may not be saved." warning
+						window.onbeforeunload = null;
+
+						// Reload the current page
+						setTimeout(function() {
+							location.reload();
+						}, 3000);
+					} else {
+						$( '.wcs-error' ).show();
+						$( '.wcs-error' ).text( response.error );
+					}
+				},
+				error: function( jqXHR, textStatus, errorThrown ) {
+					console.log( jqXHR, textStatus, errorThrown );
+					alert( jqXHR.status + " " + jqXHR.responseText + " " + textStatus + " " + errorThrown );
+				},
+				complete: function() {
+					$( '.wcs-spinner' ).css( 'visibility', 'hidden' );
+				}
+			} );
+		} );
+	}
 });

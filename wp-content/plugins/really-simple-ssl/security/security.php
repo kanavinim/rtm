@@ -1,13 +1,24 @@
 <?php
+
+use RSSSL\Security\RSSSL_Htaccess_File_Manager;
+
 defined('ABSPATH') or die();
 class REALLY_SIMPLE_SECURITY
 {
 	private static $instance;
 	public $firewall_manager;
+	public $hardening;
+	/**
+	 * Components array, so we can access singleton classes which are dynamically added, from anywhere.
+	 * @var
+	 */
+	public $components;
 
 	private function __construct()
 	{
-
+        if (!defined('RSSSL_SAFE_MODE') && file_exists(trailingslashit(WP_CONTENT_DIR) . 'rsssl-safe-mode.lock')) {
+            define('RSSSL_SAFE_MODE', true);
+        }
 	}
 
 	public static function instance()
@@ -15,27 +26,27 @@ class REALLY_SIMPLE_SECURITY
 		if (!isset(self::$instance) && !(self::$instance instanceof REALLY_SIMPLE_SECURITY)) {
 			self::$instance = new REALLY_SIMPLE_SECURITY;
 			self::$instance->includes();
-			$wpcli = defined( 'WP_CLI' ) && WP_CLI;
-
-			if ( $wpcli || rsssl_is_logged_in_rest() || is_admin() || wp_doing_cron() || defined('RSSSL_LEARNING_MODE') ) {
-				self::$instance->firewall_manager = new rsssl_firewall_manager();
+			if ( rsssl_admin_logged_in() ) {
+				$htaccessFileManager = RSSSL_Htaccess_File_Manager::get_instance();
+				self::$instance->firewall_manager = new rsssl_firewall_manager($htaccessFileManager);
 			}
-			self::$instance->hooks();
 		}
 		return self::$instance;
 	}
 
 	private function includes()
 	{
+
 		$path = rsssl_path.'security/';
-		require_once( $path . 'cron.php' );
+		require_once( $path . 'two-fa-frontend-functions.php' );
 		require_once( $path . 'integrations.php' );
-		$wpcli = defined( 'WP_CLI' ) && WP_CLI;
+		require_once( $path . 'cron.php' );
+		require_once( $path . 'includes/check404/class-rsssl-simple-404-interceptor.php' );
 
 		/**
 		 * Load only on back-end
 		 */
-		if ( $wpcli || rsssl_is_logged_in_rest() || is_admin() || wp_doing_cron() || defined('RSSSL_LEARNING_MODE')  ) {
+		if ( rsssl_admin_logged_in() ) {
 			require_once( $path . 'functions.php' );
 			require_once( $path . 'deactivate-integration.php' );
 			require_once( $path . 'firewall-manager.php' );
@@ -44,10 +55,6 @@ class REALLY_SIMPLE_SECURITY
 			require_once( $path . 'sync-settings.php' );
 		}
 
-	}
-
-	private function hooks()
-	{
 	}
 }
 

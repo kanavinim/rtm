@@ -65,7 +65,10 @@ var br_something_changed = false;
                 $('.nav-block-active').removeClass('nav-block-active');
                 $(this).addClass('active');
                 $('.'+$(this).data('block')+'-block').addClass('nav-block-active');
-                $('.br_framework_settings .content .title').html( $(this).html() );
+                $ee_hide_premium = $('body.berocket_settings_page #brfr_ee_hide_locked_features').length?
+                    $('#brfr_ee_hide_locked_features').prop('outerHTML')
+                    : '';
+                $('.br_framework_settings .content .title').html( $(this).html()+$ee_hide_premium);
                 window.history.replaceState(null, null, $(this).attr('href'));
                 $(this).trigger('brlinktab_opened');
                 $('.'+$(this).data('block')+'-block').trigger('brtab_opened');
@@ -183,7 +186,7 @@ var br_something_changed = false;
         });
         $(document).on('click', '.berocket_select_fontawesome .berocket_remove_fa',function(event) {
             event.preventDefault();
-            $(this).parents('.berocket_select_fontawesome').find('.berocket_selected_fa').html('');
+            $(this).parents('.berocket_select_fontawesome').find('.berocket_selected_fa').html('<i class="fa_select_removed"></i>');
             $(this).parents('.berocket_select_fontawesome').find('.berocket_fa_value').val('').trigger('change');
         });
         $(document).on('keyup', '.berocket_select_fontawesome .berocket_fa_search', function() {
@@ -344,8 +347,13 @@ var br_something_changed = false;
                                 $result_block = $('body').append($result_block);
                                 $('.berocket_search_result').css('position', 'absolute')
                                 .css('top', $search_box.offset().top+$search_box.height())
-                                .css('left', $search_box.offset().left)
                                 .outerWidth($search_box.outerWidth());
+                                if( getComputedStyle($search_box[0]).direction === 'rtl' ) {
+                                    var rtl_pos = ($('.berocket_search_result').offsetParent().outerWidth() - $search_box.offset().left) - $search_box.outerWidth();
+                                    $('.berocket_search_result').css('right', rtl_pos);
+                                } else {
+                                    $('.berocket_search_result').css('left', $search_box.offset().left);
+                                }
                             }
                             $('.berocket_product_search .berocket_loads').remove();
                         }, 'json');
@@ -577,12 +585,13 @@ jQuery(document).on('click', function() {
             event.preventDefault();
             var $this = $(this);
             var post_id = $(this).data('post_id');
+            var nonce = $(this).data('nonce');
             if( $this.is('.berocket_post_set_new_sortable_set') ) {
                 var order = $this.parents('.berocket_post_set_new_sortable_input').first().find('input').val();
             } else {
                 var order = $(this).data('order');
             }
-            $.post(location.href, {braction:'berocket_custom_post_sortable', BRsortable_id:post_id, BRorder:order}, function(html) {
+            $.post(location.href, {braction:'berocket_custom_post_sortable', BRsortable_id:post_id, BRorder:order, wp_nonce: nonce}, function(html) {
                 var $html = jQuery(html);
                 var $tbody = $html.find('.berocket_post_set_new_sortable').first().parents('tbody').first();
                 $('.berocket_post_set_new_sortable').first().parents('tbody').first().replaceWith($tbody);
@@ -692,6 +701,7 @@ jQuery(document).on('click', '.berocket_remove_condition', function() {
 jQuery(document).on('click', '.br_remove_group', function() {
     $parent = jQuery(this).parents('.br_html_condition');
     $parent.remove();
+    jQuery(document).trigger('berocket:filters:br_remove_group');
 });
 jQuery(document).on('change', '.br_cond_attr_select', function() {
     var $attr_block = jQuery(this).parents('.br_cond').first();

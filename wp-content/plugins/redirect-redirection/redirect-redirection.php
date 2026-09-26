@@ -2,7 +2,7 @@
 /*
  * Plugin Name: Redirect Redirection
  * Description: Create specific URL redirections and redirection rules super-easily on a beautiful, user-friendly interface of the Redirect Redirection plugin.
- * Version: 1.2.7
+ * Version: 1.3.0
  * Author: Inisev
  * Author URI: https://inisev.com
  * Plugin URI: https://redirection.pro
@@ -21,7 +21,7 @@ define("IRRP_DIR_NAME", basename(IRRP_DIR_PATH));
 define("IRRP_CRON_DELETE_LOGS", "irrp_cron_delete_logs");
 define("IRRP_CRON_DELETE_LOGS_RECURRENCE_KEY", "irrp_custom_interval");
 define("IRRP_CRON_DELETE_LOGS_RECURRENCE", 60);
-define("IRRP_PLUGIN_VERSION", "1.2.7");
+define("IRRP_PLUGIN_VERSION", "1.3.0");
 
 /**
  * Create tables on activation.
@@ -48,6 +48,7 @@ add_action('wp_loaded', function () {
     include_once "includes/banner/misc.php";
 
     include_once "includes/irrp-constants.php";
+    include_once "includes/irrp-cache-manager.php";
     include_once "includes/irrp-db-manager.php";
     include_once "includes/irrp-helper.php";
     include_once "includes/settings/irrp-settings.php";
@@ -332,12 +333,17 @@ add_action('wp_loaded', function () {
     }
 
     $irrPRedirection = IrrPRedirection::getInstance();
-    $irrPRedirection->irrpInit();
+    // $irrPRedirection->irrpInit();
     
     // Review banner
     if (!(class_exists('Inisev\Subs\Inisev_Review') || class_exists('Inisev_Review'))) require_once __DIR__ . '/modules/review/review.php';
     $review_banner = new \Inisev\Subs\Inisev_Review(__FILE__, __DIR__, 'redirect-redirection', 'Redirection', 'https://bit.ly/3Pw8VrS', 'irrp-redirection');
-    
+
+    if (!(class_exists('\Inisev\Subs\New_BB_Banner') || class_exists('Inisev\Subs\New_BB_Banner') || class_exists('New_BB_Banner'))) {
+        require_once __DIR__ . '/modules/new-bb-banner/misc.php';
+        new \Inisev\Subs\New_BB_Banner(__FILE__,  __DIR__, 'redirect-redirection', 'Redirection', 'irrp-redirection');
+    }
+
 }, 9);
 
 /**

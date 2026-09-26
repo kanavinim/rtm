@@ -1,346 +1,614 @@
 import {
     TextControl,
     RadioControl,
-    SelectControl,
     TextareaControl,
-    __experimentalNumberControl as NumberControl,
-    ToggleControl,
+    __experimentalNumberControl as NumberControl
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import * as rsssl_api from "../utils/api";
-import License from "./License";
+import License from "./License/License";
 import Password from "./Password";
-import Host from "./Host";
+import SelectControl from "./SelectControl";
+import Host from "./Host/Host";
 import Hyperlink from "../utils/Hyperlink";
 import LetsEncrypt from "../LetsEncrypt/LetsEncrypt";
 import Activate from "../LetsEncrypt/Activate";
-import MixedContentScan from "./MixedContentScan";
+import MixedContentScan from "./MixedContentScan/MixedContentScan";
 import PermissionsPolicy from "./PermissionsPolicy";
+import CheckboxControl from "./CheckboxControl";
 import Support from "./Support";
-import LearningMode from "./LearningMode";
-import ChangeStatus from "./ChangeStatus";
-import {
-    Component,
-} from '@wordpress/element';
+import LearningMode from "./LearningMode/LearningMode";
+import RiskComponent from "./RiskConfiguration/RiskComponent";
+import VulnerabilitiesOverview from "./RiskConfiguration/vulnerabilitiesOverview";
+import IpAddressDatatable from "./LimitLoginAttempts/IpAddressDatatable";
+import TwoFaRolesDropDown from "./TwoFA/TwoFaRolesDropDown";
+import Button from "./Button";
+import Icon from "../utils/Icon";
+import { useEffect, useState, useRef } from "@wordpress/element";
+import useFields from "./FieldsData";
+import PostDropdown from "./PostDropDown";
+import NotificationTester from "./RiskConfiguration/NotificationTester";
+import getAnchor from "../utils/getAnchor";
+import useMenu from "../Menu/MenuData";
+import UserDatatable from "./LimitLoginAttempts/UserDatatable";
+import CountryDatatable from "./LimitLoginAttempts/CountryDatatable";
+import BlockListDatatable from "./GeoBlockList/BlockListDatatable";
+import TwoFaDataTable from "./TwoFA/TwoFaDataTable";
+import EventLogDataTable from "./EventLog/EventLogDataTable";
+import DOMPurify from "dompurify";
+import RolesDropDown from "./RolesDropDown";
+import GeoDatatable from "./GeoBlockList/GeoDatatable";
+import WhiteListDatatable from "./GeoBlockList/WhiteListDatatable";
+import Captcha from "./Captcha/Captcha";
+import CaptchaKey from "./Captcha/CaptchaKey";
+import UserAgentTable from "./firewall/UserAgentTable";
+import TwoFaEnabledDropDown from "./TwoFA/TwoFaEnabledDropDown";
+const Field = (props) => {
+    const scrollAnchor = useRef(null);
+    const { updateField, setChangedField, highLightField, setHighLightField , getFieldValue} = useFields();
+    const [anchor, setAnchor] = useState(null);
+    const { selectedFilter, setSelectedFilter } = useMenu();
 
-/*
- * https://react-data-table-component.netlify.app
- */
-import DataTable from "react-data-table-component";
+    useEffect(() => {
+        // Check URL for anchor and highlightfield parameters
+        const anchor = getAnchor('anchor');
+        const highlightField = getAnchor('highlightfield');
 
+        setAnchor(anchor);
 
-class Field extends Component {
-    constructor() {
-        super( ...arguments );
-        this.scrollAnchor = false;
-        this.onChangeHandlerDataTableStatus = this.onChangeHandlerDataTableStatus.bind(this);
-        this.onChangeHandler = this.onChangeHandler.bind(this);
-
-    }
-
-    componentDidMount(){
-
-    }
-
-    componentDidUpdate(){
-        if ( this.props.highLightedField===this.props.field.id && this.scrollAnchor.current ) {
-            this.scrollAnchor.current.scrollIntoView()
+        if (highlightField) {
+            setHighLightField(highlightField);
         }
-    }
 
-    onChangeHandler(fieldValue) {
-        let fields = this.props.fields;
-        let field = this.props.field;
-        fields[this.props.index]['value'] = fieldValue;
+        if (highlightField === props.field.id && scrollAnchor.current) {
+            scrollAnchor.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
 
-        //we can configure other fields if a field is enabled, or set to a certain value.
+        //if the field is a captcha provider, scroll to the captcha provider is a temp fix cause i can't get the scroll to work properly.
+        if (highLightField === 'enabled_captcha_provider' && props.fields) {
+            let captchaField = document.getElementsByClassName('rsssl-highlight')[0];
+            if (captchaField) {
+                captchaField.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        if (anchor && anchor === props.field.id) {
+            scrollAnchor.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }, []);
+
+    useEffect(() => {
+        handleAnchor();
+    }, [anchor]);
+
+    window.addEventListener('hashchange', () => {
+        const anchor = getAnchor('anchor');
+        const highlightField = getAnchor('highlightfield');
+
+        setAnchor(anchor);
+
+        if (highlightField) {
+            setHighLightField(highlightField);
+        }
+
+        if (highlightField === props.field.id && scrollAnchor.current) {
+            scrollAnchor.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        if (anchor && anchor === props.field.id) {
+            scrollAnchor.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    });
+
+    const handleAnchor = () => {
+        if (anchor && anchor === props.field.id) {
+            scrollAnchor.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    };
+
+    const onChangeHandler = (fieldValue) => {
+        let field = props.field;
+        if (field.pattern) {
+            const regex = new RegExp(field.pattern, 'g');
+            const allowedCharactersArray = fieldValue.match(regex);
+            fieldValue = allowedCharactersArray ? allowedCharactersArray.join('') : '';
+        }
+        updateField(field.id, fieldValue);
+
+        // We can configure other fields if a field is enabled, or set to a certain value.
         let configureFieldCondition = false;
         if (field.configure_on_activation) {
-            if ( field.configure_on_activation.hasOwnProperty('condition') && this.props.field.value==field.configure_on_activation.condition ) {
+            if (field.configure_on_activation.hasOwnProperty('condition') && props.field.value == field.configure_on_activation.condition) {
                 configureFieldCondition = true;
             }
             let configureField = field.configure_on_activation[0];
-            for (let fieldId in configureField ) {
-                if ( configureFieldCondition && configureField.hasOwnProperty(fieldId) ) {
-                    this.props.updateField(fieldId, configureField[fieldId] );
-                }
-            }
-        }
-        this.props.saveChangedFields( field.id )
-    }
-
-    /*
-     * Handle data update for a datatable, for the status only (true/false)
-     * @param enabled
-     * @param clickedItem
-     * @param type
-     */
-    onChangeHandlerDataTableStatus(enabled, clickedItem, type ) {
-
-        let field=this.props.field;
-        enabled = enabled==1 ? 0 : 1;
-        if (typeof field.value === 'object') {
-            field.value = Object.values(field.value);
-        }
-        //find this item in the field list
-        for (const item of field.value){
-            if (item.id === clickedItem.id) {
-                item[type] = enabled;
-            }
-            delete item.valueControl;
-            delete item.statusControl;
-            delete item.deleteControl;
-        }
-        //the updateItemId allows us to update one specific item in a field set.
-        field.updateItemId = clickedItem.id;
-        let saveFields = [];
-        saveFields.push(field);
-        this.props.updateField(field.id, field.value);
-        rsssl_api.setFields(saveFields).then(( response ) => {
-            //this.props.showSavedSettingsNotice();
-        });
-    }
-    onCloseTaskHandler(){
-
-    }
-
-    render(){
-        if ( this.highLightClass ) {
-            this.scrollAnchor = React.createRef();
-        }
-        let field = this.props.field;
-        let fieldValue = field.value;
-        let fields = this.props.fields;
-        let disabled = field.disabled;
-        this.highLightClass = this.props.highLightedField===this.props.field.id ? 'rsssl-field-wrap rsssl-highlight' : 'rsssl-field-wrap';
-
-        //if an element is highlighted, get that element, and scroll into view
-
-        let options = [];
-        if ( field.options ) {
-            for (var key in field.options) {
-                if (field.options.hasOwnProperty(key)) {
-                    let item = {};
-                    item.label = field.options[key];
-                    item.value = key;
-                    options.push(item);
+            for (let fieldId in configureField) {
+                if (configureFieldCondition && configureField.hasOwnProperty(fieldId)) {
+                    updateField(fieldId, configureField[fieldId]);
                 }
             }
         }
 
-        //if a feature can only be used on networkwide or single site setups, pass that info here.
-        if ( !rsssl_settings.networkwide_active && field.networkwide_required ) {
-            disabled = true;
-            field.comment = <>{__("This feature is only available networkwide.","really-simple-ssl")}<Hyperlink target="_blank" text={__("Network settings","really-simple-ssl")} url={rsssl_settings.network_link}/></>
-        }
+        setChangedField(field.id, fieldValue);
+    };
 
-        if ( field.conditionallyDisabled ) {
-            disabled = true;
-        }
+    const labelWrap = (field) => {
+        let tooltipColor = field.warning ? 'red' : 'black';
+        return (
+            <>
+                <div className="cmplz-label-text">{field.label}</div>
+                {field.tooltip && <Icon name="info-open" tooltip={field.tooltip} color={tooltipColor} />}
+            </>
+        );
+    };
 
-        if ( !field.visible ) {
-            return (
-                <></>
-            );
-        }
+    let field = props.field;
+    let fieldValue = field.value;
+    let disabled = field.disabled;
+    let highLightClass = 'rsssl-field-wrap';
+    if (highLightField === props.field.id) {
+        highLightClass = 'rsssl-field-wrap rsssl-highlight';
+    }
 
-        if ( field.type==='checkbox' ){
-            return (
-                <div className={this.highLightClass} ref={this.scrollAnchor}>
-                  <ToggleControl
-                      disabled = {disabled}
-                      checked= { field.value==1 }
-                      label={ field.label }
-                      onChange={ ( fieldValue ) => this.onChangeHandler(fieldValue) }
-                  />
-                  {field.comment && <div className="rsssl-comment" dangerouslySetInnerHTML={{__html:field.comment}}></div>}
-                </div>
-            );
+    let options = [];
+    if (field.options) {
+        for (let key in field.options) {
+            if (field.options.hasOwnProperty(key)) {
+                let item = {};
+                item.label = field.options[key];
+                item.value = key;
+                options.push(item);
+            }
         }
+    }
 
-        if ( field.type==='hidden' ){
-            return (
-                <input type="hidden" value={field.value}/>
-            );
-        }
+    // If a feature can only be used on networkwide or single site setups, pass that info here.
+    if (!rsssl_settings.networkwide_active && field.networkwide_required) {
+        disabled = true;
+        field.comment = (
+            <>
+                {__("This feature is only available networkwide.", "really-simple-ssl")}
+                <Hyperlink target="_blank" rel="noopener noreferrer" text={__("Network settings", "really-simple-ssl")} url={rsssl_settings.network_link} />
+            </>
+        );
+    }
 
-        if ( field.type==='radio' ){
-            return (
-                <div className={this.highLightClass} ref={this.scrollAnchor}>
-                  <RadioControl
-                      label={ field.label }
-                      onChange={ ( fieldValue ) => this.onChangeHandler(fieldValue) }
-                      selected={ fieldValue }
-                      options={ options }
-                  />
-                </div>
-            );
-        }
+    if (field.conditionallyDisabled) {
+        disabled = true;
+    }
 
-        if ( field.type==='text' || field.type==='email' ){
-            return (
-                <div className={this.highLightClass} ref={this.scrollAnchor}>
-                  <TextControl
-                      required={ field.required }
-                      disabled={ disabled }
-                      help={ field.comment }
-                      label={ field.label }
-                      onChange={ ( fieldValue ) => this.onChangeHandler(fieldValue) }
-                      value= { fieldValue }
-                  />
-                </div>
-            );
-        }
+    if (!field.visible) {
+        return null;
+    }
 
-        if ( field.type==='button' ){
-            return (
-                <div className={'rsssl-field-button ' + this.highLightClass} ref={this.scrollAnchor}>
-                    <label>{field.label}</label>
-                    <Hyperlink className="button button-default" text={field.button_text} url={field.url}/>
-                </div>
-            );
-        }
+    if ( field.type==='checkbox' ) {
+        return (
+            <div className={highLightClass} ref={scrollAnchor}>
+                <CheckboxControl
+                    label={labelWrap(field)}
+                    field={field}
+                    disabled={disabled}
+                    onChangeHandler={ ( fieldValue ) => onChangeHandler( fieldValue ) }
+                />
+                { field.comment &&
+                    <div className="rsssl-comment" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(field.comment) }} />
+                    /* nosemgrep: react-dangerouslysetinnerhtml */
+                }
+            </div>
+        );
+    }
 
-        if ( field.type==='password' ){
-            return (
-                <div className={ this.highLightClass} ref={this.scrollAnchor}>
-                    <Password
-                        index={ this.props.index }
-                        field={ field }
-                        fields={ this.props.fields }
-                        saveChangedFields={this.props.saveChangedFields}
-                    />
-                </div>
-            );
-        }
+    if ( field.type==='hidden' ){
+        return (
+            <input type="hidden" value={field.value}/>
+        );
+    }
 
-        if ( field.type==='textarea' ){
-            return (
-                <div className={this.highLightClass} ref={this.scrollAnchor}>
-                  <TextareaControl
-                      label={ field.label }
-                      disabled={ disabled }
-                      help={ field.comment }
-                      value= { fieldValue }
-                      onChange={ ( fieldValue ) => this.onChangeHandler(fieldValue) }
-                  />
-                </div>
-            );
-        }
+    if ( field.type==='radio' ){
+        return (
+            <div className={highLightClass} ref={scrollAnchor}>
+                <RadioControl
+                    label={labelWrap(field)}
+                    onChange={ ( fieldValue ) => onChangeHandler(fieldValue) }
+                    selected={ fieldValue }
+                    options={ options }
+                />
+            </div>
+        );
+    }
 
-        if ( field.type==='license' ){
-            let field = this.props.field;
-            let fieldValue = field.value;
-            let fields = this.props.fields;
-            return (
-                <div className={this.highLightClass} ref={this.scrollAnchor}>
-                  <License setPageProps={this.props.setPageProps} fieldsUpdateComplete = {this.props.fieldsUpdateComplete} index={this.props.index} fields={fields} field={field} fieldValue={fieldValue} saveChangedFields={this.props.saveChangedFields} highLightField={this.props.highLightField} highLightedField={this.props.highLightedField}/>
-                </div>
+    if (field.type==='email'){
+        const sendVerificationEmailField = props.fields.find(field => field.id === 'send_verification_email');
+        const emailIsVerified = sendVerificationEmailField && (sendVerificationEmailField.disabled === false);
 
-            );
-        }
-        if ( field.type==='number' ){
-            return (
-                <div className={this.highLightClass} ref={this.scrollAnchor}>
-                    <NumberControl
-                        onChange={ ( fieldValue ) => this.onChangeHandler(fieldValue) }
-                        help={ field.comment }
-                        label={ field.label }
-                        value= { fieldValue }
-                    />
-                </div>
-            );
-        }
-        if ( field.type==='email' ){
-            return (
-                <div className={this.highLightClass} ref={this.scrollAnchor}>
-                  <TextControl
-                      help={ field.comment }
-                      label={ field.label }
-                      onChange={ ( fieldValue ) => this.onChangeHandler(fieldValue) }
-                      value= { fieldValue }
-                  />
-                </div>
-            );
-        }
+        return (
+            <div className={highLightClass} ref={scrollAnchor} style={{position: 'relative'}}>
+                <TextControl
+                    required={ field.required }
+                    placeholder={ field.placeholder }
+                    disabled={ disabled }
+                    help={ field.comment }
+                    label={labelWrap(field)}
+                    onChange={ ( fieldValue ) => onChangeHandler(fieldValue) }
+                    value= { fieldValue }
+                />
+                { sendVerificationEmailField &&
+                    <div className="rsssl-email-verified" >
+                        {!emailIsVerified
+                            ? <Icon name='circle-check' color={'green'} />
+                            : <Icon name='circle-times' color={'red'} />}
+                    </div>
+                }
+            </div>
+        );
+    }
 
-        if ( field.type==='host') {
-            return (
-                <div className={this.highLightClass} ref={this.scrollAnchor}>
-                  <Host
-                       index={this.props.index}
-                       saveChangedFields={this.props.saveChangedFields}
-                       handleNextButtonDisabled={this.props.handleNextButtonDisabled}
-                       updateFields={this.props.updateFields}
-                      fields={this.props.fields}
-                      field={this.props.field}
-                  />
-                </div>
+    if (field.type==='captcha_key') {
+        return (
+            <div className={highLightClass} ref={scrollAnchor} style={{position: 'relative'}}>
+                <CaptchaKey field={field} fields={props.fields} label={labelWrap(field)} />
+            </div>
             )
-        }
+    }
 
-        if ( field.type==='select') {
-            return (
-                <div className={this.highLightClass} ref={this.scrollAnchor}>
-                  <SelectControl
-                      disabled={ disabled }
-                      help={ field.comment }
-                      label={ field.label }
-                      onChange={ ( fieldValue ) => this.onChangeHandler(fieldValue) }
-                      value= { fieldValue }
-                      options={ options }
-                  />
-                </div>
-            )
-        }
+    if ( field.type==='number' ){
+        return (
+            <div className={highLightClass} ref={scrollAnchor} style={{ position: 'relative'}}>
+                <NumberControl
+                    required={ field.required }
+                    placeholder={ field.placeholder }
+                    className="number_full"
+                    disabled={ disabled }
+                    help={ field.comment }
+                    label={labelWrap(field)}
+                    onChange={ ( fieldValue ) => onChangeHandler(fieldValue) }
+                    value= { fieldValue }
+                />
+            </div>
+        );
+    }
 
-        if ( field.type==='support' ) {
-            return (
-                <div className={this.highLightClass} ref={this.scrollAnchor}>
-                  <Support/>
-                </div>
-            )
-        }
-        if ( field.type==='permissionspolicy' ) {
-            return (
-                <div className={this.highLightClass} ref={this.scrollAnchor}>
-                  <PermissionsPolicy disabled={disabled} updateField={this.props.updateField} field={this.props.field} options={options} highLightClass={this.highLightClass} fields={fields}/>
-                </div>
-            )
-        }
 
-        if ( field.type==='learningmode' ) {
-            return(
-                <div className={this.highLightClass} ref={this.scrollAnchor}>
-                  <LearningMode disabled={disabled} onChangeHandlerDataTableStatus={this.onChangeHandlerDataTableStatus} updateField={this.props.updateField} field={this.props.field} options={options} highLightClass={this.highLightClass} fields={fields}/>
-                </div>
-            )
-        }
+    if (field.type==='text' ){
+        return (
+            <div className={highLightClass} ref={scrollAnchor} style={{position: 'relative'}}>
+                <TextControl
+                    required={ field.required }
+                    placeholder={ field.placeholder }
+                    disabled={ disabled }
+                    help={ field.comment }
+                    label={labelWrap(field)}
+                    onChange={ ( fieldValue ) => onChangeHandler(fieldValue) }
+                    value= { fieldValue }
+                />
+            </div>
+        );
+    }
 
-        if ( field.type === 'mixedcontentscan' ) {
-            return (
-                <div className={this.highLightClass} ref={this.scrollAnchor}>
-                  <MixedContentScan dropItemFromModal={this.props.dropItemFromModal} handleModal={this.props.handleModal} field={this.props.field} fields={this.props.selectedFields}/>
-                </div>
-            )
-        }
 
-        if ( field.type === 'letsencrypt' ) {
-                return (
-                   <LetsEncrypt key={field.id} resetRefreshTests={this.props.resetRefreshTests} refreshTests={this.props.refreshTests} getFieldValue={this.props.getFieldValue} save={this.props.save} selectMenu={this.props.selectMenu} addHelp={this.props.addHelp} updateField={this.props.updateField} fields={this.props.fields} field={field} handleNextButtonDisabled={this.props.handleNextButtonDisabled}/>
-                )
-        }
+    if ( field.type==='button' ){
+        return (
+            <div className={'rsssl-field-button ' + highLightClass} ref={scrollAnchor}>
+                <label>{field.label}</label>
+                <Button field={field}/>
+            </div>
+        );
+    }
 
-        if ( field.type === 'activate' ) {
-                return (
-                   <Activate key={field.id} selectMainMenu={this.props.selectMainMenu} resetRefreshTests={this.props.resetRefreshTests} refreshTests={this.props.refreshTests} getFieldValue={this.props.getFieldValue} save={this.props.save} selectMenu={this.props.selectMenu} addHelp={this.props.addHelp} updateField={this.props.updateField} fields={this.props.fields} field={field} handleNextButtonDisabled={this.props.handleNextButtonDisabled}/>
-                )
+    if ( field.type==='password' ){
+        return (
+            <div className={ highLightClass} ref={scrollAnchor}>
+                <Password
+                    index={ props.index }
+                    field={ field }
+                />
+            </div>
+        );
+    }
+
+    if ( field.type==='textarea' ) {
+        // Handle csp_frame_ancestors_urls differently. Disable on select change
+        let fieldDisabled = false
+        if ( field.id === 'csp_frame_ancestors_urls') {
+            if ( getFieldValue('csp_frame_ancestors') === 'disabled' ) {
+                fieldDisabled = true
+            }
+        } else {
+            fieldDisabled = field.disabled
         }
 
         return (
-            'not found field type '+field.type
+            <div className={highLightClass} ref={scrollAnchor}>
+                <TextareaControl
+                    label={ field.label }
+                    help={ field.comment }
+                    value= { fieldValue }
+                    onChange={ ( fieldValue ) => onChangeHandler(fieldValue) }
+                    disabled={ fieldDisabled }
+                />
+            </div>
         );
     }
+
+    if ( field.type==='license' ){
+        let field = props.field;
+        let fieldValue = field.value;
+        return (
+            <div className={highLightClass} ref={scrollAnchor}>
+                <License index={props.index} field={field} fieldValue={fieldValue}/>
+            </div>
+
+        );
+    }
+    if ( field.type==='number' ){
+        return (
+            <div className={highLightClass} ref={scrollAnchor}>
+                <NumberControl
+                    onChange={ ( fieldValue ) => onChangeHandler(fieldValue) }
+                    help={ field.comment }
+                    label={ field.label }
+                    value= { fieldValue }
+                />
+            </div>
+        );
+    }
+    if ( field.type==='email' ){
+        return (
+            <div className={this.highLightClass} ref={this.scrollAnchor}>
+                <TextControl
+                    help={ field.comment }
+                    label={ field.label }
+                    onChange={ ( fieldValue ) => this.onChangeHandler(fieldValue) }
+                    value= { fieldValue }
+                />
+            </div>
+        );
+    }
+
+    if ( field.type==='host') {
+        return (
+            <div className={highLightClass} ref={scrollAnchor}>
+                <Host
+                    index={props.index}
+                    field={props.field}
+                />
+            </div>
+        )
+    }
+
+    if ( field.type==='select') {
+        return (
+            <div className={highLightClass} ref={scrollAnchor}>
+                <SelectControl
+                    disabled={ disabled }
+                    label={labelWrap(field)}
+                    onChangeHandler={ ( fieldValue ) => onChangeHandler(fieldValue) }
+                    value= { fieldValue }
+                    options={ options }
+                    field={field}
+                />
+            </div>
+        )
+    }
+
+    if ( field.type==='support' ) {
+        return (
+            <div className={highLightClass} ref={scrollAnchor}>
+                <Support/>
+            </div>
+        )
+    }
+
+    if ( field.type==='postdropdown' ) {
+        return (
+            <div className={highLightClass} ref={scrollAnchor}>
+                <PostDropdown field={props.field}/>
+            </div>
+        )
+    }
+    if ( field.type==='permissionspolicy' ) {
+        return (
+            <div className={highLightClass} ref={scrollAnchor}>
+                <PermissionsPolicy disabled={disabled} field={props.field} options={options}/>
+            </div>
+        )
+    }
+
+    if (field.type==='captcha') {
+        return (
+            <div className={highLightClass} ref={scrollAnchor}>
+                <Captcha field={field} label={labelWrap(field)} />
+            </div>
+        )
+    }
+
+    if ( field.type==='learningmode' ) {
+        return(
+            <div className={highLightClass} ref={scrollAnchor}>
+                <LearningMode disabled={disabled} field={props.field}/>
+            </div>
+        )
+    }
+
+    if ( field.type==='riskcomponent' ) {
+        return (<div className={highLightClass} ref={scrollAnchor}>
+            <RiskComponent field={props.field}/>
+        </div>)
+    }
+
+    if ( field.type === 'mixedcontentscan' ) {
+        return (
+            <div className={highLightClass} ref={scrollAnchor}>
+                <MixedContentScan field={props.field}/>
+            </div>
+        )
+    }
+
+    if (field.type === 'vulnerabilitiestable') {
+        return (
+            <div className={highLightClass} ref={scrollAnchor}>
+                <VulnerabilitiesOverview field={props.field} />
+            </div>
+        )
+    }
+
+    if (field.type === 'two_fa_roles') {
+        return (
+            <div className={highLightClass} ref={scrollAnchor}>
+                <label htmlFor={`rsssl-two-fa-dropdown-${field.id}`}>
+                    {labelWrap(field)}
+                </label>
+                <TwoFaRolesDropDown field={props.field} forcedRoledId={props.field.forced_roles_id} optionalRolesId={props.field.optional_roles_id}
+                />
+            </div>
+        );
+    }
+
+    if (field.type === 'eventlog-datatable') {
+        return (
+            <div className={highLightClass} ref={scrollAnchor}>
+                <EventLogDataTable
+                    field={props.field}
+                    action={props.field.action}
+                />
+            </div>
+        )
+    }
+    if (field.type === 'twofa-datatable') {
+        return (
+            <div className={highLightClass} ref={scrollAnchor}>
+                <TwoFaDataTable
+                    field={props.field}
+                    action={props.field.action}
+                />
+            </div>
+        )
+    }
+
+    if (field.type === 'ip-address-datatable') {
+        return (
+            <div className={highLightClass} ref={scrollAnchor}>
+                <IpAddressDatatable
+                    field={props.field}
+                    action={props.field.action}
+                />
+            </div>
+        )
+    }
+
+    if (field.type === 'user-datatable') {
+        return (
+            <div className={highLightClass} ref={scrollAnchor}>
+                <UserDatatable
+                    field={props.field}
+                    action={props.field.action}
+                />
+            </div>
+        )
+    }
+
+    if (field.type === 'country-datatable') {
+        return (
+            <div className={highLightClass} ref={scrollAnchor}>
+                <CountryDatatable
+                    field={props.field}
+                    action={props.field.action}
+                />
+            </div>
+        )
+    }
+
+    if (field.type === 'geo-datatable') {
+        return (
+            <div className={highLightClass} ref={scrollAnchor}>
+                <GeoDatatable
+                    field={props.field}
+                    action={props.field.action}
+                />
+            </div>
+        )
+    }
+
+    if (field.type === 'geo-ip-datatable') {
+        return (
+            <div className={highLightClass} ref={scrollAnchor}>
+                <WhiteListDatatable
+                    field={props.field}
+                    action={props.field.action}
+                />
+            </div>
+        )
+    }
+
+    if (field.type === 'blocklist-datatable') {
+        return (
+            <div className={highLightClass} ref={scrollAnchor}>
+                <BlockListDatatable
+                    field={props.field}
+                    action={props.field.action}
+                />
+            </div>
+        )
+    }
+
+    if (field.type === 'user-agents-datatable') {
+        return (
+            <div className={highLightClass} ref={scrollAnchor}>
+                <UserAgentTable
+                    field={props.field}
+                    action={props.field.action}
+                />
+            </div>
+        )
+    }
+
+    if (field.type === 'roles_dropdown') {
+        return (
+            <div className={highLightClass} ref={scrollAnchor}>
+                <label htmlFor={`rsssl-two-fa-dropdown-${field.id}`}>
+                    {labelWrap(field)}
+                </label>
+                <RolesDropDown field={props.field}
+                />
+            </div>
+        );
+    }
+
+    if (field.type === 'roles_enabled_dropdown') {
+        return (
+            <div className={highLightClass} ref={scrollAnchor}>
+                <label htmlFor={`rsssl-two-fa-dropdown-${field.id}`}>
+                    {labelWrap(field)}
+                </label>
+                <TwoFaEnabledDropDown field={props.field} disabled={disabled}
+                />
+            </div>
+        );
+    }
+
+    if(field.type === 'notificationtester') {
+        return (
+            <div className={'rsssl-field-button ' + highLightClass} ref={scrollAnchor}>
+                <NotificationTester field={props.field} disabled={disabled} labelWrap={labelWrap}/>
+            </div>
+        )
+    }
+
+    if ( field.type === 'letsencrypt' ) {
+        return (
+            <LetsEncrypt field={field} />
+        )
+    }
+
+    if ( field.type === 'activate' ) {
+        return (
+            <Activate field={field}/>
+        )
+    }
+
+    return (
+
+        'not found field type '+field.type
+    );
 }
 
 export default Field;

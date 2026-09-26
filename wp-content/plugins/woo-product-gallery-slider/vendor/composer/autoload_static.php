@@ -4,15 +4,8 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInita2122d1682b254ec2f79d7ce958b8d2f
+class ComposerStaticInita0a14dfed5acb57c47df9d6218459c36
 {
-    public static $files = array (
-        '5eec9d9e411935cf3bf6a02a459e8cac' => __DIR__ . '/../..' . '/includes/functions.php',
-        'ec5fc77e83e6d34b5a65b6a1d5acda7a' => __DIR__ . '/../..' . '/includes/codestar/codestar-framework.php',
-        'c2a38f3c111752c08b9c635b74c5c062' => __DIR__ . '/../..' . '/includes/core.php',
-        'c66fcf71a347660c46f017b65ba7a5de' => __DIR__ . '/../..' . '/includes/class-image-sizes.php',
-    );
-
     public static $prefixLengthsPsr4 = array (
         'P' => 
         array (
@@ -29,18 +22,16 @@ class ComposerStaticInita2122d1682b254ec2f79d7ce958b8d2f
 
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
+        'NS7_RDNC' => __DIR__ . '/..' . '/niloys7/remote-admin-notification-client/class-remote-notification-client.php',
         'PAnD' => __DIR__ . '/..' . '/collizo4sky/persist-admin-notices-dismissal/persist-admin-notices-dismissal.php',
-        'Product_Gallery_Sldier\\Bootstrap' => __DIR__ . '/../..' . '/src/Bootstrap.php',
-        'Product_Gallery_Sldier\\Options' => __DIR__ . '/../..' . '/src/Options.php',
-        'Product_Gallery_Sldier\\Product' => __DIR__ . '/../..' . '/src/Product.php',
     );
 
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInita2122d1682b254ec2f79d7ce958b8d2f::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInita2122d1682b254ec2f79d7ce958b8d2f::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInita2122d1682b254ec2f79d7ce958b8d2f::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInita0a14dfed5acb57c47df9d6218459c36::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInita0a14dfed5acb57c47df9d6218459c36::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInita0a14dfed5acb57c47df9d6218459c36::$classMap;
 
         }, null, ClassLoader::class);
     }

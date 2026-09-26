@@ -10,6 +10,11 @@ foreach (glob(plugin_dir_path( __FILE__ ) . "includes/compatibility/*.php") as $
 {
     include_once($filename);
 }
+if( ( ! defined("BLMP_VER_PAID_DISABLE") || ! BLMP_VER_PAID_DISABLE ) && file_exists(__DIR__ . "/paid/paid.php") ) {
+    include_once(__DIR__ . "/paid/tripwire.php");
+    include_once(__DIR__ . "/paid/paid.php");
+}
+include_once(plugin_dir_path( __FILE__ ) . "includes/admin/funnels.php");
 /*
  * Class BeRocket_LMP
  * REPLACE
@@ -29,6 +34,16 @@ class BeRocket_LMP extends BeRocket_Framework {
         array('br_lmp_javascript_settings', 'before_update'),
         array('br_lmp_javascript_settings', 'after_update'),
     );
+    public $import_export = array(
+        'br_lmp_javascript_settings' => array(
+            'before_update' => array(
+                'export_type' => 'remove'
+            ),
+            'after_update' => array(
+                'export_type' => 'remove'
+            )
+        )
+    );
 
     function __construct () {
         $this->info = array(
@@ -40,6 +55,7 @@ class BeRocket_LMP extends BeRocket_Framework {
             'key'         => '',
             'name'        => '',
             'plugin_name' => 'BeRocket_LMP',
+            'plugin_sku'  => 'loadmore',
             'full_name'   => 'BeRocket Load More Products',
             'norm_name'   => 'Load More Products',
             'price'       => '',
@@ -49,140 +65,86 @@ class BeRocket_LMP extends BeRocket_Framework {
             'plugin_dir'  => __DIR__,
         );
 
-        $this->defaults = array(
-            'br_lmp_general_settings'   => array(
-                'type'                      => 'infinity_scroll',
-                'update_url'                => '',
-                'use_mobile'                => '',
-                'mobile_type'               => 'more_button',
-                'mobile_width'              => '767',
-                'choose_loading'            => 'icons',
-                'loading_image'             => 'fa-spinner',
-                'rotate_image'              => '1',
-                'buffer'                    => '50',
-                'use_wpml'                  => '0',
-            ),
-            'br_lmp_button_settings'    => array(
-                'button_text'               => __('Load More', 'BeRocket_LMP_domain'),
-                'custom_class'              => '',
-                'background-color'          => '#aaaaff',
-                'color'                     => '#333333',
-                'border-color'              => '#000',
-                'font-size'                 => '22',
-                'padding-left'              => '25',
-                'padding-right'             => '25',
-                'padding-top'               => '15',
-                'padding-bottom'            => '15',
-                'hover'                     => array(
-                    'background-color'          => '#9999ff',
-                    'color'                     => '#111111',
+        $this->defaults = array (
+            'br_lmp_button_settings' => array (
+                'button_text' => 'Load More',
+                'custom_class' => '',
+                'background-color' => '#aaaaff',
+                'color' => '#333333',
+                'border-color' => '#000',
+                'font-size' => '22',
+                'padding-left' => '25',
+                'padding-right' => '25',
+                'padding-top' => '15',
+                'padding-bottom' => '15',
+                'hover' => array (
+                    'background-color' => '#9999ff',
+                    'color' => '#111111',
                 ),
-                'color'                     => '#333333',
-                'font-size'                 => '22',
-                'hover'                     => array(
-                    'color'                     => '#111111',
-                ),
-                'background-color'          => '#aaaaff',
-                'color'                     => '#333333',
-                'border-color'              => '#000',
-                'padding-left'              => '25',
-                'padding-right'             => '25',
-                'padding-top'               => '15',
-                'padding-bottom'            => '15',
-                'margin-right'              => '',
-                'margin-top'                => '',
-                'margin-bottom'             => '',
-                'margin-left'               => '',
-                'border-right'              => '',
-                'border-top'                => '',
-                'border-bottom'             => '',
-                'border-left'               => '',
-                'border-top-left-radius'    => '',
-                'border-top-right-radius'   => '',
+                'margin-right' => '',
+                'margin-top' => '',
+                'margin-bottom' => '',
+                'margin-left' => '',
+                'border-right' => '',
+                'border-top' => '',
+                'border-bottom' => '',
+                'border-left' => '',
+                'border-top-left-radius' => '',
+                'border-top-right-radius' => '',
                 'border-bottom-left-radius' => '',
-                'border-bottom-right-radius'=> '',
-                'hover'                     => array(
-                    'background-color'          => '#9999ff',
-                    'color'                     => '#111111',
-                ),
+                'border-bottom-right-radius' => '',
             ),
-            'br_lmp_prev_settings'    => array(
-                'enable_prev'               => '0',
-                'button_text'               => __('Load Previous', 'BeRocket_LMP_domain'),
-                'custom_class'              => '',
-                'background-color'          => '#aaaaff',
-                'color'                     => '#333333',
-                'border-color'              => '#000',
-                'font-size'                 => '22',
-                'padding-left'              => '25',
-                'padding-right'             => '25',
-                'padding-top'               => '15',
-                'padding-bottom'            => '15',
-                'hover'                     => array(
-                    'background-color'          => '#9999ff',
-                    'color'                     => '#111111',
+            'br_lmp_prev_settings' => array (
+                'enable_prev' => '',
+                'button_text' => 'Load Previous',
+                'custom_class' => '',
+                'background-color' => '#aaaaff',
+                'color' => '#333333',
+                'border-color' => '#000',
+                'font-size' => '22',
+                'padding-left' => '25',
+                'padding-right' => '25',
+                'padding-top' => '15',
+                'padding-bottom' => '15',
+                'hover' => array (
+                    'background-color' => '#9999ff',
+                    'color' => '#111111',
                 ),
-                'color'                     => '#333333',
-                'font-size'                 => '22',
-                'hover'                     => array(
-                    'color'                     => '#111111',
-                ),
-                'background-color'          => '#aaaaff',
-                'color'                     => '#333333',
-                'border-color'              => '#000',
-                'padding-left'              => '25',
-                'padding-right'             => '25',
-                'padding-top'               => '15',
-                'padding-bottom'            => '15',
-                'margin-right'              => '',
-                'margin-top'                => '',
-                'margin-bottom'             => '',
-                'margin-left'               => '',
-                'border-right'              => '',
-                'border-top'                => '',
-                'border-bottom'             => '',
-                'border-left'               => '',
-                'border-top-left-radius'    => '',
-                'border-top-right-radius'   => '',
+                'margin-right' => '',
+                'margin-top' => '',
+                'margin-bottom' => '',
+                'margin-left' => '',
+                'border-right' => '',
+                'border-top' => '',
+                'border-bottom' => '',
+                'border-left' => '',
+                'border-top-left-radius' => '',
+                'border-top-right-radius' => '',
                 'border-bottom-left-radius' => '',
-                'border-bottom-right-radius'=> '',
-                'hover'                     => array(
-                    'background-color'          => '#9999ff',
-                    'color'                     => '#111111',
-                ),
+                'border-bottom-right-radius' => '',
             ),
-            'br_lmp_selectors_settings' => array(
-                'products'                  => 'ul.products',
-                'item'                      => 'li.product',
-                'pagination'                => '.woocommerce-pagination',
-                'next_page'                 => '.woocommerce-pagination a.next',
-                'prev_page'                 => '.woocommerce-pagination a.prev',
+            'br_lmp_general_settings' => array (
+                'type' => 'infinity_scroll',
+                'update_url' => '',
+                'use_mobile' => '',
+                'choose_loading' => '',
+                'loading_image' => 'fa-spinner',
+                'rotate_image' => '1',
+                'buffer' => '50',
+                'use_wpml' => '',
             ),
-            'br_lmp_lazy_load_settings' => array(
-                'use_lazy_load'             => '',
-                'use_lazy_load_mobile'      => '',
-                'animation'                 => '',
+            'br_lmp_selectors_settings' => array (
+                'products' => 'ul.products',
+                'item' => 'li.product',
+                'pagination' => '.woocommerce-pagination',
+                'next_page' => '.woocommerce-pagination a.next',
+                'prev_page' => '.woocommerce-pagination a.prev',
             ),
-            'br_lmp_messages_settings'  => array(
-                'loading'                   => __('Loading...', 'BeRocket_LMP_domain'),
-                'loading_class'             => '',
-                'end_text'                  => __('Товаров больше нет', 'BeRocket_LMP_domain'),
-                'end_text_class'            => '',
-            ),
-            'br_lmp_javascript_settings'=> array(
-                'before_update'             => '',
-                'after_update'              => '',
-            ),
-            'br_lmp_license_settings'   => array(
-                'plugin_key'                => '',
+            'br_lmp_javascript_settings' => array (
+                'before_update' => '',
+                'after_update' => '',
             ),
             'custom_css' => '',
-            'fontawesome_frontend_disable'    => '',
-            'fontawesome_frontend_version'    => '',
-            'script'     => array(
-                'js_page_load'      => '',
-            ),
-            'plugin_key' => '',
         );
 
         $this->values = array(
@@ -190,12 +152,15 @@ class BeRocket_LMP extends BeRocket_Framework {
             'option_page'   => 'br_load_more_products',
             'premium_slug'  => 'woocommerce-load-more-products',
             'free_slug'     => 'load-more-products-for-woocommerce',
+            'hpos_comp'     => true
         );
         
         // List of the features missed in free version of the plugin
         $this->feature_list = array();
+	    $this->active_libraries = ['tooltip'];
 
-        $this->framework_data['fontawesome_frontend'] = true;
+
+	    $this->framework_data['fontawesome_frontend'] = true;
         parent::__construct( $this );
         
         $options = $this->get_option();
@@ -239,7 +204,16 @@ class BeRocket_LMP extends BeRocket_Framework {
                 //AJAX Compatibility
                 add_filter('brfr_get_option_ajax_filters', array($this, 'remove_product_per_page'));
             }
+            include_once __DIR__ . '/includes/admin/admin_bar.php';
         }
+    }
+
+    public function get_option() {
+        return BeRocket_LMP_Security::settings( parent::get_option(), $this->defaults );
+    }
+
+    public function save_settings_callback( $settings ) {
+        return BeRocket_LMP_Security::settings( parent::save_settings_callback( $settings ), $this->defaults );
     }
 
     public function init() {
@@ -269,6 +243,11 @@ class BeRocket_LMP extends BeRocket_Framework {
 
     public function lmp_button_style($button, $option_name, $options_btn) {
         $options_btn = array_merge($this->defaults[$option_name], $options_btn);
+        $sanitized_options = BeRocket_LMP_Security::settings(
+            array( $option_name => $options_btn ),
+            $this->defaults
+        );
+        $options_btn = $sanitized_options[ $option_name ];
         $button .= 'font-size: '.$options_btn['font-size'].'px;';
         $button .= 'color: '.$options_btn['color'].';';
         $button .= 'background-color: '.$options_btn['background-color'].';';
@@ -354,7 +333,7 @@ class BeRocket_LMP extends BeRocket_Framework {
                 _e( 'Showing the single result', 'woocommerce' );
             } elseif ( $total <= $per_page || -1 === $per_page ) {
                 /* translators: %d: total results */
-                printf( _n( 'Showing all %d result', 'Showing all %d results', $total, 'woocommerce' ), $total );
+                printf( _n( 'Showing all %1$d result', 'Showing all %1$d results', $total, 'woocommerce' ), $total );
             } else {
                 /* translators: 1: first result 2: last result 3: total results */
                 printf( _nx( 'Showing %1$d&ndash;%2$d of %3$d result', 'Showing %1$d&ndash;%2$d of %3$d results', $total, 'with first and last result', 'woocommerce' ), -1, -2, $total );
@@ -373,9 +352,9 @@ class BeRocket_LMP extends BeRocket_Framework {
     }
     
     public function wp_header() {
-        $options = parent::get_option();
+        $options = $this->get_option();
         $selectors_options = $options['br_lmp_selectors_settings'];
-        $item_selector = $selectors_options['item'];
+        $item_selector = BeRocket_LMP_Security::css_selector( $selectors_options['item'] );
         echo '<style>';
         foreach(array('br_lmp_button_settings', 'br_lmp_prev_settings') as $option_name) {
             $options_btn = $options[$option_name];
@@ -386,31 +365,36 @@ class BeRocket_LMP extends BeRocket_Framework {
                 }';
             $style = apply_filters('berocket_lmp_button_hover', $style, $option_name, $options_btn);
             if( ! empty($style) ) {
-                echo $style;
+                echo BeRocket_LMP_Security::style_block( $style );
             }
         }
-        echo trim($item_selector) . '.lazy, .berocket_lgv_additional_data.lazy{opacity:0;}</style>';
+        echo BeRocket_LMP_Security::style_block( $item_selector . '.lazy, .berocket_lgv_additional_data.lazy{opacity:0;}' );
+        echo '</style>';
     }
     
     public function list_grid_compatibility( $user_func ) {
-        $options = get_option('br_load_more_products');
+        $options = $this->get_option();
         $selectors_options = $options['br_lmp_selectors_settings'];
         $item_selector = $selectors_options['item'];
         $after_set = 'jQuery(window).scrollTop(jQuery(window).scrollTop() + 1).scrollTop(jQuery(window).scrollTop() - 1);';
-        $after_set .= "jQuery( '{$item_selector}.animated').trigger('lazyshow');";
+        $after_set .= 'jQuery(' . wp_json_encode( $item_selector . '.animated' ) . ").trigger('lazyshow');";
         $user_func['after_style_set'] = $after_set . $user_func['after_style_set'];
         return $user_func;
     }
     
     public function get_load_more_button($option_name = 'br_lmp_button_settings') {
-        $options = parent::get_option();
-        $options_btn = $options[$option_name];
-        $general_options = $options['br_lmp_general_settings'];
+        $options = $this->get_option();
+        $options_btn = array_replace_recursive(
+            br_get_value_from_array($this->defaults, array($option_name), array()),
+            (array) br_get_value_from_array($options, array($option_name), array())
+        );
+        $general_options = (array) br_get_value_from_array($options, array('br_lmp_general_settings'), array());
         $text = apply_filters('berocket_lmp_button_text', $options_btn['button_text'], $option_name, $options_btn);
-        $button = '<div class="lmp_load_more_button ' . $option_name . '">';
-        $button .= '<a class="lmp_button '.$options_btn['custom_class'].'" style="';
-        $button .= apply_filters('berocket_lmp_button_style', '', $option_name, $options_btn);
-        $button .= '" href="#load_next_page">'.$text.'</a>';
+        $button_style = apply_filters('berocket_lmp_button_style', '', $option_name, $options_btn);
+        $button = '<div class="lmp_load_more_button ' . esc_attr( sanitize_html_class( $option_name ) ) . '">';
+        $button .= '<a class="lmp_button ' . esc_attr( BeRocket_LMP_Security::class_list( $options_btn['custom_class'] ) ) . '" style="';
+        $button .= esc_attr( safecss_filter_attr( $button_style ) );
+        $button .= '" href="#load_next_page">' . wp_kses_post( $text ) . '</a>';
         $button .= '</div>';
         $button = apply_filters('berocket_lmp_button_html', $button, $option_name, $options_btn);
         return $button;
@@ -421,14 +405,43 @@ class BeRocket_LMP extends BeRocket_Framework {
         if( defined('THE7_VERSION') && THE7_VERSION ) {
             wp_enqueue_script( 'berocket_ajax_fix-the7', plugins_url( 'js/themes/the7.js', __FILE__ ), array( 'jquery' ) );
         }
-        $options = parent::get_option();
-        $general_options = $options['br_lmp_general_settings'];
-        $button_options = $options['br_lmp_button_settings'];
-        $prev_options = $options['br_lmp_prev_settings'];
-        $selectors_options = $options['br_lmp_selectors_settings'];
-        $lazy_load_options = $options['br_lmp_lazy_load_settings'];
-        $messages_options = $options['br_lmp_messages_settings'];
-        $javascript_options = $options['br_lmp_javascript_settings'];
+        $options = $this->get_option();
+        $general_options = array_merge(array(
+            'type' => '',
+            'update_url' => '',
+            'use_mobile' => '',
+            'mobile_type' => '',
+            'mobile_width' => '',
+            'rotate_image' => '',
+            'loading_image' => '',
+            'use_wpml' => '',
+            'buffer' => '',
+        ), (array) br_get_value_from_array($options, array('br_lmp_general_settings'), array()));
+        $prev_options = array_merge(array(
+            'enable_prev' => '',
+        ), (array) br_get_value_from_array($options, array('br_lmp_prev_settings'), array()));
+        $selectors_options = array_merge(array(
+            'products' => '',
+            'item' => '',
+            'pagination' => '',
+            'next_page' => '',
+            'prev_page' => '',
+        ), (array) br_get_value_from_array($options, array('br_lmp_selectors_settings'), array()));
+        $lazy_load_options = array_merge(array(
+            'use_lazy_load' => '',
+            'use_lazy_load_mobile' => '',
+            'animation' => '',
+        ), (array) br_get_value_from_array($options, array('br_lmp_lazy_load_settings'), array()));
+        $messages_options = array_merge(array(
+            'loading_class' => '',
+            'end_text_class' => '',
+            'loading' => '',
+            'end_text' => '',
+        ), (array) br_get_value_from_array($options, array('br_lmp_messages_settings'), array()));
+        $javascript_options = array_merge(array(
+            'before_update' => '',
+            'after_update' => '',
+        ), (array) br_get_value_from_array($options, array('br_lmp_javascript_settings'), array()));
         $products_selector = $selectors_options['products'];
         $item_selector = $selectors_options['item'];
         $pagination_selector = $selectors_options['pagination'];
@@ -441,19 +454,19 @@ class BeRocket_LMP extends BeRocket_Framework {
         $image = '<div class="lmp_products_loading">';
         if ( $general_options['loading_image'] ) {
             if ( substr( $general_options['loading_image'], 0, 3) == 'fa-' ) {
-                $image .= '<i class="fa '.$general_options['loading_image'].' '.$image_class.'"></i>';
+                $image .= '<i class="fa ' . esc_attr( BeRocket_LMP_Security::class_list( $general_options['loading_image'] . ' ' . $image_class ) ) . '"></i>';
             } else {
-                $image .= '<i class="fa '.$image_class.'"><img class="berocket_widget_icon" src="'.$general_options['loading_image'].'" alt=""></i>';
+                $image .= '<i class="fa ' . esc_attr( $image_class ) . '"><img class="berocket_widget_icon" src="' . esc_url( $general_options['loading_image'] ) . '" alt=""></i>';
             }
         } else {
-            $image .= '<i class="fa fa-spinner '.$image_class.'"></i>';
+            $image .= '<i class="fa fa-spinner ' . esc_attr( $image_class ) . '"></i>';
         }
         if ( $general_options['use_wpml'] ) {
-            $image .= '<span class="'.$messages_options['loading_class'].'">'.__( 'Loading...', 'BeRocket_LMP_domain' ).'</span></div>';
-            $end_text = '<div class="lmp_products_loading">Товаров больше нет!</div>';
+            $image .= '<span class="' . esc_attr( $messages_options['loading_class'] ) . '">' . esc_html__( 'Loading...', 'BeRocket_LMP_domain' ) . '</span></div>';
+            $end_text = '<div class="lmp_products_loading"><span class="' . esc_attr( $messages_options['end_text_class'] ) . '">' . esc_html__( 'No more products', 'BeRocket_LMP_domain' ) . '</span></div>';
         } else {
-            $image .= '<span class="'.$messages_options['loading_class'].'">'.$messages_options['loading'].'</span></div>';
-            $end_text = '<div class="lmp_products_loading">Товаров больше нет!</div>';
+            $image .= '<span class="' . esc_attr( $messages_options['loading_class'] ) . '">' . wp_kses_post( $messages_options['loading'] ) . '</span></div>';
+            $end_text = '<div class="lmp_products_loading"><span class="' . esc_attr( $messages_options['end_text_class'] ) . '">' . wp_kses_post( $messages_options['end_text'] ) . '</span></div>';
         }
         $load_more_button = $this->get_load_more_button();
         $load_prev_button = $this->get_load_more_button('br_lmp_prev_settings');
@@ -600,13 +613,6 @@ class BeRocket_LMP extends BeRocket_Framework {
                     ),
                     "value"    => 'infinity_scroll',
                 ),
-                'framework_products_per_page' => array(
-                    "label"     => __( 'Products per page', "BeRocket_LMP_domain" ),
-                    "type"      => "number",
-                    "name"      => "framework_products_per_page",
-                    "value"     => '',
-                    'extra'     => 'placeholder="'.__( 'From WooCommerce', "BeRocket_LMP_domain" ).'"'
-                ),
                 'load_image' => array(
                     "label"     => __( 'Loading Image', 'BeRocket_LMP_domain' ),
                     "items"     => array(
@@ -703,6 +709,7 @@ class BeRocket_LMP extends BeRocket_Framework {
                 'paddings' => array(
                     "label"    => __('Paddings', 'BeRocket_LMP_domain'),
                     "td_class" => "berocket-margin-paddings-block-parent",
+					"tr_class" => 'lmp_input_numbers_over',
                     "items" => array(
                         array(
                             "type"     => "number",
@@ -741,6 +748,7 @@ class BeRocket_LMP extends BeRocket_Framework {
                 'margin' => array(
                     "label"    => __('Margin', 'BeRocket_LMP_domain'),
                     "td_class" => "berocket-margin-paddings-block-parent",
+                    "tr_class" => 'lmp_input_numbers_over',
                     "items" => array(
                         array(
                             "type"     => "number",
@@ -779,6 +787,7 @@ class BeRocket_LMP extends BeRocket_Framework {
                 'border' => array(
                     "label"    => __('Border', 'BeRocket_LMP_domain'),
                     "td_class" => "berocket-margin-paddings-block-parent",
+                    "tr_class" => 'lmp_input_numbers_over',
                     "items" => array(
                         array(
                             "type"     => "number",
@@ -817,6 +826,7 @@ class BeRocket_LMP extends BeRocket_Framework {
                 'border-radius' => array(
                     "label"    => __('Border radius', 'BeRocket_LMP_domain'),
                     "td_class" => "berocket-margin-paddings-block-parent",
+                    "tr_class" => 'lmp_input_numbers_over',
                     "items" => array(
                         array(
                             "type"     => "number",
@@ -924,6 +934,7 @@ class BeRocket_LMP extends BeRocket_Framework {
                 'paddings' => array(
                     "label"    => __('Paddings', 'BeRocket_LMP_domain'),
                     "td_class" => "berocket-margin-paddings-block-parent",
+                    "tr_class" => 'lmp_input_numbers_over',
                     "items" => array(
                         array(
                             "type"     => "number",
@@ -962,6 +973,7 @@ class BeRocket_LMP extends BeRocket_Framework {
                 'margin' => array(
                     "label"    => __('Margin', 'BeRocket_LMP_domain'),
                     "td_class" => "berocket-margin-paddings-block-parent",
+                    "tr_class" => 'lmp_input_numbers_over',
                     "items" => array(
                         array(
                             "type"     => "number",
@@ -1000,6 +1012,7 @@ class BeRocket_LMP extends BeRocket_Framework {
                 'border' => array(
                     "label"    => __('Border', 'BeRocket_LMP_domain'),
                     "td_class" => "berocket-margin-paddings-block-parent",
+                    "tr_class" => 'lmp_input_numbers_over',
                     "items" => array(
                         array(
                             "type"     => "number",
@@ -1038,6 +1051,7 @@ class BeRocket_LMP extends BeRocket_Framework {
                 'border-radius' => array(
                     "label"    => __('Border radius', 'BeRocket_LMP_domain'),
                     "td_class" => "berocket-margin-paddings-block-parent",
+                    "tr_class" => 'lmp_input_numbers_over',
                     "items" => array(
                         array(
                             "type"     => "number",
@@ -1080,24 +1094,6 @@ class BeRocket_LMP extends BeRocket_Framework {
             ),
             'Selectors' => $Selectors,
             'JavaScript/CSS'     => array(
-                'global_font_awesome_disable' => array(
-                    "label"     => __( 'Disable Font Awesome', "BeRocket_LMP_domain" ),
-                    "type"      => "checkbox",
-                    "name"      => "fontawesome_frontend_disable",
-                    "value"     => '1',
-                    'label_for' => __('Don\'t loading css file for Font Awesome on site front end. Use it only if you doesn\'t uses Font Awesome icons in widgets or you have Font Awesome in your theme.', 'BeRocket_LMP_domain'),
-                ),
-                'global_fontawesome_version' => array(
-                    "label"    => __( 'Font Awesome Version', "BeRocket_LMP_domain" ),
-                    "name"     => "fontawesome_frontend_version",
-                    "type"     => "selectbox",
-                    "options"  => array(
-                        array('value' => '', 'text' => __('Font Awesome 4', 'BeRocket_LMP_domain')),
-                        array('value' => 'fontawesome5', 'text' => __('Font Awesome 5', 'BeRocket_LMP_domain')),
-                    ),
-                    "value"    => '',
-                    "label_for" => __('Version of Font Awesome that will be used on front end. Please select version that you have in your theme', 'BeRocket_LMP_domain'),
-                ),
                 array(
                     "type"  => "textarea",
                     "label" => __( "Custom CSS", "BeRocket_LMP_domain" ),
@@ -1130,7 +1126,7 @@ class BeRocket_LMP extends BeRocket_Framework {
     {
         $html = "<th>" . $item['label'] . "</th>".
             "<td>".
-                "<input class='lmp_button_settings' data-style='custom_css' name='" . $this->values['settings_name'] . "[br_lmp_button_settings][" . $item['name'] . "]' value='" . $options['br_lmp_button_settings']['custom_class'] . "' type='text'>".
+                "<input class='lmp_button_settings' data-style='custom_css' name='" . esc_attr( $this->values['settings_name'] . "[br_lmp_button_settings][" . $item['name'] . "]" ) . "' value='" . esc_attr( $options['br_lmp_button_settings']['custom_class'] ) . "' type='text'>".
             "</td></tr><tr>".
             "<td colspan='2'><div class='btn-preview-td'>".
                 "<h1 style='text-align: center;'>".__('Preview', 'BeRocket_LMP_domain')."</h1>".
@@ -1153,7 +1149,7 @@ class BeRocket_LMP extends BeRocket_Framework {
     {
         $html = "<th>" . $item['label'] . "</th>".
             "<td>".
-                "<input class='lmp_button_settings' data-style='custom_css' name='" . $this->values['settings_name'] . "[br_lmp_prev_settings][" . $item['name'] . "]' value='" . $options['br_lmp_prev_settings']['custom_class'] . "' type='text'>".
+                "<input class='lmp_button_settings' data-style='custom_css' name='" . esc_attr( $this->values['settings_name'] . "[br_lmp_prev_settings][" . $item['name'] . "]" ) . "' value='" . esc_attr( $options['br_lmp_prev_settings']['custom_class'] ) . "' type='text'>".
             "</td></tr><tr>".
             "<td colspan='2'><div class='btn-prev-preview-td'>".
                 "<h1 style='text-align: center;'>Preview</h1>".
@@ -1204,7 +1200,7 @@ class BeRocket_LMP extends BeRocket_Framework {
                     <li>' . __('Wait until end <strong style="color:red;">do not close this page</strong>', 'BeRocket_LMP_domain') . '</li>
                     <li>' . __('Save settings with new selectors', 'BeRocket_LMP_domain') . '</li>
                 </ol>
-                ' . BeRocket_wizard_generate_autoselectors(array('products' => '.lmp_button_selector_products', 'product' => '.lmp_button_selector_item', 'pagination' => '.lmp_button_selector_pagination', 'next_page' => '.lmp_button_selector_next_page', 'prev_page' => '.lmp_button_selector_prev_page'), array(), $output_text) . '
+                ' . BeRocket_wizard_generate_autoselectors_v2(array('products' => '.lmp_button_selector_products', 'product' => '.lmp_button_selector_item', 'pagination' => '.lmp_button_selector_pagination', 'next_page' => '.lmp_button_selector_next_page', 'prev_page' => '.lmp_button_selector_prev_page'), array(), $output_text) . '
             </td>
         </tr><tr>';
         return $html;

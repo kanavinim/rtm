@@ -70,20 +70,23 @@ class UR_Form_Field_Number extends UR_Form_Field {
 	 * @param [int]    $form_id Form id.
 	 */
 	public function validation( $single_form_field, $form_data, $filter_hook, $form_id ) {
-		$label = $single_form_field->general_setting->label;
+		$label = $single_form_field->general_setting->field_name;
 		$value = isset( $form_data->value ) ? $form_data->value : '';
 
 		if ( isset( $single_form_field->advance_setting->max ) && '' !== $single_form_field->advance_setting->max ) {
 			$max_value = $single_form_field->advance_setting->max;
 			if ( floatval( $value ) > floatval( $max_value ) ) {
+				$message = array(
+					/* translators: %s - validation message */
+					$label       => sprintf( __( 'Please enter a value less than %d', 'user-registration' ), $max_value ),
+					'individual' => true,
+				);
+
 				add_filter(
 					$filter_hook,
-					function ( $msg ) use ( $max_value, $label ) {
-						return sprintf(
-							'Please enter a value less than %d for %s',
-							$max_value,
-							"<strong>$label</strong>."
-						);
+					function ( $msg ) use ( $message, $form_data ) {
+						$message = apply_filters( 'user_registration_modify_field_validation_response', $message, $form_data );
+						return $message;
 					}
 				);
 			}
@@ -91,17 +94,41 @@ class UR_Form_Field_Number extends UR_Form_Field {
 
 		if ( isset( $single_form_field->advance_setting->min ) && '' !== $single_form_field->advance_setting->min ) {
 			$min_value = $single_form_field->advance_setting->min;
+
 			if ( floatval( $value ) < floatval( $min_value ) ) {
+				$message = array(
+					/* translators: %s - validation message */
+					$label       => sprintf( __( 'Please enter a value greater than %d', 'user-registration' ), $min_value ),
+					'individual' => true,
+				);
+
 				add_filter(
 					$filter_hook,
-					function ( $msg ) use ( $min_value, $label ) {
-						return sprintf(
-							'Please enter a value greater than %d for %s',
-							$min_value,
-							"<strong>$label</strong>."
-						);
+					function ( $msg ) use ( $message, $form_data ) {
+						$message = apply_filters( 'user_registration_modify_field_validation_response', $message, $form_data );
+						return $message;
 					}
 				);
+			}
+		}
+
+		if ( isset( $single_form_field->advance_setting->step ) && '' !== $single_form_field->advance_setting->step ) {
+			$step = $single_form_field->advance_setting->step;
+			if ( $step ) {
+				if ( floatval( $value ) % floatval( $step ) != 0 ) {
+					$message = array(
+						/* translators: %s - validation message */
+						$label       => sprintf( __( 'Please enter multiple of %d', 'user-registration' ), $step ),
+						'individual' => true,
+					);
+					add_filter(
+						$filter_hook,
+						function ( $msg ) use ( $message, $form_data ) {
+							$message = apply_filters( 'user_registration_modify_field_validation_response', $message, $form_data );
+							return $message;
+						}
+					);
+				}
 			}
 		}
 	}

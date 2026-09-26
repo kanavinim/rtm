@@ -28,10 +28,5 @@
 font-style: normal;
 }
 
-.flaticon-right-arrow:before { content: ">"; }
-.flaticon-back:before { content: "<"; }
-.flaticon-back:before, .flaticon-right-arrow:before {
-    font-family: impact;
-    font-size: 14px;
-    font-weight: 600;
-}
+.flaticon-right-arrow:before { content: "\f100"; }
+.flaticon-back:before { content: "\f101"; }

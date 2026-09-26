@@ -11,7 +11,6 @@
  * the readme will list any important changes.
  *
  * @see     https://docs.wpuserregistration.com/docs/how-to-edit-user-registration-template-files-such-as-login-form/
- * @author  WPEverest
  * @package UserRegistration/Templates
  * @version 1.0.0
  */
@@ -19,8 +18,6 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
-
-ur_print_notices();
 
 /**
  * My Account navigation.

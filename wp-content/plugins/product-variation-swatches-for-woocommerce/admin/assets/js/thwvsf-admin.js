@@ -211,6 +211,16 @@ var thwvsf_settings = (function($, window, document) {
     *---- ON-LOAD FUNCTIONS - SATRT ----- 
     *------------------------------------*/
 
+    $(document).ready(function(e){
+		var feature_popup = $(".thwvsf-pro-discount-popup");
+	    var feature_popup_wrapper = $(".thwvsf-pro-discount-popup-wrapper");
+
+	    if (feature_popup.length > 0) {
+	    	$('body').css('overflow','hidden');
+	        feature_popup[0].style.display = "flex";
+	    }
+	});
+
     $(function() {
 
         var settings_div = $('#edittag'),
@@ -229,6 +239,7 @@ var thwvsf_settings = (function($, window, document) {
         var last_active_tab = $('#last_active_tab').val();
 
         thwvsf_base.setup_form_side_popup();
+        $('.th-swatch-option-link').closest('#col-container').addClass('th-attr-container');
     });
 
 
@@ -422,7 +433,7 @@ var thwvsf_settings = (function($, window, document) {
 
     function populate_color_swatch_terms_html(terms, form){
         var termHtml = '';
-        termHtml += '<tr><td class="terms-label" colspan="3">Set Terms Color</td> </tr>';
+        termHtml += '<tr><td class="terms-label" colspan="3">Set Term Colors</td> </tr>';
         jQuery.each(terms,function(key,value){
 
             termHtml += '<tr>';
@@ -447,7 +458,7 @@ var thwvsf_settings = (function($, window, document) {
             upload_img        = thwvsf_var.upload_image,
             remove_img        = thwvsf_var.remove_image;
 
-        termHtml += '<tr><td class="terms-label" colspan="3">Set Terms Image</td> </tr>';
+        termHtml += '<tr><td class="terms-label" colspan="3">Set Term Images</td> </tr>';
         jQuery.each(terms,function(key,value){
 
             var remove_icon_style = value['image'] ? '' : 'display:none;' ,
@@ -478,7 +489,7 @@ var thwvsf_settings = (function($, window, document) {
 
     function populate_label_swatch_terms_html(terms, form){
         var termHtml = '';
-        termHtml += '<tr><td class="terms-label" colspan="3">Set Terms Label</td> </tr>';
+        termHtml += '<tr><td class="terms-label" colspan="3">Set Term Labels</td> </tr>';
         jQuery.each(terms,function(key,value){
           
             termHtml += '<tr>';
@@ -631,6 +642,202 @@ var thwvsf_settings = (function($, window, document) {
         }
     }
 
+    function widget_popup(){
+
+        var x = document.getElementById("myDIV"),
+            y = document.getElementById("myWidget"),
+            th_animation=document.getElementById("th_quick_border_animation"),
+            th_arrow = document.getElementById("th_arrow_head");
+
+        if (x.style.display === "none" || !x.style.display) {
+            x.style.display = "block";
+            th_arrow.style="transform:rotate(-12.5deg);";
+            th_animation.style="box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);";
+            th_animation.style.animation='none';
+        } else {
+            x.style.display = "none";
+            th_arrow.style="transform:rotate(45deg);"
+            th_animation.style.animation='pulse 1.5s infinite';
+        }
+    }
+
+    function widget_close(){
+
+        var z = document.getElementById("myDIV"),
+            za = document.getElementById("myWidget"),
+            th_animation=document.getElementById("th_quick_border_animation"),
+            th_arrow = document.getElementById("th_arrow_head");
+        z.style.display = "none";
+        th_arrow.style="transform:rotate(45deg);"
+        th_animation.style.animation='pulse 1.5s infinite';
+    }
+
+    /*------------------------------------
+    *---- Pro tab - SATRT ----- 
+    *------------------------------------*/
+
+    var slideIndex = 1;
+	var count = 0;
+	var myTimer;
+	var contentTimer;
+	var slideshowContainer;
+
+	window.addEventListener("load",function() {
+		showSlides(slideIndex);
+	    myTimer = setInterval(function(){plusSlides(1)}, 3000);
+	    slideshowContainer = document.getElementsByClassName('th-user-review-section')[0];
+	    if(slideshowContainer){
+	    	slideshowContainer.addEventListener('mouseenter', pause)
+		    slideshowContainer.addEventListener('mouseleave', resume)
+			slideContent(count);
+			contentTimer = setInterval(function(){ contentchange(1)},3000);
+	    }
+	})
+
+	function pause() {
+	  	clearInterval(myTimer);
+	  	clearInterval(contentTimer)
+	};
+
+	function resume(){
+		clearInterval(myTimer);
+	  	clearInterval(contentTimer)
+	  	myTimer = setInterval(function(){plusSlides(slideIndex)}, 3000);
+	  	contentTimer = setInterval(function(){ contentchange(count)},3000);
+	};
+
+	function showSlides(n){
+		var i;		  
+	  	var dots = document.getElementsByClassName("th-review-nav-btn");
+	  	
+	  	if(dots.length>0){
+	  		if (n > dots.length) {
+	  			slideIndex = 1
+	  		}
+			for (i = 0; i < dots.length; i++) {
+				dots[i].className = dots[i].className.replace(" active", "");
+			}
+	  		dots[slideIndex-1].className += " active";	
+	  	}
+	}
+
+	function plusSlides(n){
+		clearInterval(myTimer);
+		if (n < 0){
+			showSlides(slideIndex -= 1);
+		} else {
+			showSlides(slideIndex += 1); 
+		}
+		if (n === -1){
+			myTimer = setInterval(function(){plusSlides(n + 2)}, 3000);
+		} else {
+			myTimer = setInterval(function(){plusSlides(n + 1)}, 3000);
+		}
+	}
+
+	function accordionexpand(elm){
+		var curr_panel = elm.getElementsByClassName("th-panel")[0];
+		var accordion_qstn = elm.getElementsByClassName("th-accordion-qstn")[0];
+		var accordion_qstn_img = elm.getElementsByClassName("th-accordion-img")[0];
+		var accordion_qstn_img_opn = elm.getElementsByClassName("th-accordion-img-opn")[0];
+		var accordion_qstn_para = accordion_qstn.querySelector('p');
+		var panel = document.getElementsByClassName("th-panel");
+		var i;
+		for(i = 0; i < panel.length; i++){
+			if (curr_panel != panel[i]) {
+				if(panel[i].style.display === "block"){
+					var parentaccordion = panel[i].parentNode;
+					var parent_accordion_qstn = parentaccordion.getElementsByClassName("th-accordion-qstn")[0];
+					var parent_accordion_img = parentaccordion.getElementsByClassName("th-accordion-img")[0];
+					var parent_accordion_img_opn = parentaccordion.getElementsByClassName("th-accordion-img-opn")[0];
+					var parent_accordion_qstn_p = parent_accordion_qstn.querySelector('p');
+					panel[i].style.display = "none";
+					parent_accordion_qstn_p.style.color = "#121933";
+					parentaccordion.style.zIndex = "unset";
+					parentaccordion.style.borderColor = "#dfdfdf";
+					parent_accordion_qstn.style.marginTop = "0px";
+					parent_accordion_img.style.display = "block";
+					parent_accordion_img_opn.style.display = "none";
+				}
+			}
+		}
+		if (curr_panel.style.display === "block") {
+			curr_panel.style.display = "none";
+			accordion_qstn_para.style.color = "#121933";
+			elm.style.zIndex = "unset";
+			accordion_qstn.style.marginTop = "0";
+			elm.style.borderColor = "#dfdfdf";
+			accordion_qstn_img.style.display = "block";
+			accordion_qstn_img_opn.style.display = "none";
+		} else {
+			curr_panel.style.display = "block";
+			accordion_qstn_para.style.color = "#6E55FF";
+			elm.style.zIndex = "1";
+			elm.style.borderColor = "#6E55FF";
+			accordion_qstn.style.marginTop = "1.53rem";
+			accordion_qstn_img.style.display = "none";
+			accordion_qstn_img_opn.style.display = "block";
+		}
+	}
+
+	function slideContent(n){
+		var review_heading = ['Excellent plugin, and fantastic support','Reliable plug-in and great support', 'Great plugin, super helpful Support', 'Useful plugin for variation swatches','Easy to use and reliable'];
+		var headingContainer = document.getElementsByClassName('th-review-heading');
+		var review_content = ['This is an excellent plugin.<br>It did everything I needed.<br>And when I needed help, I was able to count on a fantastic support team.<br>Excellent reception.<br>Very worth the investment.',
+			'This is a plug-in for using extra product options in your Woocommerce shop. I’m using it for more than a year now with several sites and we’ve never had a single problem or bug.While buying and recently I’ve had a couple of questions, that were answered on the spot, so we’re very satisfied. Keep up the great work!',
+			'The pro version of the plugin is just what I needed, and Support was very thorough in answering my questions',
+			'I found this plugin the most useful among other ones, because: It has 5 different swatches types like color/bio color, Image, Image with label, text/label/button, and radio. It has swatches display styles that makes it possible to display many swatches in Horizontal scroll, vertical scroll, accordion, dropdown, and slider. The possibility to create links for variations Affordable Price for pro version Fantastic support team for solving problems and customizations Creating unlimited designs for variation swatches Creating custom designs for each variation Compatibility with other plugins',
+			'Thank you, ThemeHigh, for this delightful and easy to use plugin when you need just that small something extra.',
+		];
+		var contentContainer = document.getElementsByClassName('th-review-content');
+		var review_author = ['Guilherme Souza','resultancy','Kazerniel','Reza Manouchehri','tigmewp'];
+		var authorContainer = document.getElementsByClassName('th-review-user-name');
+		if(n > review_heading.length - 1){
+			count = 0;
+		}
+		headingContainer[0].innerHTML =  review_heading[count];
+		contentContainer[0].innerHTML = review_content[count];
+		authorContainer[0].innerHTML = review_author[count];
+	}
+
+	function contentchange(n){
+		clearInterval(contentTimer);
+	  	if(n<0){
+	  		slideContent(count -= 1);
+	  	}else{
+	  		slideContent(count += 1);
+	  	}
+	  	if (n === -1){
+		    contentTimer = setInterval(function(){ contentchange(1)},3000);
+		} else {
+		    contentTimer = setInterval(function(){ contentchange(1)},3000);
+		}
+	}
+
+	function plusSlides(n){
+		clearInterval(myTimer);
+		if (n < 0){
+			showSlides(slideIndex -= 1);
+		} else {
+			showSlides(slideIndex += 1); 
+		}
+		if (n === -1){
+			myTimer = setInterval(function(){plusSlides(n + 2)}, 3000);
+		} else {
+			myTimer = setInterval(function(){plusSlides(n + 1)}, 3000);
+		}
+	}
+
+	function currentSlide(n){
+		clearInterval(myTimer);
+		myTimer = setInterval(function(){plusSlides(n + 1)}, 3000);
+		showSlides(slideIndex = n);
+		clearInterval(contentTimer);
+		contentTimer = setInterval(function(){ contentchange(n+1)},3000);
+		slideContent(count = n);
+	}
+
+
     return{
 
         upload_icon_image : upload_icon_image, 
@@ -644,7 +851,13 @@ var thwvsf_settings = (function($, window, document) {
         OpenAttributeForm   : open_attribute_form,
         SwatchTypeChangeListner : swatch_type_change_listener,
         show_check_styles     : show_check_styles,
-        label_selection_syles : label_selection_syles
+        label_selection_syles : label_selection_syles,
+
+        thwvsfwidgetPopUp : widget_popup,
+        thwvsfwidgetClose : widget_close,
+
+        thwvsfAccordionexpand : accordionexpand,
+        currentSlide : currentSlide,
     };
 
 }(window.jQuery, window, document));  
@@ -682,6 +895,19 @@ function thwvsfShowcheckStyles(elm){
 }
 function thwvsfShowLabelSelectionStyles(elm){
     thwvsf_settings.label_selection_syles(elm);
+}
+function thwvsfwidgetPopUp(){
+    thwvsf_settings.thwvsfwidgetPopUp();
+}
+function thwvsfwidgetClose() {
+    thwvsf_settings.thwvsfwidgetClose();
+}
+
+function thwvsfAccordionexpand(elm){
+	thwvsf_settings.thwvsfAccordionexpand(elm);
+}
+function currentSlide(elm) {
+	thwvsf_settings.currentSlide(elm);
 }
 
 

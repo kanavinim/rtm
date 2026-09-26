@@ -1,5 +1,12 @@
-var lmp_update_state, load_next_page, lmp_ajax_instance = false, lmp_update_lazyload, lmp_init, lmp_init_buttons;
+var lmp_update_state, load_next_page, lmp_ajax_instance = false, lmp_update_lazyload, lmp_init, lmp_init_buttons, lmp_products_elements;
 (function ($){
+    lmp_products_elements = function(selector) {
+        var elements = $(selector);
+        elements = elements.filter(function() {
+            return $(this).closest('.br-brands-product-list').length === 0;
+        });
+        return elements;
+    }
     $('body').append( $( '<div class="berocket_load_more_preload">'
     + the_lmp_js_data.load_image
     + the_lmp_js_data.br_lmp_button_settings_load_image 
@@ -13,11 +20,12 @@ var lmp_update_state, load_next_page, lmp_ajax_instance = false, lmp_update_lazy
         lmp_init = function() {
             lmp_is_loading = false, lmp_loading_style, lmp_count_start = 0, lmp_count_end = 0, lmp_count_laststart = 0, lmp_count_lastend = 0, lmp_count_text = '';
             $( '.berocket_load_more_preload' ).remove();
-            if( $( the_lmp_js_data.products ).find( the_lmp_js_data.item ).first().length ) {
-                $( the_lmp_js_data.products ).find( the_lmp_js_data.item ).first().addClass('berocket_lmp_first_on_page').attr('data-url', decodeURIComponent(location.href));
+            var products_elements = lmp_products_elements(the_lmp_js_data.products);
+            if( products_elements.find( the_lmp_js_data.item ).first().length ) {
+                products_elements.find( the_lmp_js_data.item ).first().addClass('berocket_lmp_first_on_page').attr('data-url', decodeURIComponent(location.href));
             }
-            if( $( the_lmp_js_data.products ).find( '.berocket_lgv_additional_data' ).first().length ) {
-                $( the_lmp_js_data.products ).find( '.berocket_lgv_additional_data' ).first().addClass('berocket_lmp_first_on_page').attr('data-url', decodeURIComponent(location.href));
+            if( products_elements.find( '.berocket_lgv_additional_data' ).first().length ) {
+                products_elements.find( '.berocket_lgv_additional_data' ).first().addClass('berocket_lmp_first_on_page').attr('data-url', decodeURIComponent(location.href));
             }
             if( $('.br_product_result_count').length ) {
                 lmp_count_start = $('.br_product_result_count').data('start');
@@ -28,12 +36,13 @@ var lmp_update_state, load_next_page, lmp_ajax_instance = false, lmp_update_lazy
             }
         }
         lmp_init_buttons = function() {
-            if ( $( the_lmp_js_data.products ).length <= 0 ) {
+            var products_elements = lmp_products_elements(the_lmp_js_data.products);
+            if ( products_elements.length <= 0 ) {
                 return;
             }
-            $( the_lmp_js_data.products ).after( $( the_lmp_js_data.load_more ) );
+            products_elements.after( $( the_lmp_js_data.load_more ) );
             if( the_lmp_js_data.use_prev_btn ) {
-                $( the_lmp_js_data.products ).before( $( the_lmp_js_data.load_prev ) );
+                products_elements.before( $( the_lmp_js_data.load_prev ) );
             }
         }
         $(window).resize( function () {
@@ -79,7 +88,7 @@ var lmp_update_state, load_next_page, lmp_ajax_instance = false, lmp_update_lazy
                                 if( ! $(o).is(':visible') ) {
                                     return true;
                                 }
-                                if( $(o).offset().top > $(window).scrollTop()+($(window).height()/2) ) {
+                                if( $(o).offset().top > $(window).scrollTop()+(window.innerHeight/2) ) {
                                     return false;
                                 }
                                 next_page = $(o).attr('data-url');
@@ -116,11 +125,12 @@ var lmp_update_state, load_next_page, lmp_ajax_instance = false, lmp_update_lazy
         });
         if ( lmp_loading_style !== 'pagination' ) {
             $(window).scroll ( function () {
-                if( $( the_lmp_js_data.products ).length > 0 && ! lmp_is_loading ) {
+                var products_elements = lmp_products_elements(the_lmp_js_data.products);
+                if( products_elements.length > 0 && ! lmp_is_loading ) {
                     br_load_more_html5();
                     if ( lmp_loading_style == 'infinity_scroll' ) {
-                        var products_bottom = $( the_lmp_js_data.products ).offset().top + $( the_lmp_js_data.products ).height() - the_lmp_js_data.buffer;
-                        var bottom_position = $(window).scrollTop() + $(window).height();
+                        var products_bottom = products_elements.offset().top + products_elements.height() - the_lmp_js_data.buffer;
+                        var bottom_position = $(window).scrollTop() + window.innerHeight;
                         if ( products_bottom < bottom_position && ! lmp_is_loading ) {
                             lmp_update_state();
                             load_next_page();
@@ -131,7 +141,7 @@ var lmp_update_state, load_next_page, lmp_ajax_instance = false, lmp_update_lazy
         }
         if ( lmp_loading_style != 'none' && (! the_lmp_js_data.is_AAPF || typeof the_ajax_script == 'undefined') ) {
             $(document).on( 'click', the_lmp_js_data.pagination+' a', function (event) {
-                if( $( the_lmp_js_data.products ).length > 0 ) {
+                if( lmp_products_elements( the_lmp_js_data.products ).length > 0 ) {
                     event.preventDefault();
                     var next_page = $(this).attr('href');
                     if ( typeof the_lmp_js_data.update_url != "undefined" && the_lmp_js_data.update_url == 1 ) {
@@ -183,18 +193,18 @@ var lmp_update_state, load_next_page, lmp_ajax_instance = false, lmp_update_lazy
                         }
                         var $products = $data.find( the_lmp_js_data.products ).html();
                         if ( replace == 1 ) {
-                            $( the_lmp_js_data.products ).html( $products );
+                            lmp_products_elements( the_lmp_js_data.products ).html( $products );
                         } else if( replace == 2 ) {
                             $products = $data.find( the_lmp_js_data.products );
                             $products.find(the_lmp_js_data.item).addClass('berocket_lmp_hidden');
                             var count_images = $products.find(the_lmp_js_data.item).find('img').length;
                             $products = $products.html();
-                            $( the_lmp_js_data.products ).prepend( $products );
+                            lmp_products_elements( the_lmp_js_data.products ).prepend( $products );
                             berocket_show_berocket_lmp_hidden_executed = false;
                             function berocket_show_berocket_lmp_hidden() {
                                 if( ! berocket_show_berocket_lmp_hidden_executed ) {
                                     berocket_show_berocket_lmp_hidden_executed = true;
-                                    var object = $( the_lmp_js_data.products ).find(the_lmp_js_data.item+':not(".berocket_lmp_hidden")').first();
+                                    var object = lmp_products_elements( the_lmp_js_data.products ).find(the_lmp_js_data.item+':not(".berocket_lmp_hidden")').first();
                                     var positionOld = object.offset().top;
                                     var scrollTop = $(window).scrollTop();
                                     $('.berocket_lmp_hidden').removeClass('berocket_lmp_hidden');
@@ -211,7 +221,7 @@ var lmp_update_state, load_next_page, lmp_ajax_instance = false, lmp_update_lazy
                             });
                             setTimeout(berocket_show_berocket_lmp_hidden, 2500);
                         } else {
-                            $( the_lmp_js_data.products ).append( $products );
+                            lmp_products_elements( the_lmp_js_data.products ).append( $products );
                         }
                         lmp_update_lazyload();
                         if(lmp_loading_style !== 'pagination')
@@ -364,17 +374,18 @@ var lmp_update_state, load_next_page, lmp_ajax_instance = false, lmp_update_lazy
             lmp_execute_func( the_lmp_js_data.javascript.before_update );
             $(document).trigger('berocket_lmp_start');
             if( replace == 2 ) {
-                $( the_lmp_js_data.products ).before( $( the_lmp_js_data.load_image ) );
+                lmp_products_elements( the_lmp_js_data.products ).before( $( the_lmp_js_data.load_image ) );
                 $(document).trigger('berocket_lmp_start_prev');
             } else {
-                $( the_lmp_js_data.products ).after( $( the_lmp_js_data.load_image ) );
+                lmp_products_elements( the_lmp_js_data.products ).after( $( the_lmp_js_data.load_image ) );
                 $(document).trigger('berocket_lmp_start_next');
             }
         }
         function end_ajax_loading() {
-            if( typeof($(the_lmp_js_data.products).isotope) == 'function' && $(the_lmp_js_data.products).data('isotope') ) {
-                $(the_lmp_js_data.products).isotope( 'reloadItems' );
-                $(the_lmp_js_data.products).isotope();
+            var products_elements = lmp_products_elements(the_lmp_js_data.products);
+            if( typeof(products_elements.isotope) == 'function' && products_elements.data('isotope') ) {
+                products_elements.isotope( 'reloadItems' );
+                products_elements.isotope();
             }
             $( the_lmp_js_data.load_img_class ).remove();
             $(document).trigger('berocket_ajax_products_infinite_loaded');
@@ -384,12 +395,12 @@ var lmp_update_state, load_next_page, lmp_ajax_instance = false, lmp_update_lazy
             lmp_is_loading = false;
             var $next_page = jquery_get_next_page();
             if( ( lmp_loading_style == 'infinity_scroll' || lmp_loading_style == 'more_button' ) && $next_page.length <= 0 ) {
-                $( the_lmp_js_data.products ).append( $( the_lmp_js_data.end_text ) );
+                products_elements.append( $( the_lmp_js_data.end_text ) );
             }
             br_load_more_html5();
         }
         function current_style() {
-            if ( $( the_lmp_js_data.products ).length <= 0 ) {
+            if ( lmp_products_elements( the_lmp_js_data.products ).length <= 0 ) {
                 return;
             }
             var $next_page = jquery_get_next_page();
@@ -487,8 +498,8 @@ var lmp_update_state, load_next_page, lmp_ajax_instance = false, lmp_update_lazy
             if( typeof reset_count == 'undefined' ) {
                 reset_count = false;
             }
-            if( ! $( the_lmp_js_data.products ).find( the_lmp_js_data.item ).first().is('.berocket_lmp_first_on_page') ) {
-                $( the_lmp_js_data.products ).find( the_lmp_js_data.item ).first().addClass('berocket_lmp_first_on_page').attr('data-url', decodeURIComponent(location.href));
+            if( ! lmp_products_elements( the_lmp_js_data.products ).find( the_lmp_js_data.item ).first().is('.berocket_lmp_first_on_page') ) {
+                lmp_products_elements( the_lmp_js_data.products ).find( the_lmp_js_data.item ).first().addClass('berocket_lmp_first_on_page').attr('data-url', decodeURIComponent(location.href));
             }
             current_style();
             if( reset_count ) {
@@ -517,8 +528,8 @@ var lmp_update_state, load_next_page, lmp_ajax_instance = false, lmp_update_lazy
         lmp_update_lazyload = function() {
             if( typeof $(window).lazyLoadXT != 'undefined' ) {
                 if( the_lmp_js_data.lazy_load_m && $(window).width() <= the_lmp_js_data.mobile_width || the_lmp_js_data.lazy_load && $(window).width() > the_lmp_js_data.mobile_width ) {
-                    $( the_lmp_js_data.products+' .lazy' ).find( 'img' ).lazyLoadXT();
-                    $( the_lmp_js_data.products ).find('.lazy').on( 'lazyshow', function () {
+                    lmp_products_elements( the_lmp_js_data.products+' .lazy' ).find( 'img' ).lazyLoadXT();
+                    lmp_products_elements( the_lmp_js_data.products ).find('.lazy').on( 'lazyshow', function () {
                         $(this).removeClass('lazy').addClass('animated').addClass(the_lmp_js_data.LLanimation);
                         if( $(this).is('img') ) {
                             $(this).attr('srcset', $(this).data('srcset'));
@@ -541,8 +552,8 @@ var lmp_update_state, load_next_page, lmp_ajax_instance = false, lmp_update_lazy
                 UNCODE.init();
             }} catch (e) {}
             //Flatsome theme
-            try {if( berocket_apply_filters('flatsome_theme_compatibility', (typeof(Flatsome) == 'object' && typeof(Flatsome.attach) == 'function' && jQuery(the_lmp_js_data.products).length ) ) ) {
-                Flatsome.attach(jQuery(the_lmp_js_data.products));
+            try {if( berocket_apply_filters('flatsome_theme_compatibility', (typeof(Flatsome) == 'object' && typeof(Flatsome.attach) == 'function' && lmp_products_elements(the_lmp_js_data.products).length ) ) ) {
+                Flatsome.attach(lmp_products_elements(the_lmp_js_data.products));
             }} catch (e) {}
             //Woodmart theme
             try {if( berocket_apply_filters('woodmart_theme_compatibility', (typeof(woodmartThemeModule) == 'object' && typeof(woodmartThemeModule.init) == 'function' ) ) ) {

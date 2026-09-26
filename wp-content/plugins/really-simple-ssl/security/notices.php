@@ -1,4 +1,9 @@
-<?php defined( 'ABSPATH' ) or die();
+<?php
+
+use RSSSL\Security\RSSSL_Htaccess_File_Manager;
+
+defined( 'ABSPATH' ) or die();
+
 /**
  * Convert htaccess rules to html friendly layout
  *
@@ -7,55 +12,56 @@
  * @return string
  */
 function rsssl_parse_htaccess_to_html( string $code): string {
-	if ( strpos($code, "\n")===0 ) {
-		$code = 	preg_replace('/\n/', '', $code, 1);
+	$normalized_code = preg_replace( "/\r\n?|\r/", "\n", $code );
+	if ( is_string( $normalized_code ) ) {
+		$code = $normalized_code;
 	}
-	//split into linebreak separated array, so we can run esc_html on the result
-	$code = 	preg_replace('/\n/', '--br--', $code, 1);
-	$code = 	preg_replace('/<br>/', '--br--', $code, 1);
-	$code_arr = explode('--br--', $code);
+
+	$code = ltrim( $code, "\n" );
+	$code = str_replace( '<br>', "\n", $code );
+	$code_arr = explode( "\n", $code );
 	$code_arr = array_map('esc_html', $code_arr);
 	$code = implode('<br>', $code_arr);
 	return '<br><code>' . $code . '</code><br>';
 }
 
 function rsssl_general_security_notices( $notices ) {
-	$code = rsssl_parse_htaccess_to_html( get_site_option('rsssl_htaccess_rules','') );
-	$uploads_code = rsssl_parse_htaccess_to_html( get_site_option('rsssl_uploads_htaccess_rules','') );
+	$code                              = rsssl_parse_htaccess_to_html( get_site_option( 'rsssl_htaccess_rules', '' ) );
+	$uploads_code                      = rsssl_parse_htaccess_to_html( get_site_option( 'rsssl_uploads_htaccess_rules', '' ) );
+	$open_hardening_features           = rsssl_get_open_hardening_feature_ids();
+	$open_hardening_count              = count( $open_hardening_features );
+	$open_hardening_highlight_field_id = reset( $open_hardening_features ) ?: '';
 
-	$notices['application-passwords'] = array(
-		'callback' => 'rsssl_wp_is_application_passwords_available',
-		'score' => 5,
-		'output' => array(
-			'true' => array(
-				'msg' => __("Disable application passwords.", "really-simple-ssl"),
-				'icon' => 'premium',
-				'url' => 'https://really-simple-ssl.com/definition/what-are-application-passwords/',
-				'dismissible' => true,
-				'highlight_field_id' => 'disable_application_passwords',
-			),
-		),
-	);
-
+	// Unified error message format for .htaccess issues
+	// Note: 'not-supported' (file doesn't exist) is handled silently - no notice shown
+	// as the plugin falls back to PHP redirect / advanced-headers.php
 	$notices['htaccess_status'] = array(
-		'callback' => 'rsssl_htaccess_status',
-		'score' => 5,
-		'output' => array(
-			'not-writable' => array(
-				'title' => __(".htaccess not writable", "really-simple-ssl"),
-				'msg' => __("An option that requires the .htaccess file is enabled, but the file is not writable.", "really-simple-ssl").' '.__("Please add the following lines to your .htaccess, or set it to writable:", "really-simple-ssl").$code,
-				'icon' => 'warning',
+		'callback'          => 'rsssl_htaccess_status',
+		'score'             => 5,
+		'output'            => array(
+			RSSSL_Htaccess_File_Manager::ERROR_NOT_WRITABLE => array(
+				'title'       => __( "Failed to update .htaccess", "really-simple-ssl" ),
+				'msg'         => __( "Failed to update security setting in your .htaccess file: file is not writable.", "really-simple-ssl" ) . '<br><br>'
+				                 . '<strong>' . __( "Resolution:", "really-simple-ssl" ) . '</strong><br>'
+				                 . __( "1. Update file permissions to make .htaccess writable, or", "really-simple-ssl" ) . '<br>'
+				                 . __( "2. Add the following code manually:", "really-simple-ssl" ) . $code,
+				'clear_cache_id' => 'managed_htaccess',
+				'icon'        => 'warning',
 				'dismissible' => true,
-				'plusone' => true,
-				'url' => 'https://really-simple-ssl.com/manual/editing-htaccess/',
+				'plusone'     => true,
+				'url'         => 'manual/editing-htaccess/',
 			),
-			'not-exists' => array(
-				'title' => __(".htaccess does not exist", "really-simple-ssl"),
-				'msg' => __("An option that requires the .htaccess file is enabled, but the file does not exist.", "really-simple-ssl").' '.__("Please add the following lines to your .htaccess, or set it to writable:", "really-simple-ssl").$code,
-				'icon' => 'warning',
+			RSSSL_Htaccess_File_Manager::ERROR_NOT_READABLE => array(
+				'title'       => __( "Failed to update .htaccess", "really-simple-ssl" ),
+				'msg'         => __( "Failed to update security setting in your .htaccess file: file is not readable.", "really-simple-ssl" ) . '<br><br>'
+				                 . '<strong>' . __( "Resolution:", "really-simple-ssl" ) . '</strong><br>'
+				                 . __( "1. Update file permissions to make .htaccess readable and writable, or", "really-simple-ssl" ) . '<br>'
+				                 . __( "2. Add the following code manually:", "really-simple-ssl" ) . $code,
+				'clear_cache_id' => 'managed_htaccess',
+				'icon'        => 'warning',
 				'dismissible' => true,
-				'plusone' => true,
-				'url' => 'https://really-simple-ssl.com/manual/editing-htaccess/',
+				'plusone'     => true,
+				'url'         => 'manual/editing-htaccess/',
 			),
 		),
 		'show_with_options' => [
@@ -65,16 +71,19 @@ function rsssl_general_security_notices( $notices ) {
 	);
 
 	$notices['htaccess_status_uploads'] = array(
-		'callback' => 'rsssl_uploads_htaccess_status',
-		'score' => 5,
-		'output' => array(
+		'callback'          => 'rsssl_uploads_htaccess_status',
+		'score'             => 5,
+		'output'            => array(
 			'not-writable' => array(
-				'title' => __(".htaccess in uploads not writable", "really-simple-ssl"),
-				'msg' => __("An option that requires the .htaccess file in the uploads directory is enabled, but the file is not writable.", "really-simple-ssl").' '.__("Please add the following lines to your .htaccess, or set it to writable:", "really-simple-ssl").$uploads_code,
-				'icon' => 'warning',
+				'title'       => __( "Failed to update uploads .htaccess", "really-simple-ssl" ),
+				'msg'         => __( "Failed to update security setting in your uploads .htaccess file: file is not writable.", "really-simple-ssl" ) . '<br><br>'
+				                 . '<strong>' . __( "Resolution:", "really-simple-ssl" ) . '</strong><br>'
+				                 . __( "1. Update file permissions to make the uploads .htaccess writable, or", "really-simple-ssl" ) . '<br>'
+				                 . __( "2. Add the following code manually:", "really-simple-ssl" ) . $uploads_code,
+				'icon'        => 'warning',
 				'dismissible' => true,
-				'plusone' => true,
-				'url' => 'https://really-simple-ssl.com/manual/editing-htaccess/',
+				'plusone'     => true,
+				'url'         => 'manual/editing-htaccess/',
 			),
 		),
 		'show_with_options' => [
@@ -82,192 +91,92 @@ function rsssl_general_security_notices( $notices ) {
 		]
 	);
 
-	$notices['block_display_is_login_enabled'] = array(
-		'condition' => ['NOT option_block_display_is_login'],
-		'callback' => '_true_',
-		'score' => 5,
-		'output' => array(
-			'true' => array(
-				'highlight_field_id' => 'block_display_is_login',
-				'msg' => __("It is currently possible to create an administrator user with the same login and display name.", "really-simple-ssl"),
-				'icon' => 'open',
-				'dismissible' => true,
-			),
-		),
-	);
-
 	$notices['display_name_is_login_exists'] = array(
-		'condition' => ['rsssl_get_users_where_display_name_is_login'],
-		'callback' => '_true_',
-		'score' => 5,
-		'output' => array(
+		'condition' => [ 'rsssl_get_users_where_display_name_is_login' ],
+		'callback'  => '_true_',
+		'score'     => 5,
+		'output'    => array(
 			'true' => array(
-				'url' => 'https://really-simple-ssl.com/manual/login-and-display-names-should-be-different-for-wordpress/',
-				'msg' => __("We have detected administrator roles where the login and display names are the same.", "really-simple-ssl") . "&nbsp;<b>" . rsssl_list_users_where_display_name_is_login_name() . "</b>",
-				'icon' => 'open',
+				'url'         => 'manual/login-and-display-names-should-be-different-for-wordpress/',
+				'msg'         => __( "We have detected administrator roles where the login and display names are the same", "really-simple-ssl" ) . "&nbsp;<b>" . rsssl_list_users_where_display_name_is_login_name() . "</b>",
+				'icon'        => 'open',
 				'dismissible' => true,
 			),
 		),
 	);
 
-	$notices['debug_log'] = array(
-		'condition' => ['rsssl_debug_log_file_exists_in_default_location'],
-		'callback' => 'rsssl_is_debugging_enabled',
-		'score' => 5,
-		'output' => array(
-			'true' => array(
-				'highlight_field_id' => 'change_debug_log_location',
-				'title' => __("Debugging", "really-simple-ssl"),
-				'msg' => __("Your site logs information to a public debugging file.", "really-simple-ssl"),
-				'url' => 'https://really-simple-ssl.com/instructions/about-hardening-features/',
-				'icon' => 'premium',
-				'dismissible' => true,
-			),
-		),
-		'show_with_options' => [
-			'change_debug_log_location',
-		],
-	);
-
-	$notices['user_id_one'] = array(
-		'condition' => ['NOT option_disable_user_enumeration'],
-		'callback' => '_true_',
-		'score' => 5,
-		'output' => array(
-			'true' => array(
-				'msg' => __("Your site is vulnerable to user enumeration attacks.", "really-simple-ssl"),
-				'icon' => 'warning',
-				'title' => __('Prevent user enumeration','really-simple-ssl'),
-				'url' => 'https://really-simple-ssl.com/what-are-user-enumeration-attacks/',
-				'dismissible' => true,
-				'highlight_field_id' => 'disable_user_enumeration',
-			),
-		),
-		'show_with_options' => [
-			'disable_user_enumeration',
-		],
-	);
-
-	$notices['username_admin_exists'] = array(
-		'condition' => ['rsssl_has_admin_user'],
-		'callback' => '_true_',
-		'score' => 5,
-		'output' => array(
-			'true' => array(
-				'highlight_field_id' => 'rename_admin_user',
-				'title' => __("Username", "really-simple-ssl"),
-				'msg' => __("Your site registered a user with the name 'admin'.", "really-simple-ssl"),
-				'icon' => 'warning',
-				'dismissible' => true,
-			),
-		),
-		'show_with_options' => [
-			'rename_admin_user',
-		],
-	);
 	$notices['new_username_empty'] = array(
-		'condition' => ['rsssl_has_admin_user', 'option_rename_admin_user', 'NOT rsssl_new_username_valid'],
-		'callback' => '_true_',
-		'score' => 5,
-		'output' => array(
+		'condition'         => [ 'rsssl_has_admin_user', 'option_rename_admin_user', 'NOT rsssl_new_username_valid' ],
+		'callback'          => '_true_',
+		'score'             => 5,
+		'output'            => array(
 			'true' => array(
 				'highlight_field_id' => 'rename_admin_user',
-				'title' => __("Username", "really-simple-ssl"),
-				'msg' => __("Rename admin user enabled: Please choose a new username of at least 3 characters, which is not in use yet.", "really-simple-ssl"),
-				'icon' => 'warning',
-				'dismissible' => true,
+				'title'              => __( "Username", "really-simple-ssl" ),
+				'msg'                => __( "Rename admin user enabled: Please choose a new username of at least 3 characters, which is not in use yet", "really-simple-ssl" ),
+				'icon'               => 'warning',
+				'dismissible'        => true,
 			),
 		),
 		'show_with_options' => [
 			'new_admin_user_login',
 		],
 	);
-	$notices['code-execution-uploads-allowed'] = array(
-		'callback' => 'rsssl_code_execution_allowed',
-		'score' => 5,
-		'output' => array(
-			'true' => array(
-				'highlight_field_id' => 'block_code_execution_uploads',
-				'msg' => __("Code execution is allowed in the public 'Uploads' folder.", "really-simple-ssl"),
-				'icon' => 'open',
-				'dismissible' => true,
-			),
-		),
-	);
-	$notices['db-prefix-notice'] = array(
-		'callback' => 'rsssl_is_default_wp_prefix',
-		'score' => 5,
-		'output' => array(
+
+	$notices['enable_vulnerability_scanner'] = array(
+		'callback' => 'option_enable_vulnerability_scanner',
+		'score'    => 5,
+		'output'   => array(
 			'false' => array(
-				'msg' => __("Your database prefix is renamed and randomized. Awesome!", "really-simple-ssl"),
+				'highlight_field_id' => 'enable_vulnerability_scanner',
+				'msg'                => __( "Enable the Vulnerability scan to detect possible vulnerabilities", 'really-simple-ssl' ),
+				'icon'               => 'open',
+				'admin_notice'       => false,
+				'dismissible'        => true,
+				'plusone'            => false,
+			),
+			'true'  => array(
+				'msg'  => __( "Vulnerability scanning is enabled", 'really-simple-ssl' ),
 				'icon' => 'success',
-				'dismissible' => true,
-			),
-			'true' => array(
-				'msg' => __("Your database prefix is set to the default 'wp_'.", "really-simple-ssl"),
-				'icon' => 'premium',
-				'dismissible' => true,
-				'url' => 'https://really-simple-ssl.com/instructions/about-hardening-features/'
 			),
 		),
 	);
 
-//	$notices['xmlrpc'] = array(
-//		'callback' => 'rsssl_xmlrpc_allowed',
-//		'score' => 10,
-//		'output' => array(
-//			'true' => array(
-//				'highlight_field_id' => 'xmlrpc',
-//				'msg' => __("XMLRPC is enabled on your site.", "really-simple-ssl"),
-//				'icon' => 'warning',
-//				'plusone' => true,
-//			),
-//		),
-//		'show_with_options' => [
-//			'xmlrpc',
-//		],
-//	);
-
-	$notices['file-editing'] = array(
-		'callback' => 'rsssl_file_editing_allowed',
-		'score' => 5,
-		'output' => array(
-			'true' => array(
-				'highlight_field_id' => 'disable_file_editing',
-				'msg' => __("The built-in file editors are accessible to others.", "really-simple-ssl"),
-//					'url' => 'https://wordpress.org/support/article/editing-wp-config-php/#disable-the-plugin-and-theme-editor',
-				'icon' => 'open',
-				'dismissible' => true,
+	$notices['count_open_hardening_features'] = array(
+		'callback' => 'rsssl_has_open_hardening_features',
+		'score'    => 5,
+		'output'   => array(
+			'true'  => array(
+				'highlight_field_id' => $open_hardening_highlight_field_id,
+				'msg'                => sprintf(
+					_n(
+						"You have %s open hardening feature",
+						"You have %s open hardening features",
+						$open_hardening_count,
+						"really-simple-ssl"
+					),
+					$open_hardening_count
+				),
+				'icon'               => 'open',
+				'dismissible'        => true,
+			),
+			'false' => array(
+				'msg'  => __( "All recommended hardening features enabled", "really-simple-ssl" ),
+				'icon' => 'success',
 			),
 		),
 	);
 
-	$notices['registration'] = array(
-		'callback' => 'rsssl_user_registration_allowed',
-		'score' => 5,
-		'output' => array(
-			'true' => array(
-				'highlight_field_id' => 'disable_anyone_can_register',
-				'msg' => __("Anyone can register an account on your site. Consider disabling this option in the WordPress general settings.", "really-simple-ssl"),
-				'icon' => 'open',
-				'plusone' => false,
-				'dismissible' => true,
-			),
-		),
-	);
-
-	$notices['hide-wp-version'] = array(
-		'callback' => 'rsssl_src_contains_wp_version',
-		'score' => 5,
-		'output' => array(
-			'true' => array(
-				'highlight_field_id' => 'hide_wordpress_version',
-				'msg' => __("Your WordPress version is visible to others.", "really-simple-ssl"),
-				'icon' => 'open',
-				'dismissible' => true,
-			),
-		),
-	);
+    $notices['lock_file_exists'] = array(
+        'callback' => 'rsssl_lock_file_exists',
+        'score'    => 5,
+        'output'   => array(
+            'true'  => array(
+                'msg'  => __( 'The Firewall, LLA and 2FA are currently inactive, as you have activated Safe Mode with the rsssl-safe-mode.lock file. Remove the file from your /wp-content folder after you have finished debugging', 'really-simple-ssl' ),
+                'icon' => 'warning',
+            ),
+        ),
+    );
 
 	return $notices;
 }

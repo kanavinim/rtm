@@ -19,7 +19,7 @@ if ( ! class_exists( 'AWS_Table' ) ) :
         /**
          * @var AWS_Table Data
          */
-        private $data;
+        private $data = array();
 
         /**
          * Constructor
@@ -35,6 +35,9 @@ if ( ! class_exists( 'AWS_Table' ) ) :
 
             // Change product status
             add_action( 'wp_insert_post', array( $this, 'product_changed' ), 10, 3 );
+
+            // Scheduled products
+            add_action( 'wp_after_insert_post', array( $this, 'wp_after_insert_post' ), 10, 4 );
 
             // Delete product
             add_action( 'delete_post', array( $this, 'product_deleted' ), 10, 2 );
@@ -52,6 +55,8 @@ if ( ! class_exists( 'AWS_Table' ) ) :
             add_action( 'aws_reindex_table', array( $this, 'reindex_table_job' ) );
 
             add_action( 'aws_reindex_product', array( $this, 'reindex_product_action' ) );
+
+            add_action( 'aws_force_reindex_product', array( $this, 'force_reindex_product_action' ) );
 
         }
 
@@ -105,11 +110,13 @@ if ( ! class_exists( 'AWS_Table' ) ) :
 
                 $this->create_table();
 
-                if ( AWS()->cache->is_cache_table_not_exist() ) {
+                if ( AWS()->option_vars->is_cache_table_not_exists() ) {
                     AWS()->cache->create_cache_table();
                 }
 
                 $index_meta['found_posts'] = $this->get_number_of_products();
+
+                do_action( 'aws_index_started', $index_meta );
 
             } else if ( ! empty( $index_meta['site_stack'] ) && $index_meta['offset'] >= $index_meta['found_posts'] ) {
                 $status = 'start';
@@ -154,10 +161,6 @@ if ( ! class_exists( 'AWS_Table' ) ) :
                     $this->fill_table( $posts );
 
                     $index_meta['offset'] = absint( $index_meta['offset'] + $posts_per_page );
-
-                    if ( $index_meta['offset'] >= $index_meta['found_posts'] ) {
-                        $index_meta['offset'] = $index_meta['found_posts'];
-                    }
 
                     set_transient( 'aws_index_processed', $index_meta, 60*60 );
 
@@ -299,28 +302,24 @@ if ( ! class_exists( 'AWS_Table' ) ) :
             global $wpdb;
 
             $charset_collate = $wpdb->get_charset_collate();
-            $terms_key = '';
-
-            $search_rule = AWS()->get_settings( 'search_rule' );
-            if ( $search_rule === 'begins' ) {
-                $terms_key = 'KEY term (term),';
-            }
 
             $sql = "CREATE TABLE {$this->table_name} (
+                      k BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
                       id BIGINT(20) UNSIGNED NOT NULL DEFAULT 0,
                       term VARCHAR(50) NOT NULL DEFAULT 0,
                       term_source VARCHAR(50) NOT NULL DEFAULT 0,
-                      type VARCHAR(50) NOT NULL DEFAULT 0,
-                      count BIGINT(20) UNSIGNED NOT NULL DEFAULT 0,
-                      in_stock INT(11) NOT NULL DEFAULT 0,
-                      on_sale INT(11) NOT NULL DEFAULT 0,
+                      type TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+                      count SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+                      in_stock TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+                      on_sale TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
                       term_id BIGINT(20) UNSIGNED NOT NULL DEFAULT 0,
-                      visibility VARCHAR(20) NOT NULL DEFAULT 0,
+                      visibility TINYINT(1) UNSIGNED NOT NULL DEFAULT 1,
                       lang VARCHAR(20) NOT NULL DEFAULT 0,
+                      PRIMARY KEY (k),
                       KEY id (id),
-                      {$terms_key}
+                      KEY term (term),
                       KEY term_id (term_id),
-                      UNIQUE KEY source_term (id,term,term_source,lang)
+                      UNIQUE KEY source_term (id,type,in_stock,on_sale,visibility,lang,term_source,term,count)
                 ) $charset_collate;";
 
             /**
@@ -341,6 +340,8 @@ if ( ! class_exists( 'AWS_Table' ) ) :
                 }
 
             }
+
+            update_option( 'aws_index_table_version', AWS_VERSION );
 
             do_action( 'aws_create_index_table' );
 
@@ -398,6 +399,8 @@ if ( ! class_exists( 'AWS_Table' ) ) :
 
             global $wpdb;
 
+            $rows = AWS()->table_updates->get_table_rows();
+
             /**
              * Filters product data array before it will be added to index table.
              *
@@ -408,6 +411,9 @@ if ( ! class_exists( 'AWS_Table' ) ) :
              * @param null ( since 1.82 )
              */
             $data = apply_filters( 'aws_indexed_data', $data, $data['id'], null );
+
+            $product_type = AWS()->table_updates->get_product_type_code( 'product' );
+            $data['visibility'] = AWS()->table_updates->get_visibility_code( $data['visibility'] );
 
             $values = array();
 
@@ -432,8 +438,8 @@ if ( ! class_exists( 'AWS_Table' ) ) :
                             }
 
                             $value = $wpdb->prepare(
-                                "(%d, %s, %s, %s, %d, %d, %d, %d, %s, %s)",
-                                $data['id'], $term, $source, 'product', $count, $data['in_stock'], $data['on_sale'], $term_id, $data['visibility'], $data['lang']
+                                $rows,
+                                $data['id'], $term, $source, $product_type, $count, $data['in_stock'], $data['on_sale'], $term_id, $data['visibility'], $data['lang']
                             );
 
                             $values[] = $value;
@@ -454,7 +460,14 @@ if ( ! class_exists( 'AWS_Table' ) ) :
 				              VALUES $values
                     ";
 
-                $wpdb->query( $query );
+                $max_retries = 3;
+                for ( $i = 0; $i < $max_retries; $i++ ) {
+                    $wpdb->query( $query );
+                    if ( ! $wpdb->last_error || strpos( $wpdb->last_error, 'Deadlock' ) === false ) {
+                        break;
+                    }
+                    usleep( rand( 100000, 300000 ) );
+                }
 
             }
 
@@ -527,6 +540,19 @@ if ( ! class_exists( 'AWS_Table' ) ) :
         }
 
         /*
+         * Update index table for scheduled products
+         */
+        public function wp_after_insert_post( $post_id, $post, $update, $post_before ) {
+
+            if ( $update && $post->post_type === 'product' && $post_before &&
+                ( $post_before->post_status === 'future' || ( $post_before->post_status === 'trash' && $post->post_status === 'publish' ) )
+            ) {
+                $this->update_table( $post_id );
+            }
+
+        }
+
+        /*
          * Update index table
          */
         public function woocommerce_after_product_object_save( $product ) {
@@ -574,7 +600,7 @@ if ( ! class_exists( 'AWS_Table' ) ) :
             global $wp_current_filter, $wpdb;
             if ( ! in_array( 'save_post', $wp_current_filter ) || in_array( 'woocommerce_process_shop_order_meta', $wp_current_filter ) ) {
                 $sync = AWS()->get_settings( 'autoupdates' );
-                if ( AWS_Helpers::is_table_not_exist() ) {
+                if ( AWS()->option_vars->is_index_table_not_exists() ) {
                     $this->create_table();
                 }
                 if ( $sync !== 'false' ) {
@@ -589,13 +615,26 @@ if ( ! class_exists( 'AWS_Table' ) ) :
          * Re-index single product action
          */
         public function reindex_product_action( $product_id ) {
-            $this->update_table( $product_id );
+            if ( is_array( $product_id ) ) {
+                foreach ( $product_id as $product_i ) {
+                    $this->update_table( $product_i );
+                }
+            } else {
+                $this->update_table( $product_id );
+            }
+        }
+
+        /*
+         * Re-index single product action. Always runs without looking into 'autoupdates' option
+         */
+        public function force_reindex_product_action( $product_id ) {
+            $this->update_table( $product_id, true );
         }
 
         /*
          * Update index table
          */
-        private function update_table( $product_id ) {
+        private function update_table( $product_id, $force = false ) {
 
             global $wpdb;
 
@@ -607,13 +646,18 @@ if ( ! class_exists( 'AWS_Table' ) ) :
              * @param boolean $sync
              * @param integer $product_id
              */
-            $sync = apply_filters( 'aws_sync_index_table', $sync, $product_id );
+            $sync = $force ? 'true' : apply_filters( 'aws_sync_index_table', $sync, $product_id );
 
-            if ( AWS_Helpers::is_table_not_exist() ) {
+            if ( AWS()->option_vars->is_index_table_not_exists() ) {
                 $this->create_table();
             }
 
             if ( $sync === 'false' ) {
+                return;
+            }
+
+            // Forced re-index must always run, even if product was already indexed during current request
+            if ( ! $force && isset( $this->data['product_to_index'] ) && array_search( $product_id, $this->data['product_to_index'] ) !== false ) {
                 return;
             }
 
@@ -635,6 +679,8 @@ if ( ! class_exists( 'AWS_Table' ) ) :
             }
 
             do_action('aws_cache_clear');
+
+            $this->data['product_to_index'][] = $product_id;
 
         }
 

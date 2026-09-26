@@ -1,118 +1,199 @@
 <?php
 
+
 /*
- * Plugin Name: 3D Viewer
+ * Plugin Name: 3D Viewer – Display Interactive 3D Models
  * Plugin URI:  https://bplugins.com/
- * Description: Easily display interactive 3D models on the web. Supported File type .glb, .gltf
- * Version: 1.3.3
- * Author: bPlugins LLC
- * Author URI: http://bplugins.com
- * License: GPLv3
- * Text Domain: model-viewer
+ * Description: Easily display interactive 3D models on the web. Supported File type .glb, .gltf,obj 3ds stl ply off 3dm fbx dae wrl 3mf amf ifc brep step iges fcstd bim
+ * Version: 1.9.3
+ * Author: bPlugins
+ * Author URI: https://bplugins.com
+ * Requires PHP: 7.4
+ * Requires at least: 6.5
+ * Tested up to: 7.0
+ * License: GPLv2 or later
+ * Text Domain: 3d-viewer
  * Domain Path:  /languages
  */
-if ( !defined( 'ABSPATH' ) ) {
+
+if (!defined('ABSPATH')) {
     exit;
 }
 
-if ( function_exists( 'bp3dv_fs' ) ) {
-    bp3dv_fs()->set_basename( false, __FILE__ );
-} else {
-    
-    if ( $_SERVER['HTTP_HOST'] === 'localhost' ) {
-        define( 'BP3D_VERSION', time() );
-    } else {
-        define( 'BP3D_VERSION', '1.3.3' );
-    }
-    
-    defined( 'BP3D_DIR' ) or define( 'BP3D_DIR', plugin_dir_url( __FILE__ ) );
-    defined( 'BP3D_PATH' ) or define( 'BP3D_PATH', plugin_dir_path( __FILE__ ) );
-    defined( 'BP3D__FILE__' ) or define( 'BP3D__FILE__', __FILE__ );
-    define( 'BP3D_IMPORT_VER', '1.0.0' );
-    
-    if ( !function_exists( 'bp3dv_fs' ) ) {
-        // Create a helper function for easy SDK access.
-        function bp3dv_fs()
-        {
-            global  $bp3dv_fs ;
-            
-            if ( !isset( $bp3dv_fs ) ) {
-                // Include Freemius SDK.
-                require_once dirname( __FILE__ ) . '/freemius/start.php';
-                $bp3dv_fs = fs_dynamic_init( array(
-                    'id'             => '8795',
-                    'slug'           => '3d-viewer',
-                    'type'           => 'plugin',
-                    'public_key'     => 'pk_5e6ce3f226c86e3b975b59ed84d6a',
-                    'is_premium'     => false,
-                    'premium_suffix' => 'Pro',
-                    'has_addons'     => false,
-                    'has_paid_plans' => true,
-                    'trial'          => array(
-                    'days'               => 7,
-                    'is_require_payment' => false,
-                ),
-                    'menu'           => array(
-                    'slug'       => 'edit.php?post_type=bp3d-model-viewer',
-                    'first-path' => 'edit.php?post_type=bp3d-model-viewer&page=bp3d-support',
-                ),
-                    'is_live'        => true,
-                ) );
-            }
-            
-            return $bp3dv_fs;
-        }
-        
-        // Init Freemius.
-        bp3dv_fs();
-        // Signal that SDK was initiated.
-        do_action( 'bp3dv_fs_loaded' );
-    }
-    
-    function bp3d_isset( $array, $key, $default = false )
+/**
+ * plugin is activated, deactivate the premium build automatically.
+ */
+if (!function_exists('bp3d_deactivate_premium_version')) {
+    function bp3d_deactivate_premium_version()
     {
-        if ( isset( $array[$key] ) ) {
-            return $array[$key];
+        if (!function_exists('is_plugin_active')) {
+            require_once ABSPATH . 'wp-admin/includes/plugin.php';
         }
-        return $default;
+
+        $premium = '3d-viewer-premium/3d-viewer-premium.php';
+
+        if (is_plugin_active($premium)) {
+            deactivate_plugins($premium);
+        }
     }
-    
+}
+register_activation_hook(__FILE__, 'bp3d_deactivate_premium_version');
+
+/**
+ * Flag a fresh activation so admin_init can send the user to the guided setup
+ * once. Gated on an option rather than on the absence of settings, so an
+ * update never re-triggers it.
+ */
+if (!function_exists('bp3d_flag_onboarding_redirect')) {
+    function bp3d_flag_onboarding_redirect()
+    {
+        add_option('bp3d_onboarding_redirect', 1);
+    }
+}
+register_activation_hook(__FILE__, 'bp3d_flag_onboarding_redirect');
+
+if (function_exists('bp3d_fs')) {
+    bp3d_fs()->set_basename(true, __FILE__);
+} else {
+
+    if (file_exists(dirname(__FILE__) . '/vendor/autoload.php')) {
+        require_once(dirname(__FILE__) . '/vendor/autoload.php');
+    }
+    if (file_exists(dirname(__FILE__) . '/inc/admin.php')) {
+        require_once(dirname(__FILE__) . '/inc/admin.php');
+    }
+
+    if (defined('WP_DEBUG') && WP_DEBUG === true) {
+        define('BP3D_VERSION', time());
+    } else {
+        define('BP3D_VERSION', '1.9.3');
+    }
+
+    defined('BP3D_DIR') or define('BP3D_DIR', plugin_dir_url(__FILE__));
+    defined('BP3D_PATH') or define('BP3D_PATH', plugin_dir_path(__FILE__));
+    defined('BP3D_TEMPLATE_PATH') or define('BP3D_TEMPLATE_PATH', plugin_dir_path(__FILE__) . 'inc/Template/');
+    defined('BP3D__FILE__') or define('BP3D__FILE__', __FILE__);
+    define('BP3D_IMPORT_VER', '1.0.0');
+
+
+    // Create a helper function for easy SDK access.
+    function bp3d_fs()
+    {
+        global $bp3d_fs;
+
+        if (!isset($bp3d_fs)) {
+            // Include Freemius SDK.
+            // SDK is auto-loaded through composer
+            $bp3d_fs = fs_dynamic_init(array(
+                'id' => '8795',
+                'slug' => '3d-viewer',
+                'type' => 'plugin',
+                'public_key' => 'pk_5e6ce3f226c86e3b975b59ed84d6a',
+                'is_premium' => false,
+                // If your plugin is a serviceware, set this option to false.
+                'has_affiliation' => 'selected',
+                'menu' => array(
+                    'slug' => 'edit.php?post_type=bp3d-model-viewer',
+                    // Deliberately the dashboard, not the guided setup: the
+                    // setup screen is not registered for Pro, and first-path
+                    // has no way to branch. Free users still reach the wizard —
+                    // Onboarding::maybe_redirect() picks them up from here.
+                    'first-path' => 'edit.php?post_type=bp3d-model-viewer&page=3d-viewer',
+                    'support' => false,
+                    'affiliation' => false,
+                    'contact' => false,
+                ),
+            ));
+        }
+
+        return $bp3d_fs;
+    }
+
+    // Init Freemius.
+    bp3d_fs();
+    // Signal that SDK was initiated.
+    do_action('bp3d_fs_loaded');
+
+
     // External files Inclusion
-    require_once 'admin/csf/csf-config.php';
-    require_once 'admin/ads/submenu.php';
-    
-    if ( !class_exists( 'BP3D' ) ) {
+    if (file_exists(BP3D_PATH . 'vendor/codestar-framework/codestar-framework.php')) {
+        require_once BP3D_PATH . 'vendor/codestar-framework/codestar-framework.php';
+    }
+
+
+    if (!class_exists('BP3D')) {
         class BP3D
         {
-            protected static  $instance = null ;
+            protected static $instance = null;
+
             public static function get_instance()
             {
-                if ( null === self::$instance ) {
+                if (null === self::$instance) {
                     self::$instance = new self();
                 }
                 return self::$instance;
             }
-            
+
             public function __construct()
             {
-                // $this->requireFiles();
                 $init_file = BP3D_PATH . 'inc/Init.php';
-                if ( file_exists( $init_file ) ) {
-                    require_once $init_file;
+                if (file_exists($init_file)) {
+                    require_once($init_file);
                 }
-                if ( class_exists( 'BP3D\\Init' ) ) {
-                    \BP3D\Init::instance();
+                if (class_exists('BP3D\\Init')) {
+                    \BP3D\Init::instance()->init();
                 }
+                add_action('plugins_loaded', array($this, 'plugins_loaded'));
+                add_action('init', [$this, 'load_plugin_textdomain']);
+                add_filter('fs_is_update_check_enabled', '__return_false');
+
             }
-            
-            protected function requireFiles()
+
+            public function load_plugin_textdomain()
             {
-                require_once BP3D_PATH . 'inc/Template.php';
-                require_once BP3D_PATH . 'blocks.php';
+                // Try the NEW slug first (for future translations from WordPress.org)
+                $loaded = load_plugin_textdomain('3d-viewer', false, dirname(plugin_basename(__FILE__)) . '/languages');
+
+                // If that fails, fall back to the OLD domain (for existing user translations)
+                if (!$loaded) {
+                    load_plugin_textdomain('model-viewer', false, dirname(plugin_basename(__FILE__)) . '/languages');
+                }
             }
-        
+
+            function plugins_loaded()
+            {
+                if (class_exists('BP3D\\Init')) {
+                    \BP3D\Init::register_post_type();
+                }
+            }
         }
         BP3D::get_instance();
     }
 
+    $bpem_bootstrap = BP3D_PATH . 'vendor/bp-extension-manager/bootstrap.php';
+    if (file_exists($bpem_bootstrap)) {
+        require_once $bpem_bootstrap;
+    }
+
+
+    add_action('bpem_loaded', function () {
+        if (class_exists('\\BPEM\\Manager')) {
+            \BPEM\Manager::boot(array(
+                'slug' => '3d-viewer',           // unique; namespaces everything
+                'name' => '3D Viewer',
+                'version' => (string) BP3D_VERSION,
+                'menu_parent' => 'edit.php?post_type=bp3d-model-viewer',
+                'freemius' => function_exists('bp3d_fs') ? bp3d_fs() : null,
+                'max_plan_id' => 'max',
+                'catalog_file' => __DIR__ . '/public/extensions.php', // Explicit PHP path
+                'menu_badge' => true,
+                'menu_badge_persist' => true,
+                'enable_freemius_checkout' => true
+
+            ));
+        }
+    });
+
 }
+
+

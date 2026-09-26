@@ -1,0 +1,18 @@
+{
+  "name": "bplugins/3d-viewer",
+  "version": "1.8.12",
+  "autoload": {
+    "psr-4": {
+      "BP3D\\": "inc/"
+    }
+  },
+  "authors": [
+    {
+      "name": "shehabulislam",
+      "email": "rajudjp28@gmail.com"
+    }
+  ],
+  "require": {
+    "freemius/wordpress-sdk": "^2.11"
+  }
+}

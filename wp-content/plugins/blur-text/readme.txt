@@ -1,12 +1,11 @@
 === Blur Text ===
-Author URI: http://www.linsoftware.com
-Plugin URI: http://www.linsoftware.com/blur-text/
-Contributors: LinSoftware
-Donate link: http://www.linsoftware.com/support-free-plugin-development/
+Author URI: https://www.linsoftware.com
+Plugin URI: https://www.linsoftware.com/blur-text/
+Contributors: Linnea Huxford
 Tags: blur text, hide text, blur, hover
 Requires at least: 3.9
-Tested up to: 4.4
-Stable tag: 1.0.0
+Tested up to: 6.7.1
+Stable tag: 2.0.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,24 +32,6 @@ Be default, the blurred text color will be black.  You can specify a different c
 
 [blur color=#00FF00]This text will be green, even when blurred.[/blur]
 
-This plugin uses the CSS3 feature "text-shadow" to create the blur and a transparent color font.  This plugin only works with the following browsers:
-Firefox 3.5+
-Chrome 4+
-Safari 4+
-Opera 9.6+
-
-This plugin allows you to choose what should be done on unsupported browsers.  There are currently 3 choices:
-1) blackout - This makes the background color the same color as the text  (default)
-2) none - This doesn't change the text at all.
-3) hide - The text will not be shown on unsupported browsers.
-
-The fallback is specified like this:
-
-[blur fallback=blackout color=red]This text will have a solid red background on unsupported browsers.[/blur]
-
-[blur toggle=click fallback=hide]If you are using IE or another unsupported browser, you will not see this text.[/blur]
-
-
 == Installation ==
 
 1. Install the plugin in wp-content\plugins
@@ -66,8 +47,7 @@ The fallback is specified like this:
 
 I may write a premium plugin that has these features.  However, I need suggestions as to exactly what type of features I
  should add.  If you would like me to customize this plugin for you so that it shows the blurred text only in a
- specific context, I may be albe to program a custom plugin for you.  Please contact me at http://www.linsoftware.com/contact/
-
+ specific context, I may be able to program a custom plugin for you.  Please contact me at http://www.linsoftware.com/contact/
 
 == Screenshots ==
 
@@ -75,6 +55,13 @@ I may write a premium plugin that has these features.  However, I need suggestio
 2. An example of blackout text on unsupported browsers.
 
 == Changelog ==
+
+= 2.0.0: December 2024 =
+* Security Release
+* Compatibility with WordPress 6.7.1
+* Remove support for IE.
+* Remove fallback for unsupported browsers because all browsers now support text-shadow.
+* Remove mailing list subscription prompt.
 
 = 1.0.0: September 2015 =
 

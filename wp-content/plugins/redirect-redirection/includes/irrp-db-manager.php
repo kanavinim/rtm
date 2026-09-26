@@ -189,6 +189,7 @@ class IRRPDBManager implements IRRPConstants {
     public function add($data) {
         global $wpdb;
         $wpdb->insert($this->tblRedirects, $data, ["%s", "%s", "%s", "%d", "%d", "%s"]);
+        IRRPCacheManager::purgeAll();
         return (int) $wpdb->insert_id;
     }
 
@@ -198,6 +199,7 @@ class IRRPDBManager implements IRRPConstants {
     public function addMeta($data) {
         global $wpdb;
         $wpdb->insert($this->tblRedirectMeta, $data, ["%d", "%s", "%s"]);
+        IRRPCacheManager::purgeAll();
         return (int) $wpdb->insert_id;
     }
 
@@ -207,6 +209,7 @@ class IRRPDBManager implements IRRPConstants {
     public function updateMeta($id, $metaKey, $data) {
         global $wpdb;
         $result = $wpdb->update($this->tblRedirectMeta, $data, ["redirect_id" => $id, "meta_key" => $metaKey]);
+        IRRPCacheManager::purgeAll();
         return $result !== false;
     }
 
@@ -239,6 +242,7 @@ class IRRPDBManager implements IRRPConstants {
     public function edit($id, $data, $dataFormat) {
         global $wpdb;
         $result = $wpdb->update($this->tblRedirects, $data, ["id" => $id], $dataFormat, ["%d"]);
+        IRRPCacheManager::purgeAll();
         return $result !== false;
     }
 
@@ -248,7 +252,9 @@ class IRRPDBManager implements IRRPConstants {
             $idsStr = esc_sql(implode(",", array_map("intval", $ids)));
             $status = (int) $status;
             $sql = $wpdb->prepare("UPDATE `$this->tblRedirects` SET `status` = %d WHERE `id` IN($idsStr)", $status);
-            return $wpdb->query($sql);
+            $result = $wpdb->query($sql);
+            IRRPCacheManager::purgeAll();
+            return $result;
         }
         return false;
     }
@@ -258,7 +264,9 @@ class IRRPDBManager implements IRRPConstants {
      */
     public function delete($id) {
         global $wpdb;
-        return $wpdb->delete($this->tblRedirects, ["id" => $id], ["%d"]);
+        $result = $wpdb->delete($this->tblRedirects, ["id" => $id], ["%d"]);
+        IRRPCacheManager::purgeAll();
+        return $result;
     }
 
     /**
@@ -266,7 +274,9 @@ class IRRPDBManager implements IRRPConstants {
      */
     public function deleteMeta($id) {
         global $wpdb;
-        return $wpdb->delete($this->tblRedirectMeta, ["redirect_id" => $id], ["%d"]);
+        $result = $wpdb->delete($this->tblRedirectMeta, ["redirect_id" => $id], ["%d"]);
+        IRRPCacheManager::purgeAll();
+        return $result;
     }
 
     public function bulkDelete($ids) {
@@ -291,6 +301,7 @@ class IRRPDBManager implements IRRPConstants {
             if ($result !== false) {
                 $this->bulkDeleteMeta($redirectIds);
             }
+            IRRPCacheManager::purgeAll();
             return $result;
         }
         return false;
@@ -302,6 +313,7 @@ class IRRPDBManager implements IRRPConstants {
             $idsStr = esc_sql(implode(",", array_map("intval", $ids)));
             $sql = "DELETE FROM `$this->tblRedirectMeta` WHERE `redirect_id` IN($idsStr);";
             $result = $wpdb->query($sql);
+            IRRPCacheManager::purgeAll();
             return $result === false;
         }
         return false;
@@ -508,21 +520,29 @@ class IRRPDBManager implements IRRPConstants {
             $sql .= " AND `status` = '" . (int) $status . "'";
         }
         $sql .= " AND `type` = '" . self::TYPE_REDIRECTION . "'";
-        $sql .= " ORDER BY `timestamp` DESC, `id` DESC LIMIT 1;";
-        return $wpdb->get_row($sql, ARRAY_A);
+        $sql .= " ORDER BY `timestamp` DESC, `id` DESC;";
+        return $wpdb->get_results($sql, ARRAY_A);
     }
 
     /**
      * get a redirect rules which not contains and not starts with ...
      */
     public function getRules($status = 1) {
+        $transientKey = IRRPCacheManager::KEY_REDIRECT_RULES . (int) $status;
+        $cachedResult = IRRPCacheManager::get($transientKey);
+        if ($cachedResult !== false ) {
+            return $cachedResult;
+        }
+
         global $wpdb;
         $sql = "SELECT * FROM `{$this->tblRedirects}` WHERE `type` = '" . self::TYPE_REDIRECTION_RULE . "'";
         if (trim($status) !== "") {
             $sql .= " AND `status` = " . (int) $status;
         }
         $sql .= " ORDER BY `timestamp` DESC, `id` DESC;";
-        return $wpdb->get_results($sql, ARRAY_A);
+        $result = $wpdb->get_results($sql, ARRAY_A);
+        IRRPCacheManager::set($transientKey, $result, HOUR_IN_SECONDS);
+        return $result;
     }
 
     /**
@@ -556,9 +576,15 @@ class IRRPDBManager implements IRRPConstants {
      * check if 'are-404s' rule already exists in the db and enabled
      */
     public function isAre404sRuleExists($redirct_rules = []) {
+        $transientKey = IRRPCacheManager::KEY_CHECK_ARE_404S_RULE_EXISTS;
+        $cachedResult = IRRPCacheManager::get($transientKey);
+        if ($cachedResult !== false ) {
+            return $cachedResult === 'no' ? false : $cachedResult;
+        }
 	    $rules = !empty($redirct_rules) && is_array($redirct_rules) ? $redirct_rules : $this->getRules();
 
         if (empty($rules) || !is_array($rules)) {
+            IRRPCacheManager::set($transientKey, 'no', HOUR_IN_SECONDS);
             return false;
         }
 
@@ -567,11 +593,13 @@ class IRRPDBManager implements IRRPConstants {
             if (!empty($criterias) && is_array($criterias)) {
                 foreach ($criterias as $criteria) {
                     if (isset($criteria["criteria"]) && $criteria["criteria"] === "are-404s" && ((int) $rule["status"] === 1)) {
+                        IRRPCacheManager::set($transientKey, $rule["id"], HOUR_IN_SECONDS);
                         return $rule["id"];
                     }
                 }
             }
         }
+        IRRPCacheManager::set($transientKey, 'no', HOUR_IN_SECONDS);
         return false;
     }
 
@@ -579,9 +607,17 @@ class IRRPDBManager implements IRRPConstants {
 	 * check if 'all-urls' rule already exists in the db and enabled
 	 */
 	public function isAllURLsRuleExists($redirct_rules = []) {
+        $transientKey = IRRPCacheManager::KEY_CHECK_ALL_URLS_RULE_EXISTS;
+        $cacheResult = IRRPCacheManager::get($transientKey);
+        if ($cacheResult !== false) {
+            return $cacheResult === 'no' ? false : $cacheResult;
+        }
+
+
 		$rules = !empty($redirct_rules) && is_array($redirct_rules) ? $redirct_rules : $this->getRules();
 
 		if (empty($rules) || !is_array($rules)) {
+            IRRPCacheManager::set($transientKey, 'no', HOUR_IN_SECONDS);
 			return false;
 		}
 
@@ -590,11 +626,13 @@ class IRRPDBManager implements IRRPConstants {
 			if (!empty($criterias) && is_array($criterias)) {
 				foreach ($criterias as $criteria) {
 					if (isset($criteria["criteria"]) && $criteria["criteria"] === "all-urls" && ((int) $rule["status"] === 1)) {
+                        IRRPCacheManager::set($transientKey, $rule["id"], HOUR_IN_SECONDS);
 						return $rule["id"];
 					}
 				}
 			}
 		}
+        IRRPCacheManager::set($transientKey, 'no', HOUR_IN_SECONDS);
 		return false;
 	}
 

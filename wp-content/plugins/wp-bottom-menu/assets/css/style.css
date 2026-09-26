@@ -96,6 +96,7 @@
     padding: 10px;
     transition: all 200ms;
 	transform: translateY(100%);
+    box-sizing: border-box;
 }
 
 .wp-bottom-menu-search-form-wrapper form{
@@ -106,10 +107,17 @@
     border: 1px solid #eee;
     border-radius: 8px;
     width: 100%;
-    font-size: 14px;
+    font-size: 16px;
     height: 40px;
     padding-left: 50px;
     padding-right: 30px;
+}
+
+.wp-bottom-menu-search-form input[type="search"]::-webkit-search-decoration,
+.wp-bottom-menu-search-form input[type="search"]::-webkit-search-cancel-button,
+.wp-bottom-menu-search-form input[type="search"]::-webkit-search-results-button,
+.wp-bottom-menu-search-form input[type="search"]::-webkit-search-results-decoration {
+  display: none;
 }
 
 .wp-bottom-menu-search-form i,
@@ -178,4 +186,5 @@
     top: 10%;
     font-size: var(--wpbottommenu-icon-size);
     color: inherit;
+    cursor: pointer;
 }
