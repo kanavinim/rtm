@@ -2015,6 +2015,28 @@ li.active ul {display: block;}
 .contacts-form .wpcf7 {
     margin-top: 0;
 }
+.contacts-form .wpcf7-form p {
+    height: auto !important;
+    margin: 0 0 14px;
+    line-height: 1.5;
+    overflow: visible;
+}
+.contacts-form .wpcf7-form .wpcf7-submit {
+    display: inline-block;
+    float: none;
+    clear: both;
+    margin: 8px 0 0;
+    width: auto !important;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+.contacts-form .wpcf7-form .wpcf7-textarea {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    height: 110px !important;
+}
 
 
 /* Shop / category archive */

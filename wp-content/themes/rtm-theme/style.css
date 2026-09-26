@@ -836,7 +836,8 @@ width: 60vw !important;
 }
 
 .wpcf7-form p{
-    height: 20px;
+    height: auto;
+    margin-bottom: 12px;
 }
 
 .wpcf7-form > p:nth-child(4){
