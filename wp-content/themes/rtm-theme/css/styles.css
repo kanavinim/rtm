@@ -1331,6 +1331,28 @@ tr.woocommerce-cart-form__cart-item.cart_item td.product-subtotal {
         max-width: 100%;
         margin-bottom: 24px;
     }
+    .contacts-page {
+        width: 100%;
+        max-width: 100%;
+        padding: 0 16px 60px;
+        box-sizing: border-box;
+    }
+    .contacts-columns {
+        flex-direction: column;
+        gap: 28px;
+    }
+    .contacts-info,
+    .contacts-map-wrap {
+        flex: 1 1 auto;
+        width: 100%;
+    }
+    .contacts-map {
+        height: 400px;
+    }
+    .contacts-page h1 {
+        font-size: 22px;
+        margin-bottom: 18px;
+    }
 
     .wp-bottom-menu{
         background: #282828 !important;
@@ -1853,6 +1875,79 @@ li.active ul {display: block;}
 }
 .delivery-page p a {
     margin-left: 4px;
+}
+
+/* Contacts page */
+.contacts-page {
+    max-width: 1090px;
+    width: 100%;
+    margin: 0 auto;
+    box-sizing: border-box;
+    padding: 24px 0 60px;
+}
+.contacts-page h1 {
+    margin: 0 0 24px;
+    font-size: 28px;
+    font-weight: 700;
+}
+.contacts-columns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px 40px;
+    align-items: flex-start;
+}
+.contacts-info {
+    flex: 1 1 320px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+.contacts-map-wrap {
+    flex: 1 1 360px;
+    min-width: 0;
+}
+.contacts-map {
+    display: block;
+    width: 100%;
+    height: 520px;
+    border: none;
+    max-width: 100%;
+}
+.contacts-section .title5 {
+    margin-bottom: 8px;
+}
+.contacts-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+}
+.contacts-row span,
+.contacts-section > span {
+    line-height: 1.55;
+}
+.contact-social {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+.contact-social a {
+    display: inline-flex;
+    line-height: 0;
+}
+.contacts-requisites {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    line-height: 1.55;
+}
+.contacts-form h3 {
+    margin: 4px 0 16px;
+    font-size: 20px;
+    font-weight: 600;
+}
+.contacts-form .wpcf7 {
+    margin-top: 0;
 }
 
 .type-delivery>div {border-bottom: 2px solid #f2f2f2; padding-top: 18px; padding-bottom: 0px;}
