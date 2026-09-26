@@ -41,8 +41,10 @@ if ( ! empty( $product_tabs ) ) : ?>
     <div  class="pip-scroll-indicator" tabindex="0" role="scrollbar" aria-controls="pip-carousel__default" aria-orientation="horizontal" aria-valuemax="100" aria-valuemin="0" aria-valuenow="0"><span class="pip-scroll-indicator__bar-wrapper"><span id="tab-line" class="pip-scroll-indicator__bar" style="width: 34%; transform: translateX(0%);"></span></span></div>
     <div id="description">
             <?php
-                $product_description = get_post($item['product_id'])->post_content;
-                echo $product_description;
+                $product_description = get_post( $item['product_id'] )->post_content;
+                // Raw post_content has newlines but no <p>; without wpautop they collapse and
+                // labels like «Особенности:» stick to the previous sentence.
+                echo wp_kses_post( wpautop( $product_description ) );
             ?>
     </div>
     <div class="woocommerce-tabs wc-tabs-wrapper">

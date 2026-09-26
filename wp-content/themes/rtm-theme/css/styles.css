@@ -2469,31 +2469,30 @@ li.active ul {display: block;}
     line-height: 1.55;
 }
 /* Section labels in product description (Особенности / Комплектация / Совместимость) */
-.single-product div.product #description > strong,
-.single-product div.product #description p > strong,
-.single-product div.product #description strong {
-    display: block;
+.single-product #description p {
+    margin: 0 0 12px;
+    line-height: 1.55;
+}
+.single-product #description > strong,
+.single-product #description p > strong,
+.single-product #description strong {
+    display: block !important;
     clear: both;
-    margin-top: 1.5em;
-    margin-bottom: 0.5em;
+    margin-top: 1.5em !important;
+    margin-bottom: 0.5em !important;
     font-weight: 700;
     line-height: 1.35;
 }
-.single-product div.product #description > strong:first-child,
-.single-product div.product #description p:first-child > strong:first-child {
-    margin-top: 0.75em;
+.single-product #description > strong:first-child,
+.single-product #description p:first-child > strong:first-child,
+.single-product #description p:first-child strong:first-child {
+    margin-top: 0.5em !important;
 }
-/* Empty &nbsp; paragraphs before a section label */
-.single-product div.product #description p:has(+ strong),
-.single-product div.product #description p:empty {
-    margin: 0;
-    min-height: 0;
-}
-.single-product div.product #description ul {
-    margin: 0.35em 0 0.85em;
+.single-product #description ul {
+    margin: 0.35em 0 1em;
     padding-left: 1.25em;
 }
-.single-product div.product #description ul li {
+.single-product #description ul li {
     margin: 0 0 0.45em;
     line-height: 1.5;
 }
@@ -3216,48 +3215,56 @@ abbr.required {
         flex-wrap: nowrap !important;
         align-items: center !important;
         justify-content: space-between;
-        gap: 8px;
+        gap: 10px;
         box-sizing: border-box;
         min-height: 44px;
-        padding: 0 10px;
+        padding: 0 12px;
     }
     .header-top.mobile .mob-menu {
-        flex: 0 0 28px;
-        width: 28px;
-        height: 28px;
+        flex: 0 0 24px;
+        width: 24px;
+        height: 18px;
         display: block !important;
         position: relative;
         padding: 0;
         margin: 0;
         text-decoration: none;
-        color: transparent;
-        font-size: 0;
-        line-height: 0;
         overflow: hidden;
     }
     .header-top.mobile .mob-menu-label {
-        display: none !important;
+        position: absolute !important;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        border: 0;
     }
-    /* Clean 3-line hamburger (no shifted box-shadow) */
-    .header-top.mobile .mob-menu::before {
+    /* Three equal bars */
+    .header-top.mobile .mob-menu::before,
+    .header-top.mobile .mob-menu::after {
         content: "";
         position: absolute;
-        left: 4px;
-        right: 4px;
-        top: 50%;
-        height: 12px;
-        margin-top: -6px;
-        background:
-            linear-gradient(#9a9a9a, #9a9a9a) 0 0 / 100% 2px no-repeat,
-            linear-gradient(#9a9a9a, #9a9a9a) 0 5px / 100% 2px no-repeat,
-            linear-gradient(#9a9a9a, #9a9a9a) 0 10px / 100% 2px no-repeat;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: #9a9a9a;
+        border-radius: 1px;
+    }
+    .header-top.mobile .mob-menu::before {
+        top: 0;
+        box-shadow: 0 8px 0 #9a9a9a; /* middle bar */
+    }
+    .header-top.mobile .mob-menu::after {
+        bottom: 0;
     }
     .header-top.mobile .header-top-right {
         float: none !important;
         display: flex !important;
         flex-wrap: nowrap !important;
         align-items: center !important;
-        gap: 8px;
+        gap: 10px;
         margin-top: 0 !important;
         min-width: 0;
         flex: 1 1 auto;
@@ -3270,7 +3277,7 @@ abbr.required {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        max-width: 46vw;
+        max-width: 44vw;
         display: flex;
         align-items: center;
     }
@@ -3283,7 +3290,7 @@ abbr.required {
         display: flex !important;
         align-items: center !important;
         margin: 0 !important;
-        gap: 6px;
+        gap: 8px;
     }
     .header-top.mobile .icon-top {
         display: block;
@@ -3299,7 +3306,6 @@ abbr.required {
         display: flex !important;
         align-items: center !important;
         height: 28px;
-        min-width: 28px;
     }
     .header-top.mobile .cart-header .cart-punkt,
     .header-top.mobile .cart-header li {
@@ -3313,10 +3319,10 @@ abbr.required {
         display: flex !important;
         align-items: center;
         justify-content: center;
+        gap: 0;
         width: 28px;
         height: 28px;
         padding: 0 !important;
-        font-size: 0 !important; /* hide "(0)" */
         color: #9a9a9a;
         text-decoration: none;
     }
@@ -3326,8 +3332,12 @@ abbr.required {
         line-height: 1 !important;
         color: #9a9a9a;
     }
+    .header-top.mobile .cart-header .cart-count {
+        display: none !important;
+    }
     .header-top.mobile .cart-header .widget_shopping_cart,
     .header-top.mobile .cart-header .widget {
         display: none !important;
     }
 }
+

@@ -13,7 +13,7 @@
         <meta property="og:image" content="/wp-content/themes/rtm-theme/images/og-image-banner.png">
 
         <link rel="pingback" href="<?php bloginfo( 'pingback_url' ); ?>" />
-        <link rel="stylesheet" href="/wp-content/themes/rtm-theme/css/styles.css" />
+        <link rel="stylesheet" href="<?php echo esc_url( get_template_directory_uri() . '/css/styles.css?ver=' . filemtime( get_template_directory() . '/css/styles.css' ) ); ?>" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous" />
         <meta name="yandex-verification" content="c2a705e3cb645ed2" />
 
