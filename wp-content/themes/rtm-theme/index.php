@@ -9,7 +9,7 @@ Template Name: Main page
 <html lang="ru-ru">
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <base href="https://rtm-a.ru/" />
+        <base href="<?php echo esc_url( home_url( '/' ) ); ?>" />
         <meta http-equiv="content-type" content="text/html; charset=utf-8" />
         <meta name="keywords" content="Тюнинг для огнестрельного оружия, рукоятки, антабки, приклады, прицелы, усм" />
         <meta name="rights" content="РТМ" />
@@ -185,15 +185,13 @@ Template Name: Main page
                     </div>
 
                 </div>
-					<h1 style="text-align: center; margin-top: 1em;">
-						РТМ – оружейная компания
-					</h1>
             </div>
         </div>
 
+        <h1 class="home-title">РТМ – оружейная компания</h1>
 
 <div class="content">
-        <div class="categories inner" style="margin-top: 60px;">
+        <div class="categories inner">
             <div class="catalog-column">
                 <div>
                     <div  class="title4" ><a href="/product-category/rukojatki/">Рукоятки</a></div>

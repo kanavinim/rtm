@@ -2,7 +2,7 @@
 <html lang="ru-ru">
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <base href="https://rtm-a.ru/" />
+        <base href="<?php echo esc_url( home_url( '/' ) ); ?>" />
         <meta http-equiv="content-type" content="text/html; charset=utf-8" />
         <meta name="rights" content="РТМ" />
         <meta name="author" content="Super User" />        

@@ -586,8 +586,32 @@ a:focus, button:focus, .button.alt:focus, input:focus, textarea:focus, input[typ
 .breadcrumbs a:hover {color: #e93546; text-decoration: none;}
 .breadcrumbs a:hover:after {color: #fff;}
 .title3 {color: #fff; font-size: 45px; margin: 22px 0 0; text-transform: uppercase;}
-.categories>div {display: inline-block; *display: inline; *zoom: 1; vertical-align: top; margin-right: 20px; width: 345px;}
-.categories>div>div {text-align: center; margin-bottom:22px; background: #e7e6e6; padding: 50px 0px 25px;border-radius: 5px;}
+/* Homepage catalog grid */
+.home .categories.inner,
+.categories.inner {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px 20px;
+  width: 1090px;
+  max-width: calc(100% - 40px);
+  margin: 40px auto 60px;
+  box-sizing: border-box;
+}
+.categories > .catalog-column {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  width: auto;
+  margin-right: 0;
+}
+/* Keep card look; gap on column replaces per-card margin-bottom */
+.categories>div>div {text-align: center; margin-bottom:0; background: #e7e6e6; padding: 50px 0px 25px;border-radius: 5px;}
+.home-title {
+  text-align: center;
+  margin: 28px 0 8px;
+  font-size: 28px;
+  font-weight: 700;
+}
 
 .fancybox-button {
     border: unset !important;
@@ -1308,11 +1332,23 @@ tr.woocommerce-cart-form__cart-item.cart_item td.product-subtotal {
       margin: 0 !important;
     }
 
+    .home .categories.inner,
+    .categories.inner {
+        grid-template-columns: 1fr;
+        gap: 22px;
+        width: 100%;
+        max-width: 100%;
+        margin: 24px auto 40px;
+    }
     .catalog-column {
         width: 100% !important;
         max-width: 100% !important;
         margin: 0 auto !important;
         padding: 0 5%;
+    }
+    .home-title {
+        font-size: 22px;
+        margin: 20px 12px 4px;
     }
     .inner {
         width: 100% !important;
@@ -1338,9 +1374,7 @@ tr.woocommerce-cart-form__cart-item.cart_item td.product-subtotal {
     height: 4px;
     background: #6a6a6a;
     display: block;
-    margin: 0 auto;
-      margin-top: 0px;
-    margin-top: 20px;
+    margin: 20px auto 0;
 }
 
 .title4 a {

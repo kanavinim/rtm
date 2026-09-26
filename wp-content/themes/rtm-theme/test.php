@@ -7,7 +7,7 @@ Template Name: Main page
 <html lang="ru-ru">
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <base href="https://rtm-a.ru/" />
+        <base href="<?php echo esc_url( home_url( '/' ) ); ?>" />
         <meta http-equiv="content-type" content="text/html; charset=utf-8" />
         <meta name="keywords" content="Тюнинг для огнестрельного оружия, рукоятки, антабки, приклады, прицелы, усм" />
         <meta name="rights" content="РТМ" />
