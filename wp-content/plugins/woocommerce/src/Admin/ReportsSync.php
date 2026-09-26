@@ -27,6 +27,9 @@ class ReportsSync {
 		add_action( 'woocommerce_new_product', array( __CLASS__, 'clear_stock_count_cache' ) );
 		add_action( 'update_option_woocommerce_notify_low_stock_amount', array( __CLASS__, 'clear_stock_count_cache' ) );
 		add_action( 'update_option_woocommerce_notify_no_stock_amount', array( __CLASS__, 'clear_stock_count_cache' ) );
+		add_action( 'trashed_post', array( __CLASS__, 'maybe_clear_stock_count_cache_for_post' ) );
+		add_action( 'untrashed_post', array( __CLASS__, 'maybe_clear_stock_count_cache_for_post' ) );
+		add_action( 'delete_post', array( __CLASS__, 'maybe_clear_stock_count_cache_for_post' ) );
 	}
 
 	/**
@@ -71,7 +74,7 @@ class ReportsSync {
 	 * Regenerate data for reports.
 	 *
 	 * @param int|bool $days Number of days to import.
-	 * @param bool     $skip_existing Skip exisiting records.
+	 * @param bool     $skip_existing Skip existing records.
 	 * @return string
 	 */
 	public static function regenerate_report_data( $days, $skip_existing ) {
@@ -88,7 +91,7 @@ class ReportsSync {
 		 * Fires when report data regeneration begins.
 		 *
 		 * @param int|bool $days Number of days to import.
-		 * @param bool     $skip_existing Skip exisiting records.
+		 * @param bool     $skip_existing Skip existing records.
 		 */
 		do_action( 'woocommerce_analytics_regenerate_init', $days, $skip_existing );
 
@@ -99,7 +102,7 @@ class ReportsSync {
 	 * Update the import stat totals and counts.
 	 *
 	 * @param int|bool $days Number of days to import.
-	 * @param bool     $skip_existing Skip exisiting records.
+	 * @param bool     $skip_existing Skip existing records.
 	 */
 	public static function reset_import_stats( $days, $skip_existing ) {
 		$import_stats = get_option( ImportScheduler::IMPORT_STATS_OPTION, array() );
@@ -137,7 +140,7 @@ class ReportsSync {
 	 * Get the import totals for all syncs.
 	 *
 	 * @param int|bool $days Number of days to import.
-	 * @param bool     $skip_existing Skip exisiting records.
+	 * @param bool     $skip_existing Skip existing records.
 	 * @return array
 	 */
 	public static function get_import_totals( $days, $skip_existing ) {
@@ -177,6 +180,22 @@ class ReportsSync {
 		delete_option( ImportScheduler::IMPORT_STATS_OPTION );
 
 		return __( 'Report table data is being deleted.', 'woocommerce' );
+	}
+
+	/**
+	 * Clear the stock count cache for a post if it's a product or product variation.
+	 *
+	 * Handles trashed_post, untrashed_post, and delete_post hooks.
+	 *
+	 * @internal
+	 *
+	 * @param int $post_id The post ID.
+	 */
+	public static function maybe_clear_stock_count_cache_for_post( $post_id ): void {
+		$post = get_post( $post_id );
+		if ( $post && in_array( $post->post_type, array( 'product', 'product_variation' ), true ) ) {
+			self::clear_stock_count_cache( $post_id );
+		}
 	}
 
 	/**

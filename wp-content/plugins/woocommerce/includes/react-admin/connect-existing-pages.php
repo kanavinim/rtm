@@ -7,6 +7,7 @@
 
 use Automattic\WooCommerce\Admin\PageController;
 use Automattic\WooCommerce\Admin\Features\Features;
+use Automattic\WooCommerce\Utilities\OrderUtil;
 
 /**
  * Returns core WC pages to connect to WC-Admin.
@@ -135,16 +136,6 @@ wc_admin_connect_page(
 	)
 );
 
-// WooCommerce > Orders (COT).
-wc_admin_connect_page(
-	array(
-		'id'        => 'woocommerce-custom-orders',
-		'screen_id' => wc_get_page_screen_id( 'shop-order' ),
-		'title'     => __( 'Orders', 'woocommerce' ),
-		'path'      => 'admin.php?page=wc-orders',
-	)
-);
-
 // WooCommerce > Orders > Add New.
 wc_admin_connect_page(
 	array(
@@ -164,6 +155,18 @@ wc_admin_connect_page(
 		'title'     => __( 'Edit Order', 'woocommerce' ),
 	)
 );
+
+if ( OrderUtil::custom_orders_table_usage_is_enabled() ) {
+	// WooCommerce > Orders (COT).
+	wc_admin_connect_page(
+		array(
+			'id'        => 'woocommerce-custom-orders',
+			'screen_id' => wc_get_page_screen_id( 'shop-order' ),
+			'title'     => __( 'Orders', 'woocommerce' ),
+			'path'      => 'admin.php?page=wc-orders',
+		)
+	);
+}
 
 // WooCommerce > Coupons.
 wc_admin_connect_page(
@@ -293,6 +296,16 @@ wc_admin_connect_page(
 		'parent'    => 'woocommerce-products',
 		'screen_id' => 'product_page_product_attributes',
 		'title'     => __( 'Attributes', 'woocommerce' ),
+	)
+);
+
+// WooCommerce > Products > Reviews.
+wc_admin_connect_page(
+	array(
+		'id'        => 'woocommerce-product-reviews',
+		'parent'    => 'woocommerce-products',
+		'screen_id' => 'product_page_product-reviews',
+		'title'     => __( 'Product Reviews', 'woocommerce' ),
 	)
 );
 

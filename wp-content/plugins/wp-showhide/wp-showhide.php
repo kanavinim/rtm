@@ -1,115 +1,69 @@
 <?php
+/**
+ * Plugin Name: WP-ShowHide
+ * Plugin URI: https://lesterchan.net/portfolio/programming/php/
+ * Description: Allows you to embed content within your blog post via WordPress ShortCode API and toggling the visibility of the content via a button.
+ * Version: 3.0.0
+ * Requires at least: 6.8
+ * Requires PHP: 8.2
+ * Author: Lester 'GaMerZ' Chan
+ * Author URI: https://lesterchan.net
+ * License: GPLv2 or later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain: wp-showhide
+ * Domain Path: /languages
+ *
+ * @package WP-ShowHide
+ */
+
 /*
-Plugin Name: WP-ShowHide
-Plugin URI: https://lesterchan.net/portfolio/programming/php/
-Description: Allows you to embed content within your blog post via WordPress ShortCode API and toggling the visibility of the content via a link. By default the content is hidden and user will have to click on the "Show Content" link to toggle it. Similar to what Engadget is doing for their press releases. Example usage: <code>[showhide type="pressrelease"]Press Release goes in here.[/showhide]</code>
-Version: 1.05
-Author: Lester 'GaMerZ' Chan
-Author URI: https://lesterchan.net
-Text Domain: wp-showhide
-Domain Path: /languages/
-License: GPL2
+	Copyright 2026  Lester Chan  (email : lesterchan@gmail.com)
+
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 2 of the License, or
+	(at your option) any later version.
+
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-/*  Copyright 2023  Lester Chan  (email : lesterchan@gmail.com)
+defined( 'ABSPATH' ) || exit;
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License, version 2, as
-    published by the Free Software Foundation.
+/**
+ * WP-ShowHide version. The last-run value is kept in the wp_showhide_version row.
+ */
+define( 'WP_SHOWHIDE_VERSION', '3.0.0' );
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+/**
+ * WP-ShowHide slug, which is also the text domain and the asset handle.
+ */
+define( 'WP_SHOWHIDE_SLUG', 'wp-showhide' );
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-*/
+/**
+ * WP-ShowHide main file.
+ */
+define( 'WP_SHOWHIDE_MAIN_FILE', __FILE__ );
 
+/**
+ * WP-ShowHide directory, with a trailing slash.
+ */
+define( 'WP_SHOWHIDE_DIR', plugin_dir_path( __FILE__ ) );
 
-### Function: Enqueue JavaScripts
-add_action( 'wp_enqueue_scripts', 'showhide_scripts' );
-function showhide_scripts() {
-	wp_enqueue_script( 'jquery' );
-}
+/**
+ * WP-ShowHide URL, with a trailing slash.
+ */
+define( 'WP_SHOWHIDE_URL', plugin_dir_url( __FILE__ ) );
 
-### Function: Load Translation
-add_action( 'plugins_loaded', 'showhide_textdomain' );
-function showhide_textdomain() {
-	load_plugin_textdomain( 'wp-showhide', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
-}
+require_once WP_SHOWHIDE_DIR . 'includes/class-wp-showhide-template.php';
+require_once WP_SHOWHIDE_DIR . 'includes/class-wp-showhide-blocks.php';
+require_once WP_SHOWHIDE_DIR . 'includes/class-wp-showhide.php';
 
-### Function: Short Code For Inserting Press Release Into Post
-add_shortcode( 'showhide', 'showhide_shortcode' );
-function showhide_shortcode( $atts, $content = null ) {
-	// Variables
-	$post_id = get_the_id();
-	$word_count = number_format_i18n( sizeof( explode( ' ', strip_tags( $content ) ) ) );
-
-	// Extract ShortCode Attributes
-	$attributes = shortcode_atts( array(
-		'type' => 'pressrelease',
-		'more_text' => __( 'Show Press Release (%s More Words)', 'wp-showhide' ),
-		'less_text' => __( 'Hide Press Release (%s Less Words)', 'wp-showhide' ),
-		'hidden' => 'yes'
-	), $atts );
-
-	// More/Less Text
-	$more_text = sprintf( $attributes['more_text'], $word_count );
-	$less_text = sprintf( $attributes['less_text'], $word_count );
-
-	// Determine Whether To Show Or Hide Press Release
-	$hidden_class = 'sh-hide';
-	$hidden_css = 'display: none;';
-	$hidden_aria_expanded = 'false';
-	if( $attributes['hidden'] === 'no' ) {
-		$hidden_class = 'sh-show';
-		$hidden_css = 'display: block;';
-		$hidden_aria_expanded = 'true';
-		$tmp_text = $more_text;
-		$more_text = $less_text;
-		$less_text = $tmp_text;
-	}
-
-	// Format HTML Output
-	$output  = '<div id="' . esc_attr( $attributes['type'] ) . '-link-' . $post_id . '" class="sh-link ' . esc_attr( $attributes['type'] ) . '-link ' . $hidden_class .'"><a href="#" onclick="showhide_toggle(\'' . esc_js( $attributes['type'] ) . '\', ' . $post_id . ', \'' . esc_js( $more_text ) . '\', \'' . esc_js( $less_text ) . '\'); return false;" aria-expanded="' . $hidden_aria_expanded .'"><span id="' . esc_attr( $attributes['type'] ) . '-toggle-' . $post_id . '">' . $more_text . '</span></a></div>';
-	$output .= '<div id="' . esc_attr( $attributes['type'] ) . '-content-' . $post_id . '" class="sh-content ' . esc_attr( $attributes['type'] ) . '-content ' . $hidden_class . '" style="' . $hidden_css . '">' . do_shortcode( $content ) . '</div>';
-
-	return $output;
-}
-
-### Function: Add JavaScript To Footer
-add_action( 'wp_footer', 'showhide_footer' );
-function showhide_footer() {
-?>
-	<?php if( WP_DEBUG ): ?>
-		<script type="text/javascript">
-			function showhide_toggle(type, post_id, more_text, less_text) {
-				var   $link = jQuery("#"+ type + "-link-" + post_id)
-					, $link_a = jQuery('a', $link)
-					, $content = jQuery("#"+ type + "-content-" + post_id)
-					, $toggle = jQuery("#"+ type + "-toggle-" + post_id)
-					, show_hide_class = 'sh-show sh-hide';
-				$link.toggleClass(show_hide_class);
-				$content.toggleClass(show_hide_class).toggle();
-				if($link_a.attr('aria-expanded') === 'true') {
-					$link_a.attr('aria-expanded', 'false');
-				} else {
-					$link_a.attr('aria-expanded', 'true');
-				}
-				if($toggle.text() === more_text) {
-					$toggle.text(less_text);
-					$link.trigger( "sh-link:more" );
-				} else {
-					$toggle.text(more_text);
-					$link.trigger( "sh-link:less" );
-				}
-				$link.trigger( "sh-link:toggle" );
-			}
-		</script>
-	<?php else : ?>
-		<script type="text/javascript">function showhide_toggle(e,t,r,g){var a=jQuery("#"+e+"-link-"+t),s=jQuery("a",a),i=jQuery("#"+e+"-content-"+t),l=jQuery("#"+e+"-toggle-"+t);a.toggleClass("sh-show sh-hide"),i.toggleClass("sh-show sh-hide").toggle(),"true"===s.attr("aria-expanded")?s.attr("aria-expanded","false"):s.attr("aria-expanded","true"),l.text()===r?(l.text(g),a.trigger("sh-link:more")):(l.text(r),a.trigger("sh-link:less")),a.trigger("sh-link:toggle")}</script>
-	<?php endif; ?>
-<?php
-}
+WP_ShowHide::get_instance();
+WP_ShowHide_Blocks::init();

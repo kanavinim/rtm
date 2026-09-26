@@ -103,9 +103,7 @@ class WC_Admin_Taxonomies {
 			return;
 		}
 
-		$meta_name = taxonomy_is_product_attribute( $taxonomy ) ? 'order_' . esc_attr( $taxonomy ) : 'order';
-
-		update_term_meta( $term_id, $meta_name, 0 );
+		update_term_meta( $term_id, 'order', 0 );
 	}
 
 	/**
@@ -482,14 +480,28 @@ class WC_Admin_Taxonomies {
 		if ( ! isset( $_GET['taxonomy'] ) || 'product_cat' !== $_GET['taxonomy'] ) { // WPCS: CSRF ok, input var ok.
 			return;
 		}
+
 		// Ensure the tooltip is displayed when the image column is disabled on product categories.
-		wc_enqueue_js(
-			"(function( $ ) {
-				'use strict';
-				var product_cat = $( 'tr#tag-" . absint( $this->default_cat_id ) . "' );
-				product_cat.find( 'th' ).empty();
-				product_cat.find( 'td.thumb span' ).detach( 'span' ).appendTo( product_cat.find( 'th' ) );
-			})( jQuery );"
+		$handle = 'wc-admin-taxonomies';
+		wp_register_script( $handle, '', array(), WC_VERSION, array( 'in_footer' => true ) );
+		wp_enqueue_script( $handle );
+		wp_add_inline_script(
+			$handle,
+			sprintf(
+				"(function() {
+                    'use strict';
+                    const product_cat = document.getElementById('tag-%d');
+                    if (product_cat) {
+                        const th = product_cat.querySelector('th');
+                        const thumbSpan = product_cat.querySelector('td.thumb span');
+                        if (th && thumbSpan) {
+                            th.innerHTML = '';
+                            th.appendChild(thumbSpan);
+                        }
+                    }
+                })();",
+				absint( $this->default_cat_id )
+			)
 		);
 	}
 }

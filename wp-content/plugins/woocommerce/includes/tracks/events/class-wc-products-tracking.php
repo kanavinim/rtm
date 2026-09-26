@@ -10,10 +10,26 @@ use Automattic\WooCommerce\Internal\Admin\WCAdminAssets;
 
 defined( 'ABSPATH' ) || exit;
 
+require_once WC_ABSPATH . 'includes/admin/wc-admin-functions.php';
+
 /**
  * This class adds actions to track usage of WooCommerce Products.
  */
 class WC_Products_Tracking {
+
+	/**
+	 * Tracks source.
+	 */
+	public const TRACKS_SOURCE = 'product-legacy-editor';
+
+	/**
+	 * Deferred Tracks callback.
+	 *
+	 * @internal
+	 * @since 10.6.0
+	 */
+	public const TRACK_PRODUCT_PUBLISHED_CALLBACK = 'track_product_published';
+
 	/**
 	 * Init tracking.
 	 */
@@ -26,8 +42,10 @@ class WC_Products_Tracking {
 		add_action( 'edited_product_cat', array( $this, 'track_product_category_updated' ) );
 		add_action( 'add_meta_boxes_product', array( $this, 'track_product_updated_client_side' ), 10 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'possibly_add_product_tracking_scripts' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'possibly_add_product_import_scripts' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'possibly_add_attribute_tracking_scripts' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'possibly_add_tag_tracking_scripts' ) );
+		add_action( self::TRACK_PRODUCT_PUBLISHED_CALLBACK, array( $this, 'track_product_published_maybe_defer' ), 10, 3 );
 	}
 
 	/**
@@ -115,9 +133,13 @@ class WC_Products_Tracking {
 			return;
 		}
 
+		/* phpcs:disable WooCommerce.Commenting.CommentHooks.MissingHookComment */
+		$source     = apply_filters( 'woocommerce_product_source', self::is_importing() ? 'import' : self::TRACKS_SOURCE );
 		$properties = array(
 			'product_id' => $product_id,
+			'source'     => $source,
 		);
+		/* phpcs: enable */
 
 		WC_Tracks::record_event( 'product_edit', $properties );
 	}
@@ -130,63 +152,168 @@ class WC_Products_Tracking {
 	 * @param WP_Post $post The post, not used.
 	 */
 	public function track_product_updated_client_side( $post ) {
-		wc_enqueue_js(
+		$handle = 'wc-tracks-product-updated-client-side';
+		wp_register_script( $handle, '', array( 'jquery' ), WC_VERSION, array( 'in_footer' => true ) );
+		wp_enqueue_script( $handle );
+		wp_add_inline_script(
+			$handle,
 			"
-			if ( $( 'h1.wp-heading-inline' ).text().trim() === '" . __( 'Edit product', 'woocommerce' ) . "') {
-				var initialStockValue = $( '#_stock' ).val();
-				var isBlockEditor = false;
-				var child_element = '#publish';
+			jQuery(function($) {
+				if ( $( 'h1.wp-heading-inline' ).text().trim() === '" . esc_js( __( 'Edit product', 'woocommerce' ) ) . "') {
+					var initialStockValue = $( '#_stock' ).val();
+					var isBlockEditor = false;
+					var child_element = '#publish';
 
-				if ( $( '.block-editor' ).length !== 0 && $( '.block-editor' )[0] ) {
-	    			isBlockEditor = true;
-				}
-
-				if ( isBlockEditor ) {
-					child_element = '.editor-post-publish-button';
-				}
-
-				$( '#wpwrap' ).on( 'click', child_element, function() {
-					var description_value  = '';
-					var tagsText = '';
-					var currentStockValue = $( '#_stock' ).val();
-
-					if ( ! isBlockEditor ) {
-						tagsText          = $( '[name=\"tax_input[product_tag]\"]' ).val();
-						if ( $( '#content' ).is( ':visible' ) ) {
-							description_value = $( '#content' ).val();	
-						} else if ( typeof tinymce === 'object' && tinymce.get( 'content' ) ) {
-							description_value = tinymce.get( 'content' ).getContent();
-						}
-					} else {
-						description_value  = $( '.block-editor-rich-text__editable' ).text();
+					if ( $( '.block-editor' ).length !== 0 && $( '.block-editor' )[0] ) {
+		                isBlockEditor = true;
 					}
 
-					var properties = {
-						attributes:				$( '.woocommerce_attribute' ).length,
-						categories:				$( '[name=\"tax_input[product_cat][]\"]:checked' ).length,
-						cross_sells:			$( '#crosssell_ids option' ).length ? 'Yes' : 'No',
-						description:			description_value.trim() !== '' ? 'Yes' : 'No',
-						enable_reviews:			$( '#comment_status' ).is( ':checked' ) ? 'Yes' : 'No',
-						is_virtual:				$( '#_virtual' ).is( ':checked' ) ? 'Yes' : 'No',
-						is_block_editor:		isBlockEditor,
-						is_downloadable:		$( '#_downloadable' ).is( ':checked' ) ? 'Yes' : 'No',
-						manage_stock:			$( '#_manage_stock' ).is( ':checked' ) ? 'Yes' : 'No',
-						menu_order:				$( '#menu_order' ).val() ? 'Yes' : 'No',
-						product_gallery:		$( '#product_images_container .product_images > li' ).length,
-						product_image:			$( '#_thumbnail_id' ).val() > 0 ? 'Yes' : 'No',
-						product_type:			$( '#product-type' ).val(),
-						purchase_note:			$( '#_purchase_note' ).val().length ? 'yes' : 'no',
-						sale_price:				$( '#_sale_price' ).val() ? 'yes' : 'no',
-						short_description:		$( '#excerpt' ).val().length ? 'yes' : 'no',
-						stock_quantity_update:	( initialStockValue != currentStockValue ) ? 'Yes' : 'No',
-						tags:					tagsText.length > 0 ? tagsText.split( ',' ).length : 0,
-						upsells:				$( '#upsell_ids option' ).length ? 'Yes' : 'No',
-						weight:					$( '#_weight' ).val() ? 'Yes' : 'No',
-					};
-					window.wcTracks.recordEvent( 'product_update', properties );
-				} );
-			}
+					if ( isBlockEditor ) {
+						child_element = '.editor-post-publish-button';
+					}
+
+					$( '#wpwrap' ).on( 'click', child_element, function() {
+						var description_value  = '';
+						var tagsText = '';
+						var currentStockValue = $( '#_stock' ).val();
+
+						function getProductTypeOptions() {
+							const productTypeOptionsCheckboxes = $( 'input[type=\"checkbox\"][data-product-type-option-id]' );
+							const productTypeOptions = productTypeOptionsCheckboxes.map( function() {
+								return {
+									id: $( this ).data( 'product-type-option-id' ),
+									isEnabled: $( this ).is( ':checked' ),
+								};
+							} ).get();
+							return productTypeOptions;
+						}
+
+						function getProductTypeOptionsString( productTypeOptions ) {
+							return productTypeOptions
+								.filter( productTypeOption => productTypeOption.isEnabled )
+								.map( productTypeOption => productTypeOption.id )
+								.join( ', ' );
+						}
+
+						const productTypeOptions = getProductTypeOptions();
+						const productTypeOptionsString = getProductTypeOptionsString( productTypeOptions );
+
+						if ( ! isBlockEditor ) {
+							tagsText          = $( '[name=\"tax_input[product_tag]\"]' ).val();
+							if ( $( '#content' ).is( ':visible' ) ) {
+								description_value = $( '#content' ).val();
+							} else if ( typeof tinymce === 'object' && tinymce.get( 'content' ) ) {
+								description_value = tinymce.get( 'content' ).getContent();
+							}
+						} else {
+							description_value  = $( '.block-editor-rich-text__editable' ).text();
+						}
+
+						// We can't just check the number of '.woocommerce_attribute' elements because
+						// there might be empty ones, which get stripped out when saved. So, we'll check
+						// whether the name and values have been filled out.
+						var numberOfAttributes = $( '.woocommerce_attribute' ).filter( function () {
+							var attributeElement = $( this );
+							var attributeName = attributeElement.find( 'input.attribute_name' ).val();
+							var attributeValues = attributeElement.find( 'textarea[name^=\"attribute_values\"]' ).val();
+
+							return attributeName !== '' && attributeValues !== '';
+						} ).length;
+
+						var properties = {
+							attributes:				     numberOfAttributes,
+							categories:				     $( '[name=\"tax_input[product_cat][]\"]:checked' ).length,
+							cross_sells:			     $( '#crosssell_ids option' ).length ? 'Yes' : 'No',
+							description:			     description_value.trim() !== '' ? 'Yes' : 'No',
+							enable_reviews:			     $( '#comment_status' ).is( ':checked' ) ? 'Yes' : 'No',
+							is_virtual:				     $( '#_virtual' ).is( ':checked' ) ? 'Yes' : 'No',
+							is_block_editor:		     isBlockEditor,
+							is_downloadable:		     $( '#_downloadable' ).is( ':checked' ) ? 'Yes' : 'No',
+							manage_stock:			     $( '#_manage_stock' ).is( ':checked' ) ? 'Yes' : 'No',
+							menu_order:				     parseInt( $( '#menu_order' ).val(), 10 ) !== 0 ? 'Yes' : 'No',
+							product_gallery:		     $( '#product_images_container .product_images > li' ).length,
+							product_image:			     $( '#_thumbnail_id' ).val() > 0 ? 'Yes' : 'No',
+							product_type:			     $( '#product-type' ).val(),
+							product_type_options_string: productTypeOptionsString,
+							purchase_note:			     $( '#_purchase_note' ).val().length ? 'yes' : 'no',
+							sale_price:				     $( '#_sale_price' ).val() ? 'yes' : 'no',
+							short_description:		     $( '#excerpt' ).val().length ? 'yes' : 'no',
+							stock_quantity_update:	     ( initialStockValue != currentStockValue ) ? 'Yes' : 'No',
+							tags:					     tagsText.length > 0 ? tagsText.split( ',' ).length : 0,
+							upsells:				     $( '#upsell_ids option' ).length ? 'Yes' : 'No',
+							weight:					     $( '#_weight' ).val() ? 'Yes' : 'No',
+						};
+						if ( window.wcTracks && window.wcTracks.recordEvent ) {
+							window.wcTracks.recordEvent( 'product_update', properties );
+						}
+					} );
+				}
+			});
 			"
+		);
+	}
+
+	/**
+	 * Get the IDs of the possible product type options.
+	 *
+	 * @return array
+	 */
+	private static function get_possible_product_type_options_ids() {
+		$product_type_options_ids =
+			array_values(
+				array_map(
+					function ( $product_type_option ) {
+						return $product_type_option['id'];
+					},
+					/* phpcs:disable WooCommerce.Commenting.CommentHooks.MissingHookComment */
+					apply_filters(
+						'product_type_options',
+						wc_get_default_product_type_options(),
+					)
+					/* phpcs: enable */
+				)
+			);
+
+		return $product_type_options_ids;
+	}
+
+	/**
+	 * Get the product type options for a product.
+	 *
+	 * @param int $post_id The ID of the product.
+	 *
+	 * @return array
+	 */
+	private static function get_product_type_options( $post_id ) {
+		$possible_product_type_options_ids = self::get_possible_product_type_options_ids();
+		$post_meta                         = get_post_meta( $post_id );
+		$product_type_options              = array();
+
+		foreach ( $possible_product_type_options_ids as $product_type_option_id ) {
+			$product_type_options[ $product_type_option_id ] = isset( $post_meta[ $product_type_option_id ] ) ? $post_meta[ $product_type_option_id ][0] : 'no';
+		}
+
+		return $product_type_options;
+	}
+
+	/**
+	 * Get a comma-separated string of the product type options that are enabled.
+	 *
+	 * @param array $product_type_options The product type options.
+	 *
+	 * @return string
+	 */
+	private static function get_product_type_options_string( $product_type_options ) {
+		return implode(
+			', ',
+			array_keys(
+				array_filter(
+					$product_type_options,
+					function ( $is_enabled ) {
+						return 'yes' === $is_enabled;
+					}
+				)
+			)
 		);
 	}
 
@@ -210,30 +337,61 @@ class WC_Products_Tracking {
 
 		$product = wc_get_product( $post_id );
 
-		$properties = array(
-			'attributes'        => count( $product->get_attributes() ),
-			'categories'        => count( $product->get_category_ids() ),
-			'cross_sells'       => ! empty( $product->get_cross_sell_ids() ) ? 'yes' : 'no',
-			'description'       => $product->get_description() ? 'yes' : 'no',
-			'dimensions'        => wc_format_dimensions( $product->get_dimensions( false ) ) !== 'N/A' ? 'yes' : 'no',
-			'enable_reviews'    => $product->get_reviews_allowed() ? 'yes' : 'no',
-			'is_downloadable'   => $product->is_downloadable() ? 'yes' : 'no',
-			'is_virtual'        => $product->is_virtual() ? 'yes' : 'no',
-			'manage_stock'      => $product->get_manage_stock() ? 'yes' : 'no',
-			'menu_order'        => $product->get_menu_order() ? 'yes' : 'no',
-			'product_id'        => $post_id,
-			'product_gallery'   => count( $product->get_gallery_image_ids() ),
-			'product_image'     => $product->get_image_id() ? 'yes' : 'no',
-			'product_type'      => $product->get_type(),
-			'purchase_note'     => $product->get_purchase_note() ? 'yes' : 'no',
-			'sale_price'        => $product->get_sale_price() ? 'yes' : 'no',
-			'short_description' => $product->get_short_description() ? 'yes' : 'no',
-			'tags'              => count( $product->get_tag_ids() ),
-			'upsells'           => ! empty( $product->get_upsell_ids() ) ? 'yes' : 'no',
-			'weight'            => $product->get_weight() ? 'yes' : 'no',
+		$product_type_options        = self::get_product_type_options( $post_id );
+		$product_type_options_string = self::get_product_type_options_string( $product_type_options );
+
+		$is_importing = self::is_importing();
+		$properties   = array(
+			'attributes'           => count( $product->get_attributes() ),
+			'categories'           => count( $product->get_category_ids() ),
+			'cross_sells'          => ! empty( $product->get_cross_sell_ids() ) ? 'yes' : 'no',
+			'description'          => $product->get_description() ? 'yes' : 'no',
+			'dimensions'           => wc_format_dimensions( $product->get_dimensions( false ) ) !== 'N/A' ? 'yes' : 'no',
+			'enable_reviews'       => $product->get_reviews_allowed() ? 'yes' : 'no',
+			'is_downloadable'      => $product->is_downloadable() ? 'yes' : 'no',
+			'is_virtual'           => $product->is_virtual() ? 'yes' : 'no',
+			'manage_stock'         => $product->get_manage_stock() ? 'yes' : 'no',
+			'menu_order'           => $product->get_menu_order() ? 'yes' : 'no',
+			'product_id'           => $post_id,
+			'product_gallery'      => count( $product->get_gallery_image_ids() ),
+			'product_image'        => $product->get_image_id() ? 'yes' : 'no',
+			'product_type'         => $product->get_type(),
+			'product_type_options' => $product_type_options_string,
+			'purchase_note'        => $product->get_purchase_note() ? 'yes' : 'no',
+			'sale_price'           => $product->get_sale_price() ? 'yes' : 'no',
+			'source'               => apply_filters( 'woocommerce_product_source', $is_importing ? 'import' : self::TRACKS_SOURCE ),
+			'short_description'    => $product->get_short_description() ? 'yes' : 'no',
+			'tags'                 => count( $product->get_tag_ids() ),
+			'upsells'              => ! empty( $product->get_upsell_ids() ) ? 'yes' : 'no',
+			'weight'               => $product->get_weight() ? 'yes' : 'no',
+			'global_unique_id'     => $product->get_global_unique_id() ? 'yes' : 'no',
 		);
 
-		WC_Tracks::record_event( 'product_add_publish', $properties );
+		$this->track_product_published_maybe_defer( 'product_add_publish', $properties, $is_importing );
+	}
+
+	/**
+	 * Tracks the event, allowing deferred/asynchronous event recording.
+	 *
+	 * @internal
+	 * @since 10.6.0
+	 *
+	 * @param string $event_name       The name of the event.
+	 * @param array  $event_properties Custom properties to send with the event.
+	 * @param bool   $defer            Whether to defer the event publishing.
+	 * @return void
+	 */
+	public function track_product_published_maybe_defer( string $event_name, array $event_properties, bool $defer = false ): void {
+		if ( $defer ) {
+			as_schedule_single_action(
+				time(),
+				self::TRACK_PRODUCT_PUBLISHED_CALLBACK,
+				array( $event_name, $event_properties ),
+				'woocommerce-tracks'
+			);
+		} else {
+			WC_Tracks::record_event( $event_name, $event_properties );
+		}
 	}
 
 	/**
@@ -317,6 +475,7 @@ class WC_Products_Tracking {
 
 		if (
 			'post-new.php' === $hook &&
+			isset( $_GET['post_type'] ) &&
 			'product' === wp_unslash( $_GET['post_type'] )
 		) {
 			return 'new';
@@ -329,6 +488,11 @@ class WC_Products_Tracking {
 		) {
 			return 'edit';
 		}
+
+		if ( 'product_page_product_importer' === $hook ) {
+			return 'import';
+		}
+
 		// phpcs:enable
 
 		return false;
@@ -353,6 +517,22 @@ class WC_Products_Tracking {
 				'name' => $product_screen,
 			)
 		);
+	}
+
+	/**
+	 * Adds the tracking scripts for product setting pages.
+	 *
+	 * @param string $hook Page hook.
+	 */
+	public function possibly_add_product_import_scripts( $hook ) {
+		$product_screen = $this->get_product_screen( $hook );
+
+		if ( 'import' !== $product_screen ) {
+			return;
+		}
+
+		WCAdminAssets::register_script( 'wp-admin-scripts', 'product-import-tracking', false );
+
 	}
 
 	/**
@@ -408,5 +588,20 @@ class WC_Products_Tracking {
 			return;
 		}
 		WCAdminAssets::register_script( 'wp-admin-scripts', 'add-term-tracking', false );
+	}
+
+	/**
+	 * Check if the current process is importing products.
+	 *
+	 * @return bool True if importing, false otherwise.
+	 */
+	private function is_importing() {
+		// phpcs:disable WordPress.Security.NonceVerification.Missing
+		// Check if the current request is a product import.
+		if ( isset( $_POST['action'] ) && 'woocommerce_do_ajax_product_import' === $_POST['action'] ) {
+			return true;
+		}
+		return false;
+		// phpcs:enable
 	}
 }

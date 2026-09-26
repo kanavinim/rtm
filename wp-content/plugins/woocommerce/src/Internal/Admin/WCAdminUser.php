@@ -41,8 +41,12 @@ class WCAdminUser {
 			'user',
 			'is_super_admin',
 			array(
-				'get_callback' => function() {
-					return is_super_admin();
+				'get_callback' => function( $user ) {
+					if ( ! isset( $user['id'] ) || 0 === $user['id'] ) {
+						return false;
+					}
+
+					return is_super_admin( $user['id'] );
 				},
 				'schema'       => null,
 			)
@@ -103,7 +107,13 @@ class WCAdminUser {
 	 * @return array Fields to expose over the WP user endpoint.
 	 */
 	public function get_user_data_fields() {
-		return apply_filters( 'woocommerce_admin_get_user_data_fields', array() );
+		/**
+		 * Filter user data fields exposed over the WordPress user endpoint.
+		 *
+		 * @since 4.0.0
+		 * @param array $fields Array of fields to expose over the WP user endpoint.
+		 */
+		return apply_filters( 'woocommerce_admin_get_user_data_fields', array( 'variable_product_tour_shown' ) );
 	}
 
 	/**
@@ -118,7 +128,7 @@ class WCAdminUser {
 	}
 
 	/**
-	 * Helper to retrive user data fields.
+	 * Helper to retrieve user data fields.
 	 *
 	 * Migrates old key prefixes as well.
 	 *
@@ -142,5 +152,40 @@ class WCAdminUser {
 		}
 
 		return $meta_value;
+	}
+
+	/**
+	 * Get the current user data.
+	 *
+	 * @return array User data.
+	 */
+	public static function get_user_data() {
+		$user_controller = new \WP_REST_Users_Controller();
+		$request         = new \WP_REST_Request();
+		$request->set_query_params( array( 'context' => 'edit' ) );
+		$user_response     = $user_controller->get_current_item( $request );
+		$current_user_data = is_wp_error( $user_response ) ? (object) array() : $user_response->get_data();
+		$current_user_data = self::filter_user_capabilities( $current_user_data );
+
+		return $current_user_data;
+	}
+
+	/**
+	 * Filter user capabilities to respect file modification restrictions.
+	 *
+	 * @param array $user_data User data.
+	 * @return array Filtered user data.
+	 */
+	private static function filter_user_capabilities( $user_data ) {
+		if ( ! is_array( $user_data ) || ! isset( $user_data['capabilities'] ) ) {
+			return $user_data;
+		}
+
+		// If the user has install_plugins capability, check if file modifications are allowed.
+		if ( isset( $user_data['capabilities']->install_plugins ) && $user_data['capabilities']->install_plugins ) {
+			$user_data['capabilities']->install_plugins = wp_is_file_mod_allowed( 'woocommerce' );
+		}
+
+		return $user_data;
 	}
 }

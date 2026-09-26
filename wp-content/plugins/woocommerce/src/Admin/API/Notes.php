@@ -35,15 +35,6 @@ class Notes extends \WC_REST_CRUD_Controller {
 	protected $rest_base = 'admin/notes';
 
 	/**
-	 * Allowed promo notes for experimental-activate-promo.
-	 *
-	 * @var array
-	 */
-	protected $allowed_promo_notes = array(
-		'wcpay-promo-2022-us-incentive-20-off',
-	);
-
-	/**
 	 * Register the routes for admin notes.
 	 */
 	public function register_routes() {
@@ -118,19 +109,6 @@ class Notes extends \WC_REST_CRUD_Controller {
 							),
 						),
 					),
-				),
-				'schema' => array( $this, 'get_public_item_schema' ),
-			)
-		);
-
-		register_rest_route(
-			$this->namespace,
-			'/' . $this->rest_base . '/tracker/(?P<note_id>[\d-]+)/user/(?P<user_id>[\d-]+)',
-			array(
-				array(
-					'methods'             => \WP_REST_Server::READABLE,
-					'callback'            => array( $this, 'track_opened_email' ),
-					'permission_callback' => '__return_true',
 				),
 				'schema' => array( $this, 'get_public_item_schema' ),
 			)
@@ -263,6 +241,10 @@ class Notes extends \WC_REST_CRUD_Controller {
 		$args['source']     = isset( $request['source'] ) ? $request['source'] : array();
 		$args['is_deleted'] = 0;
 
+		if ( isset( $request['is_read'] ) ) {
+			$args['is_read'] = filter_var( $request['is_read'], FILTER_VALIDATE_BOOLEAN );
+		}
+
 		if ( 'date' === $args['orderby'] ) {
 			$args['orderby'] = 'date_created';
 		}
@@ -390,7 +372,7 @@ class Notes extends \WC_REST_CRUD_Controller {
 	}
 
 	/**
-	 * Prepare an array with the the requested updates.
+	 * Prepare an array with the requested updates.
 	 *
 	 * @param WP_REST_Request $request  Request object.
 	 * @return array A list of the requested updates values.
@@ -454,9 +436,17 @@ class Notes extends \WC_REST_CRUD_Controller {
 	 * @return WP_REST_Request|WP_Error
 	 */
 	public function activate_promo_note( $request ) {
+		/**
+		 * Filter allowed promo notes for experimental-activate-promo.
+		 *
+		 * @param array     $promo_notes    Array of allowed promo notes.
+		 * @since 7.8.0
+		 */
+		$allowed_promo_notes = apply_filters( 'woocommerce_admin_allowed_promo_notes', [] );
+
 		$promo_note_name = $request->get_param( 'promo_note_name' );
 
-		if ( ! in_array( $promo_note_name, $this->allowed_promo_notes, true ) ) {
+		if ( ! in_array( $promo_note_name, $allowed_promo_notes, true ) ) {
 			return new \WP_Error(
 				'woocommerce_note_invalid_promo_note_name',
 				__( 'Please provide a valid promo note name.', 'woocommerce' ),
@@ -535,7 +525,7 @@ class Notes extends \WC_REST_CRUD_Controller {
 	 *
 	 * @param string $url The URL needing a nonce.
 	 * @param string $action The nonce action.
-	 * @param string $name The nonce anme.
+	 * @param string $name The nonce name.
 	 * @return string A fully formed URL.
 	 */
 	private function maybe_add_nonce_to_url( string $url, string $action = '', string $name = '' ) : string {
@@ -544,7 +534,7 @@ class Notes extends \WC_REST_CRUD_Controller {
 		}
 
 		if ( empty( $name ) ) {
-			// Default paramater name.
+			// Default parameter name.
 			$name = '_wpnonce';
 		}
 
@@ -606,19 +596,15 @@ class Notes extends \WC_REST_CRUD_Controller {
 		return apply_filters( 'woocommerce_rest_prepare_note', $response, $data, $request );
 	}
 
-
 	/**
 	 * Track opened emails.
+	 *
+	 * @deprecated 10.6.0 This method is no longer functional as the email tracking feature was removed in WooCommerce 9.9.
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 */
 	public function track_opened_email( $request ) {
-		$note = NotesRepository::get_note( $request->get_param( 'note_id' ) );
-		if ( ! $note ) {
-			return;
-		}
-
-		NotesRepository::record_tracks_event_with_user( $request->get_param( 'user_id' ), 'email_note_opened', array( 'note_name' => $note->get_name() ) );
+		wc_deprecated_function( __METHOD__, '10.6.0' );
 	}
 
 	/**

@@ -21,6 +21,7 @@ class WC_Deprecated_Filter_Hooks extends WC_Deprecated_Hooks {
 	 * @var array
 	 */
 	protected $deprecated_hooks = array(
+		'woocommerce_account_orders_columns'              => 'woocommerce_my_account_my_orders_columns',
 		'woocommerce_structured_data_order'               => 'woocommerce_email_order_schema_markup',
 		'woocommerce_add_to_cart_fragments'               => 'add_to_cart_fragments',
 		'woocommerce_add_to_cart_redirect'                => 'add_to_cart_redirect',
@@ -49,8 +50,8 @@ class WC_Deprecated_Filter_Hooks extends WC_Deprecated_Hooks {
 		'woocommerce_order_get_total_discount'            => 'woocommerce_order_amount_total_discount',
 		'woocommerce_order_get_subtotal'                  => 'woocommerce_order_amount_subtotal',
 		'woocommerce_order_get_tax_totals'                => 'woocommerce_order_tax_totals',
-		'woocommerce_get_order_refund_get_amount'         => 'woocommerce_refund_amount',
-		'woocommerce_get_order_refund_get_reason'         => 'woocommerce_refund_reason',
+		'woocommerce_order_refund_get_amount'             => 'woocommerce_refund_amount',
+		'woocommerce_order_refund_get_reason'             => 'woocommerce_refund_reason',
 		'default_checkout_billing_country'                => 'default_checkout_country',
 		'default_checkout_billing_state'                  => 'default_checkout_state',
 		'default_checkout_billing_postcode'               => 'default_checkout_postcode',
@@ -67,6 +68,7 @@ class WC_Deprecated_Filter_Hooks extends WC_Deprecated_Hooks {
 	 * @var array
 	 */
 	protected $deprecated_version = array(
+		'woocommerce_my_account_my_orders_columns'   => '2.6.0',
 		'woocommerce_email_order_schema_markup'      => '3.0.0',
 		'add_to_cart_fragments'                      => '3.0.0',
 		'add_to_cart_redirect'                       => '3.0.0',
