@@ -184,6 +184,25 @@ Template Name: Main page
                         <div class="banner-index-one"></div>
                     </div>
 
+                    <div class="itc-slider__item">
+                        <div class="banner-index-2"></div>
+                    </div>
+                    <div class="itc-slider__item">
+                        <div class="banner-index-3"></div>
+                    </div>
+                    <div class="itc-slider__item">
+                        <div class="banner-index-4"></div>
+                    </div>
+                    <div class="itc-slider__item">
+                        <div class="banner-index-5"></div>
+                    </div>
+                    <div class="itc-slider__item">
+                        <div class="banner-index-6"></div>
+                    </div>
+                    <div class="itc-slider__item">
+                        <div class="banner-index-7"></div>
+                    </div>
+
                 </div>
             </div>
         </div>

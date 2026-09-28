@@ -3260,3 +3260,25 @@ li.empty {line-height: 20px !important; width: 100% !important;}
 #breadcrumbs {
 	font-size: 14px !important;
 }
+
+
+/* Homepage carousel appended slides */
+.banner-index-2,
+.banner-index-3,
+.banner-index-4,
+.banner-index-5,
+.banner-index-6,
+.banner-index-7 {
+    height: 450px;
+    width: 100%;
+    max-width: 100%;
+    background-position: center !important;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+.banner-index-2 { background-image: url(/wp-content/themes/rtm-theme/images/carousel-slide-03.png); }
+.banner-index-3 { background-image: url(/wp-content/themes/rtm-theme/images/carousel-slide-04.png); }
+.banner-index-4 { background-image: url(/wp-content/themes/rtm-theme/images/carousel-slide-05.png); }
+.banner-index-5 { background-image: url(/wp-content/themes/rtm-theme/images/carousel-slide-06.png); }
+.banner-index-6 { background-image: url(/wp-content/themes/rtm-theme/images/carousel-slide-07.png); }
+.banner-index-7 { background-image: url(/wp-content/themes/rtm-theme/images/carousel-slide-08.png); }
