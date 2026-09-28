@@ -357,11 +357,117 @@ $tab['new_tab']=array('label'=>"Совместимость",'target'=>"new_tab")
 return $tab;
 }
 
+/**
+ * RTM: variation dropdown args — color order + hide empty placeholder when default selected.
+ * Color sequence: black, olive, khaki/hakki, banana; then red; then others.
+ * Prefer this over CSS nth-child reordering of THWVS swatches.
+ */
+function rtm_color_sort_rank( $label ) {
+	$l = mb_strtolower( trim( wp_strip_all_tags( (string) $label ) ), 'UTF-8' );
+	$l = str_replace( array( 'ё', 'é' ), array( 'е', 'e' ), $l );
+	$rules = array(
+		10  => array( 'black', 'черный', 'чёрный' ),
+		20  => array( 'olive', 'олива', 'олив' ),
+		30  => array( 'hakki', 'khaki', 'хаки' ),
+		40  => array( 'banana', 'бананов', 'банан' ),
+		50  => array( 'red', 'красный' ),
+	);
+	foreach ( $rules as $rank => $needles ) {
+		foreach ( $needles as $needle ) {
+			if ( $l === $needle || mb_strpos( $l, $needle, 0, 'UTF-8' ) === 0 || mb_strpos( $l, $needle, 0, 'UTF-8' ) !== false ) {
+				return $rank;
+			}
+		}
+	}
+	return 1000;
+}
+
+function rtm_is_color_attribute( $attribute ) {
+	$attr = (string) $attribute;
+	$attr_l = mb_strtolower( $attr, 'UTF-8' );
+	return ( $attr === 'pa_color' || $attr_l === 'цвет' || false !== strpos( $attr_l, 'color' ) || false !== strpos( $attr_l, 'цвет' ) );
+}
+
+function rtm_sort_color_options( $options ) {
+	if ( empty( $options ) || ! is_array( $options ) ) {
+		return $options;
+	}
+	$indexed = array();
+	$i = 0;
+	foreach ( $options as $key => $value ) {
+		$label = is_string( $key ) && ! is_numeric( $key ) ? $key : $value;
+		// Taxonomy terms may be slugs as values with labels elsewhere; use value for custom attrs.
+		$rank_source = is_string( $value ) ? $value : (string) $label;
+		// For pa_color, $options is list of term slugs/names.
+		$indexed[] = array(
+			'key'   => $key,
+			'value' => $value,
+			'rank'  => rtm_color_sort_rank( $rank_source ),
+			'idx'   => $i++,
+		);
+	}
+	usort(
+		$indexed,
+		function( $a, $b ) {
+			if ( $a['rank'] === $b['rank'] ) {
+				return $a['idx'] - $b['idx'];
+			}
+			return $a['rank'] - $b['rank'];
+		}
+	);
+	$sorted = array();
+	$is_list = array_keys( $options ) === range( 0, count( $options ) - 1 );
+	foreach ( $indexed as $row ) {
+		if ( $is_list ) {
+			$sorted[] = $row['value'];
+		} else {
+			$sorted[ $row['key'] ] = $row['value'];
+		}
+	}
+	return $sorted;
+}
+
+add_filter( 'woocommerce_dropdown_variation_attribute_options_args', 'rtm_variation_dropdown_args', 20 );
+function rtm_variation_dropdown_args( $args ) {
+	if ( ! empty( $args['selected'] ) ) {
+		// Hide "Выбрать опцию" when a default is already selected (e.g. ЦПР-1 quantity).
+		$args['show_option_none'] = '';
+	}
+	if ( ! empty( $args['attribute'] ) && rtm_is_color_attribute( $args['attribute'] ) && ! empty( $args['options'] ) && is_array( $args['options'] ) ) {
+		$args['options'] = rtm_sort_color_options( $args['options'] );
+	}
+	return $args;
+}
+
+/**
+ * THWVS always injects an empty <option value="">…</option>. Strip it when a default is selected.
+ */
+add_filter( 'woocommerce_dropdown_variation_attribute_options_html', 'rtm_variation_dropdown_html', 110, 2 );
+function rtm_variation_dropdown_html( $html, $args ) {
+	if ( ! empty( $args['selected'] ) ) {
+		$html = preg_replace( '/<option value="">.*?<\/option>/u', '', $html, 1 );
+	}
+	return $html;
+}
+
+/**
+ * Stock text: only "в наличии" / "не в наличии" (no quantity, no emoji — emoji removed via CSS).
+ */
+add_filter( 'woocommerce_get_availability_text', 'rtm_availability_text', 60, 2 );
+function rtm_availability_text( $availability, $product ) {
+	if ( ! $product ) {
+		return $availability;
+	}
+	if ( $product->is_in_stock() ) {
+		return 'в наличии';
+	}
+	return 'не в наличии';
+}
+
+add_filter( 'woocommerce_get_stock_html', 'rtm_stock_html_class_cleanup', 20, 2 );
+function rtm_stock_html_class_cleanup( $html, $product ) {
+	// Keep WC markup/classes; text already filtered above.
+	return $html;
+}
 
 
- 
-
-
-
-
-?>

@@ -3357,3 +3357,93 @@ abbr.required {
     }
 }
 
+
+
+/* === RTM product stock: text only, no FA smiley icons === */
+.stock.in-stock::before,
+.stock.out-of-stock::before,
+p.stock::before {
+    content: none !important;
+    display: none !important;
+    margin: 0 !important;
+}
+
+/* === RTM variation selects: align all products with stickers-set look === */
+.single-product div.product table.variations select,
+.single-product div.product .thwvs-select,
+.single-product div.product select.thwvs-select {
+    width: 100%;
+    max-width: 100%;
+    min-height: 42px;
+    padding: 10px 36px 10px 12px !important;
+    box-sizing: border-box;
+    border: 1px solid #939393 !important;
+    border-radius: 6px !important;
+    background-color: #fff !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23939393' d='M1.4 0.6L6 5.2 10.6 0.6 12 2 6 8 0 2z'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 12px center !important;
+    background-size: 12px 8px !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    color: #282828;
+    font-size: 14px;
+    line-height: 1.4;
+    cursor: pointer;
+    outline: none !important;
+    box-shadow: none !important;
+}
+.single-product div.product table.variations select:focus,
+.single-product div.product .thwvs-select:focus {
+    border-color: #939393 !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+.single-product .select2-container .select2-selection--single {
+    min-height: 42px !important;
+    border: 1px solid #939393 !important;
+    border-radius: 6px !important;
+    background-color: #fff !important;
+}
+.single-product .select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 40px !important;
+    padding-left: 12px !important;
+    color: #282828 !important;
+}
+.single-product .select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 40px !important;
+    right: 8px !important;
+}
+
+/* === Homepage carousel appended slides (03–08) === */
+.banner-index-2,
+.banner-index-3,
+.banner-index-4,
+.banner-index-5,
+.banner-index-6,
+.banner-index-7 {
+    height: 450px;
+    width: 100%;
+    max-width: 100%;
+    background-position: center !important;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+.banner-index-2 { background-image: url(/wp-content/themes/rtm-theme/images/carousel-slide-03.png); }
+.banner-index-3 { background-image: url(/wp-content/themes/rtm-theme/images/carousel-slide-04.png); }
+.banner-index-4 { background-image: url(/wp-content/themes/rtm-theme/images/carousel-slide-05.png); }
+.banner-index-5 { background-image: url(/wp-content/themes/rtm-theme/images/carousel-slide-06.png); }
+.banner-index-6 { background-image: url(/wp-content/themes/rtm-theme/images/carousel-slide-07.png); }
+.banner-index-7 { background-image: url(/wp-content/themes/rtm-theme/images/carousel-slide-08.png); }
+
+@media (max-width: 768px) {
+    .banner-index-2,
+    .banner-index-3,
+    .banner-index-4,
+    .banner-index-5,
+    .banner-index-6,
+    .banner-index-7 {
+        height: 250px !important;
+    }
+}
