@@ -268,6 +268,7 @@ Template Name: Main page
                 <div>
                     <div  class="title4"><a href="/product-category/tools/">Инструменты</a></div>
                     <ul>
+                        <li><a href="/product/kayton/">Кайтон</a></li>
                         <li><a href="/product/ios-ekventor-pii/">ИОС Эквентор пII</a></li>
                     </ul>
                 </div>
@@ -297,7 +298,6 @@ Template Name: Main page
                 <div>
                     <div  class="title4"><a href="/product-category/mertch/">Мерч</a></div>
                     <ul>
-                        <li><a href="/product/kayton/">Кайтон</a></li>
                         <li><a href="/product/nabor-nakleek-1/">Набор наклеек №1</a></li>
                         <li><a href="/product/nabor-kontrolyorov-1-3/">Набор контролеров</a></li>
                         <li><a href="/product/nakleyka-pillau/">Наклейка Пиллау</a></li>
