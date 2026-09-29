@@ -224,7 +224,7 @@ function awoohc_add_update_form_billing( $fragments ) {
     return $fragments;
 }
 
-add_filter( 'woocommerce_checkout_fields', 'awoohc_add_update_form_billing', 99, 99 );
+add_filter( 'woocommerce_update_order_review_fragments', 'awoohc_add_update_form_billing', 99 );
 
 function awoohc_override_checkout_fields( $fields ) {
 
